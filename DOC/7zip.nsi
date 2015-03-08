@@ -2,7 +2,7 @@
 ;Defines
 
 !define VERSION_MAJOR 4
-!define VERSION_MINOR 42
+!define VERSION_MINOR 57
 !define VERSION_POSTFIX_FULL ""
 !ifdef WIN64
 !ifdef IA64
@@ -115,12 +115,47 @@ Section
   Delete $INSTDIR\7zC.sfx
   Delete $INSTDIR\7-zipn.dll
   Delete $INSTDIR\7zipDoc.txt
+  Delete $INSTDIR\file_id.diz
+
+  Delete $INSTDIR\Codecs\7zAES.dll
+  Delete $INSTDIR\Codecs\AES.dll
+  Delete $INSTDIR\Codecs\Branch.dll
+  Delete $INSTDIR\Codecs\BZip2.dll
+  Delete $INSTDIR\Codecs\Copy.dll
+  Delete $INSTDIR\Codecs\Deflate.dll
   Delete $INSTDIR\Codecs\Implode.dll
+  Delete $INSTDIR\Codecs\LZMA.dll
+  Delete $INSTDIR\Codecs\PPMD.dll
+  Delete $INSTDIR\Codecs\Rar29.dll
+  Delete $INSTDIR\Codecs\Swap.dll
+
+  RMDir $INSTDIR\Codecs
+
+  Delete $INSTDIR\Formats\7z.dll
+  Delete $INSTDIR\Formats\arj.dll
+  Delete $INSTDIR\Formats\bz2.dll
+  Delete $INSTDIR\Formats\cab.dll
+  Delete $INSTDIR\Formats\chm.dll
+  Delete $INSTDIR\Formats\cpio.dll
+  Delete $INSTDIR\Formats\deb.dll
+  Delete $INSTDIR\Formats\gz.dll
+  Delete $INSTDIR\Formats\iso.dll
+  Delete $INSTDIR\Formats\lzh.dll
+  Delete $INSTDIR\Formats\nsis.dll
+  Delete $INSTDIR\Formats\rar.dll
+  Delete $INSTDIR\Formats\rpm.dll
+  Delete $INSTDIR\Formats\split.dll
+  Delete $INSTDIR\Formats\tar.dll
+  Delete $INSTDIR\Formats\z.dll
+  Delete $INSTDIR\Formats\zip.dll
+
+  RMDir $INSTDIR\Formats
+
+  Delete $INSTDIR\Lang\no.txt
 
   # install files
   SetOutPath "$INSTDIR"
 
-  File file_id.diz
   File descript.ion
   File History.txt
   File License.txt
@@ -144,38 +179,7 @@ Section
 
   File 7-zip.chm
 
-  SetOutPath $INSTDIR\Formats
-
   File 7z.dll
-  File arj.dll
-  File bz2.dll
-  File cab.dll
-  File chm.dll
-  File cpio.dll
-  File deb.dll
-  File gz.dll
-  File iso.dll
-  File lzh.dll
-  File nsis.dll
-  File rar.dll
-  File rpm.dll
-  File split.dll
-  File tar.dll
-  File z.dll
-  File zip.dll
-
-  SetOutPath $INSTDIR\Codecs
-
-  File LZMA.dll
-  File Rar29.dll
-  File Deflate.dll
-  File Branch.dll
-  File Swap.dll
-  File Copy.dll
-  File PPMD.dll
-  File BZip2.dll
-  File AES.dll
-  File 7zAES.dll
 
   SetOutPath $INSTDIR\Lang
 
@@ -184,11 +188,14 @@ Section
   File ar.txt
   File ast.txt
   File az.txt
+  File ba.txt
   File be.txt
   File bg.txt
+  File bn.txt
   File br.txt
   File ca.txt
   File cs.txt
+  File cy.txt
   File da.txt
   File de.txt
   File el.txt
@@ -206,6 +213,7 @@ Section
   File he.txt
   File hr.txt
   File hu.txt
+  File hy.txt
   File id.txt
   File io.txt
   File it.txt
@@ -217,9 +225,12 @@ Section
   File lv.txt
   File mk.txt
   File mn.txt
+  File mr.txt
   File ms.txt
+  File ne.txt
   File nl.txt
-  File no.txt
+  File nb.txt
+  File nn.txt
   File pl.txt
   File pt.txt
   File pt-br.txt
@@ -228,7 +239,6 @@ Section
   File sk.txt
   File sl.txt
   File sq.txt
-  File sr.txt
   File sr-spc.txt
   File sr-spl.txt
   File sv.txt
@@ -240,7 +250,6 @@ Section
   File uz.txt
   File va.txt
   File vi.txt
-  File vr.txt
   File zh-cn.txt
   File zh-tw.txt
 
@@ -333,7 +342,6 @@ Section "Uninstall"
 
   # delete files
 
-  Delete $INSTDIR\file_id.diz
   Delete $INSTDIR\descript.ion
   Delete $INSTDIR\History.txt
   Delete $INSTDIR\License.txt
@@ -355,49 +363,21 @@ Section "Uninstall"
 
   Delete $INSTDIR\7-zip.chm
 
-  Delete $INSTDIR\Formats\7z.dll
-  Delete $INSTDIR\Formats\arj.dll
-  Delete $INSTDIR\Formats\bz2.dll
-  Delete $INSTDIR\Formats\cab.dll
-  Delete $INSTDIR\Formats\chm.dll
-  Delete $INSTDIR\Formats\cpio.dll
-  Delete $INSTDIR\Formats\deb.dll
-  Delete $INSTDIR\Formats\gz.dll
-  Delete $INSTDIR\Formats\iso.dll
-  Delete $INSTDIR\Formats\lzh.dll
-  Delete $INSTDIR\Formats\nsis.dll
-  Delete $INSTDIR\Formats\rar.dll
-  Delete $INSTDIR\Formats\rpm.dll
-  Delete $INSTDIR\Formats\split.dll
-  Delete $INSTDIR\Formats\tar.dll
-  Delete $INSTDIR\Formats\z.dll
-  Delete $INSTDIR\Formats\zip.dll
-
-  RMDir $INSTDIR\Formats
-
-  Delete $INSTDIR\Codecs\LZMA.dll
-  Delete $INSTDIR\Codecs\Rar29.dll
-  Delete $INSTDIR\Codecs\Deflate.dll
-  Delete $INSTDIR\Codecs\Branch.dll
-  Delete $INSTDIR\Codecs\Swap.dll
-  Delete $INSTDIR\Codecs\Copy.dll
-  Delete $INSTDIR\Codecs\PPMD.dll
-  Delete $INSTDIR\Codecs\BZip2.dll
-  Delete $INSTDIR\Codecs\AES.dll
-  Delete $INSTDIR\Codecs\7zAES.dll
-
-  RMDir $INSTDIR\Codecs
+  Delete $INSTDIR\7z.dll
 
   Delete $INSTDIR\Lang\en.ttt
   Delete $INSTDIR\Lang\af.txt
   Delete $INSTDIR\Lang\ar.txt
   Delete $INSTDIR\Lang\ast.txt
   Delete $INSTDIR\Lang\az.txt
+  Delete $INSTDIR\Lang\ba.txt
   Delete $INSTDIR\Lang\be.txt
   Delete $INSTDIR\Lang\bg.txt
+  Delete $INSTDIR\Lang\bn.txt
   Delete $INSTDIR\Lang\br.txt
   Delete $INSTDIR\Lang\ca.txt
   Delete $INSTDIR\Lang\cs.txt
+  Delete $INSTDIR\Lang\cy.txt
   Delete $INSTDIR\Lang\da.txt
   Delete $INSTDIR\Lang\de.txt
   Delete $INSTDIR\Lang\el.txt
@@ -415,6 +395,7 @@ Section "Uninstall"
   Delete $INSTDIR\Lang\he.txt
   Delete $INSTDIR\Lang\hr.txt
   Delete $INSTDIR\Lang\hu.txt
+  Delete $INSTDIR\Lang\hy.txt
   Delete $INSTDIR\Lang\id.txt
   Delete $INSTDIR\Lang\io.txt
   Delete $INSTDIR\Lang\it.txt
@@ -426,9 +407,12 @@ Section "Uninstall"
   Delete $INSTDIR\Lang\lv.txt
   Delete $INSTDIR\Lang\mk.txt
   Delete $INSTDIR\Lang\mn.txt
+  Delete $INSTDIR\Lang\mr.txt
   Delete $INSTDIR\Lang\ms.txt
+  Delete $INSTDIR\Lang\ne.txt
   Delete $INSTDIR\Lang\nl.txt
-  Delete $INSTDIR\Lang\no.txt
+  Delete $INSTDIR\Lang\nb.txt
+  Delete $INSTDIR\Lang\nn.txt
   Delete $INSTDIR\Lang\pl.txt
   Delete $INSTDIR\Lang\pt.txt
   Delete $INSTDIR\Lang\pt-br.txt
@@ -503,15 +487,26 @@ Section "Uninstall"
   DeleteRegKey HKCR "7-Zip.7z"
   DeleteRegKey HKCR "7-Zip.arj"
   DeleteRegKey HKCR "7-Zip.bz2"
+  DeleteRegKey HKCR "7-Zip.bzip2"
+  DeleteRegKey HKCR "7-Zip.tbz"
+  DeleteRegKey HKCR "7-Zip.tbz2"
   DeleteRegKey HKCR "7-Zip.cab"
   DeleteRegKey HKCR "7-Zip.cpio"
   DeleteRegKey HKCR "7-Zip.deb"
   DeleteRegKey HKCR "7-Zip.gz"
+  DeleteRegKey HKCR "7-Zip.gzip"
   DeleteRegKey HKCR "7-Zip.iso"
+  DeleteRegKey HKCR "7-Zip.lha"
+  DeleteRegKey HKCR "7-Zip.lzh"
   DeleteRegKey HKCR "7-Zip.rar"
   DeleteRegKey HKCR "7-Zip.rpm"
   DeleteRegKey HKCR "7-Zip.split"
+  DeleteRegKey HKCR "7-Zip.swm"
   DeleteRegKey HKCR "7-Zip.tar"
+  DeleteRegKey HKCR "7-Zip.taz"
+  DeleteRegKey HKCR "7-Zip.tgz"
+  DeleteRegKey HKCR "7-Zip.tpz"
+  DeleteRegKey HKCR "7-Zip.wim"
   DeleteRegKey HKCR "7-Zip.z"
   DeleteRegKey HKCR "7-Zip.zip"
 

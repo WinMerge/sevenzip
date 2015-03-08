@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <?define VerMajor = "4" ?>
-<?define VerMinor = "42" ?>
+<?define VerMinor = "57" ?>
 <?define VerBuild = "00" ?>
 <?define MmVer = "$(var.VerMajor).$(var.VerMinor)" ?>
 <?define MmHex = "0$(var.VerMajor)$(var.VerMinor)" ?>
@@ -189,18 +189,12 @@
             <File Id="_7z.exe" Name="7z.exe" />
           </Component>
 
-
-          <?if $(var.Is64) = "yes" ?>
-
-          <Component Id="CmdLineA" Guid="$(var.CompCmdLineA)" DiskId="1" Win64="$(var.Is64)">
-            <File Id="_7za.exe" Name="7za.exe" />
-          </Component>
-
-          <?endif ?>
-
-
           <Component Id="Gui" Guid="$(var.CompGui)" DiskId="1" Win64="$(var.Is64)">
             <File Id="_7zG.exe" Name="7zG.exe" />
+          </Component>
+
+          <Component Id="Formats" Guid="$(var.CompFormats)" DiskId="1" Win64="$(var.Is64)">
+              <File Id="_7z.dll" Name="7z.dll" />
           </Component>
 
           <Component Id="GuiSfx" Guid="$(var.CompGuiSfx)" DiskId="1" Win64="$(var.Is64)">
@@ -214,7 +208,6 @@
           <Component Id="Docs" Guid="$(var.CompDocs)" DiskId="1" Win64="$(var.Is64)">
             <File Id="copying.txt" Name="copying.txt" />
             <File Id="descript.ion" Name="descript.ion" />
-            <File Id="file_id.diz" Name="file_id.diz" />
             <File Id="History.txt" Name="History.txt" />
             <File Id="License.txt" Name="License.txt" />
             <File Id="readme.txt" Name="readme.txt" />
@@ -227,43 +220,6 @@
             </File>
           </Component>
 
-          <Directory Id="Formats" Name="Formats">
-            <Component Id="Formats" Guid="$(var.CompFormats)" DiskId="1" Win64="$(var.Is64)">
-              <File Id="_7z.dll" Name="7z.dll" />
-              <File Id="arj.dll" Name="arj.dll" />
-              <File Id="bz2.dll" Name="bz2.dll" />
-              <File Id="cab.dll" Name="cab.dll" />
-              <File Id="chm.dll" Name="chm.dll" />
-              <File Id="cpio.dll" Name="cpio.dll" />
-              <File Id="deb.dll" Name="deb.dll" />
-              <File Id="gz.dll" Name="gz.dll" />
-              <File Id="iso.dll" Name="iso.dll" />
-              <File Id="lzh.dll" Name="lzh.dll" />
-              <File Id="nsis.dll" Name="nsis.dll" />
-              <File Id="rar.dll" Name="rar.dll" />
-              <File Id="rpm.dll" Name="rpm.dll" />
-              <File Id="split.dll" Name="split.dll" />
-              <File Id="tar.dll" Name="tar.dll" />
-              <File Id="z.dll" Name="z.dll" />
-              <File Id="zip.dll" Name="zip.dll" />
-            </Component>
-          </Directory>
-
-          <Directory Id="Codecs" Name="Codecs">
-            <Component Id="Codecs" Guid="$(var.CompCodecs)" DiskId="1" Win64="$(var.Is64)">
-              <File Id="_7zAES.dll" Name="7zAES.dll" />
-              <File Id="AES.dll" Name="AES.dll" />
-              <File Id="Branch.dll" Name="Branch.dll" />
-              <File Id="BZip2.dll" Name="BZip2.dll" />
-              <File Id="Copy.dll" Name="Copy.dll" />
-              <File Id="Deflate.dll" Name="Deflate.dll" />
-              <File Id="LZMA.dll" Name="LZMA.dll" />
-              <File Id="PPMd.dll" Name="PPMd.dll" />
-              <File Id="Rar29.dll" Name="Rar29.dll" />
-              <File Id="Swap.dll" Name="Swap.dll" />
-            </Component>
-          </Directory>
-
           <Directory Id="MyLang" Name="Lang">
             <Component Id="Lang" Guid="$(var.CompLang)" DiskId="1" Win64="$(var.Is64)">
               <File Id="en.ttt" Name="en.ttt" />
@@ -271,11 +227,14 @@
               <File Id="ar.txt" Name="ar.txt" />
               <File Id="ast.txt" Name="ast.txt" />
               <File Id="az.txt" Name="az.txt" />
+              <File Id="ba.txt" Name="ba.txt" />
               <File Id="be.txt" Name="be.txt" />
               <File Id="bg.txt" Name="bg.txt" />
+              <File Id="bn.txt" Name="bn.txt" />
               <File Id="br.txt" Name="br.txt" />
               <File Id="ca.txt" Name="ca.txt" />
               <File Id="cs.txt" Name="cs.txt" />
+              <File Id="cy.txt" Name="cy.txt" />
               <File Id="da.txt" Name="da.txt" />
               <File Id="de.txt" Name="de.txt" />
               <File Id="el.txt" Name="el.txt" />
@@ -293,6 +252,7 @@
               <File Id="he.txt" Name="he.txt" />
               <File Id="hr.txt" Name="hr.txt" />
               <File Id="hu.txt" Name="hu.txt" />
+              <File Id="hy.txt" Name="hy.txt" />
               <File Id="id.txt" Name="id.txt" />
               <File Id="io.txt" Name="io.txt" />
               <File Id="it.txt" Name="it.txt" />
@@ -304,9 +264,12 @@
               <File Id="lv.txt" Name="lv.txt" />
               <File Id="mk.txt" Name="mk.txt" />
               <File Id="mn.txt" Name="mn.txt" />
+              <File Id="mr.txt" Name="mr.txt" />
               <File Id="ms.txt" Name="ms.txt" />
+              <File Id="ne.txt" Name="ne.txt" />
               <File Id="nl.txt" Name="nl.txt" />
-              <File Id="no.txt" Name="no.txt" />
+              <File Id="nb.txt" Name="nb.txt" />
+              <File Id="nn.txt" Name="nn.txt" />
               <File Id="pl.txt" Name="pl.txt" />
               <File Id="pt.txt" Name="pt.txt" />
               <File Id="pt_br.txt" Name="pt-br.txt" />
@@ -315,7 +278,6 @@
               <File Id="sk.txt" Name="sk.txt" />
               <File Id="sl.txt" Name="sl.txt" />
               <File Id="sq.txt" Name="sq.txt" />
-              <File Id="sr.txt" Name="sr.txt" />
               <File Id="sr_spl.txt" Name="sr-spl.txt" />
               <File Id="sr_spc.txt" Name="sr-spc.txt" />
               <File Id="sv.txt" Name="sv.txt" />
@@ -327,7 +289,6 @@
               <File Id="uz.txt" Name="uz.txt" />
               <File Id="va.txt" Name="va.txt" />
               <File Id="vi.txt" Name="vi.txt" />
-              <File Id="vr.txt" Name="vr.txt" />
               <File Id="zh_cn.txt" Name="zh-cn.txt" />
               <File Id="zh_tw.txt" Name="zh-tw.txt" />
             </Component>
@@ -350,13 +311,9 @@
         <ComponentRef Id="Fm" />
         <ComponentRef Id="ShellExt" />
         <ComponentRef Id="CmdLine" />
-        <?if $(var.Is64) = "yes" ?>
-        <ComponentRef Id="CmdLineA" />
-        <?endif ?>
         <ComponentRef Id="Gui" />
         <ComponentRef Id="GuiSfx" />
         <ComponentRef Id="ConSfx" />
-        <ComponentRef Id="Codecs" />
         <ComponentRef Id="Formats" />
         <ComponentRef Id="Docs" />
         <ComponentRef Id="Help" />
@@ -370,7 +327,7 @@
         <ComponentRef Id="InstallRegAppPath" />
 
       </Feature>
-      <Feature Id="LanguageFiles" Title="Localization files" Description="Localization files for 63 languages." 
+      <Feature Id="LanguageFiles" Title="Localization files" Description="Localization files for 71 languages." 
           Level="1" AllowAdvertise="no">
         <ComponentRef Id="Lang" />
       </Feature>
