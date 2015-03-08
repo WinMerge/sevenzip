@@ -1,5 +1,5 @@
-#define IDI_FAM                         101
-#define IDI_FM                          101
+#include "resourceGui.h"
+
 #define IDR_MENUBAR1                    103
 #define IDM_MENU                        103
 #define IDR_ACCELERATOR1                209
@@ -17,6 +17,7 @@
 #define IDM_FILE_PROPERTIES             240
 #define IDM_FILE_COMMENT                241
 #define IDM_FILE_CRC                    242
+#define IDM_FILE_DIFF                   243
 #define IDM_CREATE_FOLDER               250
 #define IDM_CREATE_FILE                 251
 #define IDM_EDIT_CUT                    320
@@ -108,9 +109,6 @@
 #define IDS_SELECT_MASK                 2252
 #define IDS_FOLDERS_HISTORY             2260
 #define IDS_N_SELECTED_ITEMS            2270
-#define IDS_FILES_COLON                 2274
-#define IDS_FOLDERS_COLON               2275
-#define IDS_SIZE_COLON                  2276
 
 #define IDS_TOO_MANY_ITEMS              2279
 #define IDS_WANT_UPDATE_MODIFIED_FILE   2280
@@ -128,12 +126,12 @@
 #define IDS_BUTTON_MOVE                 2421
 #define IDS_BUTTON_DELETE               2422
 #define IDS_BUTTON_INFO                 2423
-#define IDS_PROPERTY_TOTAL_SIZE         3100
-#define IDS_PROPERTY_FREE_SPACE         3101
-#define IDS_PROPERTY_CLUSTER_SIZE       3102
-#define IDS_PROPERTY_VOLUME_NAME        3103
-#define IDS_PROPERTY_LOCAL_NAME         3200
-#define IDS_PROPERTY_PROVIDER           3201
+#define IDS_PROP_TOTAL_SIZE             3100
+#define IDS_PROP_FREE_SPACE             3101
+#define IDS_PROP_CLUSTER_SIZE           3102
+#define IDS_PROP_VOLUME_NAME            3103
+#define IDS_PROP_LOCAL_NAME             3200
+#define IDS_PROP_PROVIDER               3201
 #define IDS_OPTIONS                     4000
 #define IDS_COMMENT                     4001
 #define IDS_COMMENT2                    4002
@@ -158,9 +156,6 @@
 
 #define IDS_SCANNING                    4050
 #define IDS_PROPERTIES                  4060
-
-#define IDS_PROGRESS_TESTING            4100
-#define IDS_MESSAGE_NO_ERRORS           4200
 
 #define IDS_MESSAGE_UNSUPPORTED_OPERATION_FOR_LONG_PATH_FOLDER  4301
 #define IDS_SELECT_ONE_FILE             4302

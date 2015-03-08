@@ -2,12 +2,15 @@
 
 #include "StdAfx.h"
 
-#include "FarUtils.h"
-#include "Common/DynamicBuffer.h"
 #include "Common/StringConvert.h"
-#include "Windows/Defs.h"
+
+#ifndef UNDER_CE
 #include "Windows/Console.h"
+#endif
+#include "Windows/Defs.h"
 #include "Windows/Error.h"
+
+#include "FarUtils.h"
 
 using namespace NWindows;
 
@@ -16,12 +19,12 @@ namespace NFar {
 CStartupInfo g_StartupInfo;
 
 void CStartupInfo::Init(const PluginStartupInfo &pluginStartupInfo,
-    const CSysString &pliginNameForRegestry)
+    const CSysString &pluginNameForRegestry)
 {
   m_Data = pluginStartupInfo;
-  m_RegistryPath = pluginStartupInfo.RootKey;
-  m_RegistryPath += '\\';
-  m_RegistryPath += pliginNameForRegestry;
+  m_RegistryPath = GetSystemString(pluginStartupInfo.RootKey);
+  m_RegistryPath += TEXT('\\');
+  m_RegistryPath += pluginNameForRegestry;
 }
 
 const char *CStartupInfo::GetMsgString(int messageId)
@@ -164,7 +167,7 @@ void CStartupInfo::RestoreScreen(HANDLE handle)
   m_Data.RestoreScreen(handle);
 }
 
-const char kRegestryKeyDelimiter = '\'';
+const TCHAR kRegestryKeyDelimiter = TEXT('\'');
 
 CSysString CStartupInfo::GetFullKeyName(const CSysString &keyName) const
 {
@@ -355,8 +358,8 @@ int CStartupInfo::Menu(
     item.Checked = 0;
     item.Separator = 0;
     item.Selected = (i == selectedItem);
-    AString reducedString = items[i].Left(sizeof(item.Text) / sizeof(item.Text[0]) - 1);
-    MyStringCopy(item.Text, (const char *)reducedString);
+    CSysString reducedString = items[i].Left(sizeof(item.Text) / sizeof(item.Text[0]) - 1);
+    MyStringCopy(item.Text, (const char *)GetOemString(reducedString));
     farMenuItems.Add(item);
   }
   return Menu(flags, title, helpTopic, &farMenuItems.Front(), farMenuItems.Size());
@@ -396,7 +399,7 @@ static AString DWORDToString(DWORD number)
 
 void PrintErrorMessage(const char *message, int code)
 {
-  CSysString tmp = message;
+  AString tmp = message;
   tmp += " #";
   tmp += DWORDToString(code);
   g_StartupInfo.ShowMessage(tmp);
@@ -404,7 +407,7 @@ void PrintErrorMessage(const char *message, int code)
 
 void PrintErrorMessage(const char *message, const char *text)
 {
-  CSysString tmp = message;
+  AString tmp = message;
   tmp += ":\n";
   tmp += text;
   g_StartupInfo.ShowMessageLines(tmp);
@@ -417,6 +420,9 @@ void PrintErrorMessage(const char *message, const wchar_t *text)
 
 bool WasEscPressed()
 {
+  #ifdef UNDER_CE
+  return false;
+  #else
   NConsole::CIn inConsole;
   HANDLE handle = ::GetStdHandle(STD_INPUT_HANDLE);
   if(handle == INVALID_HANDLE_VALUE)
@@ -438,16 +444,16 @@ bool WasEscPressed()
         event.Event.KeyEvent.wVirtualKeyCode == VK_ESCAPE)
       return true;
   }
+  #endif
 }
 
 void ShowErrorMessage(DWORD errorCode)
 {
-  AString message;
+  UString message;
   NError::MyFormatMessage(errorCode, message);
-  message.Replace("\x0D", "");
-  message.Replace("\x0A", " ");
-  g_StartupInfo.ShowMessage(SystemStringToOemString(message));
-
+  message.Replace(L"\x0D", L"");
+  message.Replace(L"\x0A", L" ");
+  g_StartupInfo.ShowMessage(UnicodeStringToMultiByte(message, CP_OEMCP));
 }
 
 void ShowLastErrorMessage()

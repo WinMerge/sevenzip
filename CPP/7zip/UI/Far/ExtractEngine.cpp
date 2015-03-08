@@ -2,15 +2,9 @@
 
 #include "StdAfx.h"
 
-#include <stdio.h>
-
-#include "ExtractEngine.h"
-
-#include "Common/Wildcard.h"
 #include "Common/StringConvert.h"
 
-#include "Windows/Defs.h"
-
+#include "ExtractEngine.h"
 #include "FarUtils.h"
 #include "Messages.h"
 #include "OverwriteDialog.h"
@@ -60,23 +54,24 @@ STDMETHODIMP CExtractCallBackImp::SetCompleted(const UInt64 *completeValue)
 STDMETHODIMP CExtractCallBackImp::AskOverwrite(
     const wchar_t *existName, const FILETIME *existTime, const UInt64 *existSize,
     const wchar_t *newName, const FILETIME *newTime, const UInt64 *newSize,
-    INT32 *answer)
+    Int32 *answer)
 {
   NOverwriteDialog::CFileInfo oldFileInfo, newFileInfo;
-  oldFileInfo.Time = *existTime;
+  oldFileInfo.TimeIsDefined = (existTime != 0);
+  if (oldFileInfo.TimeIsDefined)
+    oldFileInfo.Time = *existTime;
   oldFileInfo.SizeIsDefined = (existSize != NULL);
   if (oldFileInfo.SizeIsDefined)
     oldFileInfo.Size = *existSize;
-  oldFileInfo.Name = GetSystemString(existName, m_CodePage);
+  oldFileInfo.Name = existName;
 
   newFileInfo.TimeIsDefined = (newTime != 0);
   if (newFileInfo.TimeIsDefined)
     newFileInfo.Time = *newTime;
-  
   newFileInfo.SizeIsDefined = (newSize != NULL);
   if (newFileInfo.SizeIsDefined)
     newFileInfo.Size = *newSize;
-  newFileInfo.Name = GetSystemString(newName, m_CodePage);
+  newFileInfo.Name = newName;
   
   NOverwriteDialog::NResult::EEnum result =
     NOverwriteDialog::Execute(oldFileInfo, newFileInfo);
@@ -108,7 +103,7 @@ STDMETHODIMP CExtractCallBackImp::AskOverwrite(
   return S_OK;
 }
 
-STDMETHODIMP CExtractCallBackImp::PrepareOperation(const wchar_t *name, bool /* isFolder */, INT32 /* askExtractMode */, const UInt64 * /* position */)
+STDMETHODIMP CExtractCallBackImp::PrepareOperation(const wchar_t *name, bool /* isFolder */, Int32 /* askExtractMode */, const UInt64 * /* position */)
 {
   if (WasEscPressed())
     return E_ABORT;
@@ -124,7 +119,13 @@ STDMETHODIMP CExtractCallBackImp::MessageError(const wchar_t *message)
   return S_OK;
 }
 
-STDMETHODIMP CExtractCallBackImp::SetOperationResult(INT32 operationResult, bool encrypted)
+static void ReduceString(UString &s, int size)
+{
+  if (s.Length() > size)
+    s = s.Left(size / 2) + UString(L" ... ") + s.Right(size / 2);
+}
+
+STDMETHODIMP CExtractCallBackImp::SetOperationResult(Int32 operationResult, bool encrypted)
 {
   switch(operationResult)
   {
@@ -151,10 +152,11 @@ STDMETHODIMP CExtractCallBackImp::SetOperationResult(INT32 operationResult, bool
         default:
           return E_FAIL;
       }
-      char buffer[512];
-      const AString s = UnicodeStringToMultiByte(m_CurrentFilePath, m_CodePage);
-      sprintf(buffer, g_StartupInfo.GetMsgString(idMessage), (const char *)s);
-      if (g_StartupInfo.ShowMessage(buffer) == -1)
+      UString name = m_CurrentFilePath;
+      ReduceString(name, 70);
+      AString s = g_StartupInfo.GetMsgString(idMessage);
+      s.Replace(" '%s'", "");
+      if (g_StartupInfo.ShowMessageLines(s + (AString)("\n") + UnicodeStringToMultiByte(name, m_CodePage)) == -1)
         return E_ABORT;
     }
   }

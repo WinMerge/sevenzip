@@ -1,18 +1,18 @@
 PROG = 7z.exe
-LIBS = $(LIBS) user32.lib oleaut32.lib advapi32.lib
+MY_CONSOLE = 1
 CFLAGS = $(CFLAGS) -I ../../../  \
-  -DCOMPRESS_MT \
-  -DWIN_LONG_PATH \
-  -DEXTERNAL_LZMA \
   -DEXTERNAL_CODECS \
-  -DBREAK_HANDLER \
-  -DBENCH_MT \
-  -D_7ZIP_LARGE_PAGES \
+
+!IFNDEF UNDER_CE
+CFLAGS = $(CFLAGS) -DWIN_LONG_PATH -D_7ZIP_LARGE_PAGES -DSUPPORT_DEVICE_FILE
+!ENDIF
+
 
 CONSOLE_OBJS = \
   $O\ConsoleClose.obj \
   $O\ExtractCallbackConsole.obj \
   $O\List.obj \
+  $O\BenchCon.obj \
   $O\Main.obj \
   $O\MainAr.obj \
   $O\OpenCallbackConsole.obj \
@@ -50,8 +50,10 @@ WIN_OBJS = \
   $O\Time.obj \
 
 7ZIP_COMMON_OBJS = \
+  $O\CreateCoder.obj \
   $O\FilePathAutoRename.obj \
   $O\FileStreams.obj \
+  $O\FilterCoder.obj \
   $O\ProgressUtils.obj \
   $O\StreamUtils.obj \
 
@@ -63,6 +65,7 @@ UI_COMMON_OBJS = \
   $O\EnumDirItems.obj \
   $O\Extract.obj \
   $O\ExtractingFilePath.obj \
+  $O\Bench.obj \
   $O\LoadCodecs.obj \
   $O\OpenArchive.obj \
   $O\PropIDUtils.obj \
@@ -76,15 +79,15 @@ UI_COMMON_OBJS = \
   $O\UpdateProduce.obj \
   $O\WorkDir.obj \
 
-LZMA_BENCH_OBJS = \
-  $O\LzmaBench.obj \
-  $O\LzmaBenchCon.obj \
+AR_COMMON_OBJS = \
+  $O\OutStreamWithCRC.obj \
 
 C_OBJS = \
   $O\Alloc.obj \
+  $O\CpuArch.obj \
   $O\Threads.obj \
 
-!include "../../Crc2.mak"
+!include "../../Crc.mak"
 
 OBJS = \
   $O\StdAfx.obj \
@@ -93,10 +96,10 @@ OBJS = \
   $(WIN_OBJS) \
   $(7ZIP_COMMON_OBJS) \
   $(UI_COMMON_OBJS) \
+  $(AR_COMMON_OBJS) \
   $O\CopyCoder.obj \
-  $(LZMA_BENCH_OBJS) \
   $(C_OBJS) \
-  $(CRC_OBJS) \
+  $(ASM_OBJS) \
   $O\resource.res
 
 !include "../../../Build.mak"
@@ -111,10 +114,11 @@ $(7ZIP_COMMON_OBJS): ../../Common/$(*B).cpp
 	$(COMPL)
 $(UI_COMMON_OBJS): ../Common/$(*B).cpp
 	$(COMPL)
-$O\CopyCoder.obj: ../../Compress/$(*B).cpp
+$(AR_COMMON_OBJS): ../../Archive/Common/$(*B).cpp
 	$(COMPL)
-$(LZMA_BENCH_OBJS): ../../Compress/LZMA_Alone/$(*B).cpp
+$O\CopyCoder.obj: ../../Compress/$(*B).cpp
 	$(COMPL)
 $(C_OBJS): ../../../../C/$(*B).c
 	$(COMPL_O2)
-!include "../../Crc.mak"
+
+!include "../../Asm.mak"

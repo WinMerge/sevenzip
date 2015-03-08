@@ -78,12 +78,20 @@ namespace NFileHeader
       kWzAES = 0x63
     };
     const int kNumCompressionMethods = 11;
-    const Byte kMadeByProgramVersion = 20;
+    const Byte kMadeByProgramVersion = 63;
     
-    const Byte kDeflateExtractVersion = 20;
-    const Byte kStoreExtractVersion = 10;
+    const Byte kExtractVersion_Default = 10;
+    const Byte kExtractVersion_Dir = 20;
+    const Byte kExtractVersion_ZipCrypto = 20;
+    const Byte kExtractVersion_Deflate = 20;
+    const Byte kExtractVersion_Deflate64 = 21;
+    const Byte kExtractVersion_Zip64 = 45;
+    const Byte kExtractVersion_BZip2 = 46;
+    const Byte kExtractVersion_Aes = 51;
+    const Byte kExtractVersion_LZMA = 63;
+    const Byte kExtractVersion_PPMd = 63;
     
-    const Byte kSupportedVersion   = 20;
+    // const Byte kSupportedVersion   = 20;
   }
 
   namespace NExtraID
@@ -93,6 +101,7 @@ namespace NFileHeader
       kZip64 = 0x01,
       kNTFS = 0x0A,
       kStrongEncrypt = 0x17,
+      kUnixTime = 0x5455,
       kWzAES = 0x9901
     };
   }
@@ -103,8 +112,18 @@ namespace NFileHeader
     enum
     {
       kMTime = 0,
-      kATime = 1,
-      kCTime = 2
+      kATime,
+      kCTime
+    };
+  }
+
+  namespace NUnixTime
+  {
+    enum
+    {
+      kMTime = 0,
+      kATime,
+      kCTime
     };
   }
 

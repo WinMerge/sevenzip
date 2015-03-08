@@ -1,10 +1,6 @@
 PROG = 7za.dll
 DEF_FILE = ../../Archive/Archive2.def
-LIBS = $(LIBS) user32.lib oleaut32.lib
 CFLAGS = $(CFLAGS) -I ../../../ \
-  -DCOMPRESS_MT \
-  -DCOMPRESS_MF_MT \
-  -DCOMPRESS_BZIP2_MT \
   -DDEFLATE_EXTRACT_ONLY \
   -DBZIP2_EXTRACT_ONLY \
 
@@ -28,6 +24,7 @@ WIN_OBJS = \
 
 7ZIP_COMMON_OBJS = \
   $O\CreateCoder.obj \
+  $O\CWrappers.obj \
   $O\InBuffer.obj \
   $O\InOutTempBuffer.obj \
   $O\FilterCoder.obj \
@@ -86,7 +83,6 @@ COMPRESS_OBJS = \
   $O\BranchMisc.obj \
   $O\BranchRegister.obj \
   $O\ByteSwap.obj \
-  $O\ByteSwapRegister.obj \
   $O\BZip2Crc.obj \
   $O\BZip2Decoder.obj \
   $O\BZip2Encoder.obj \
@@ -96,6 +92,10 @@ COMPRESS_OBJS = \
   $O\DeflateDecoder.obj \
   $O\DeflateEncoder.obj \
   $O\DeflateRegister.obj \
+  $O\DeltaFilter.obj \
+  $O\Lzma2Decoder.obj \
+  $O\Lzma2Encoder.obj \
+  $O\Lzma2Register.obj \
   $O\LzmaDecoder.obj \
   $O\LzmaEncoder.obj \
   $O\LzmaRegister.obj \
@@ -117,17 +117,25 @@ C_OBJS = \
   $O\Bra86.obj \
   $O\BraIA64.obj \
   $O\BwtSort.obj \
+  $O\CpuArch.obj \
+  $O\Delta.obj \
   $O\HuffEnc.obj \
   $O\LzFind.obj \
   $O\LzFindMt.obj \
+  $O\Lzma2Dec.obj \
+  $O\Lzma2Enc.obj \
   $O\LzmaDec.obj \
   $O\LzmaEnc.obj \
+  $O\MtCoder.obj \
+  $O\Ppmd7.obj \
+  $O\Ppmd7Dec.obj \
+  $O\Ppmd7Enc.obj \
+  $O\Sha256.obj \
   $O\Sort.obj \
   $O\Threads.obj \
-  $O\Aes.obj \
-  $O\Sha256.obj \
 
-!include "../../Crc2.mak"
+!include "../../Aes.mak"
+!include "../../Crc.mak"
 
 OBJS = \
   $O\StdAfx.obj \
@@ -141,7 +149,7 @@ OBJS = \
   $(COMPRESS_OBJS) \
   $(CRYPTO_OBJS) \
   $(C_OBJS) \
-  $(CRC_OBJS) \
+  $(ASM_OBJS) \
   $O\resource.res
 
 
@@ -170,4 +178,4 @@ $(CRYPTO_OBJS): ../../Crypto/$(*B).cpp
 $(C_OBJS): ../../../../C/$(*B).c
 	$(COMPL_O2)
 
-!include "../../Crc.mak"
+!include "../../Asm.mak"

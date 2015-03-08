@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /Gz /MD /W3 /GX /O1 /I "..\..\..\\" /D "NDEBUG" /D "COMPRESS_BCJ2" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "EXTRACT_ONLY" /D "_SFX" /D "NO_READ_FROM_CODER" /Yu"StdAfx.h" /FD /c
+# ADD CPP /nologo /Gz /MD /W3 /GX /O1 /I "..\..\..\\" /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "EXTRACT_ONLY" /D "_SFX" /D "NO_READ_FROM_CODER" /Yu"StdAfx.h" /FD /c
 # ADD BASE RSC /l 0x419 /d "NDEBUG"
 # ADD RSC /l 0x419 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -285,6 +285,14 @@ SOURCE=..\..\Compress\CopyRegister.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\Compress\Lzma2Decoder.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Compress\Lzma2Register.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Compress\LzmaDecoder.cpp
 # End Source File
 # Begin Source File
@@ -477,6 +485,14 @@ SOURCE=..\..\..\Common\StringConvert.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\UTFConvert.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\UTFConvert.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\Wildcard.cpp
 # End Source File
 # Begin Source File
@@ -494,6 +510,14 @@ SOURCE=..\..\Common\CreateCoder.cpp
 # Begin Source File
 
 SOURCE=..\..\Common\CreateCoder.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\CWrappers.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\CWrappers.h
 # End Source File
 # Begin Source File
 
@@ -694,12 +718,22 @@ SOURCE=..\..\..\..\C\7zCrc.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\C\7zCrcOpt.c
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\C\Aes.c
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\..\C\Aes.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\AesOpt.c
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -721,12 +755,40 @@ SOURCE=..\..\..\..\C\Bra86.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\C\CpuArch.c
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Lzma2Dec.c
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Lzma2Dec.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\C\LzmaDec.c
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\..\C\LzmaDec.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Ppmd7.c
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Ppmd7.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Ppmd7Dec.c
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 

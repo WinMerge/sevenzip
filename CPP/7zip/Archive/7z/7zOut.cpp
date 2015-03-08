@@ -2,15 +2,13 @@
 
 #include "StdAfx.h"
 
+#include "../../../../C/7zCrc.h"
+
 #include "../../../Common/AutoPtr.h"
+
 #include "../../Common/StreamObjects.h"
 
 #include "7zOut.h"
-
-extern "C"
-{
-#include "../../../../C/7zCrc.h"
-}
 
 static HRESULT WriteBytes(ISequentialOutStream *stream, const void *data, size_t size)
 {
@@ -141,7 +139,7 @@ void COutArchive::Close()
   Stream.Release();
 }
 
-HRESULT COutArchive::SkeepPrefixArchiveHeader()
+HRESULT COutArchive::SkipPrefixArchiveHeader()
 {
   #ifdef _7Z_VOL
   if (_endMarker)
@@ -504,9 +502,11 @@ void COutArchive::SkipAlign(unsigned pos, unsigned alignSize)
 }
 */
 
+static inline unsigned Bv_GetSizeInBytes(const CBoolVector &v) { return ((unsigned)v.Size() + 7) / 8; }
+
 void COutArchive::WriteAlignedBoolHeader(const CBoolVector &v, int numDefined, Byte type, unsigned itemSize)
 {
-  const UInt64 bvSize = (numDefined == v.Size()) ? 0 : (v.Size() + 7) / 8;
+  const unsigned bvSize = (numDefined == v.Size()) ? 0 : Bv_GetSizeInBytes(v);
   const UInt64 dataSize = (UInt64)numDefined * itemSize + bvSize + 2;
   SkipAlign(3 + (unsigned)bvSize + (unsigned)GetBigNumberSize(dataSize), itemSize);
 
@@ -543,31 +543,21 @@ void COutArchive::WriteUInt64DefVector(const CUInt64DefVector &v, Byte type)
 
 HRESULT COutArchive::EncodeStream(
     DECL_EXTERNAL_CODECS_LOC_VARS
-    CEncoder &encoder, const Byte *data, size_t dataSize,
+    CEncoder &encoder, const CByteBuffer &data,
     CRecordVector<UInt64> &packSizes, CObjectVector<CFolder> &folders)
 {
-  CSequentialInStreamImp *streamSpec = new CSequentialInStreamImp;
+  CBufInStream *streamSpec = new CBufInStream;
   CMyComPtr<ISequentialInStream> stream = streamSpec;
-  streamSpec->Init(data, dataSize);
+  streamSpec->Init(data, data.GetCapacity());
   CFolder folderItem;
   folderItem.UnpackCRCDefined = true;
-  folderItem.UnpackCRC = CrcCalc(data, dataSize);
-  UInt64 dataSize64 = dataSize;
+  folderItem.UnpackCRC = CrcCalc(data, data.GetCapacity());
+  UInt64 dataSize64 = data.GetCapacity();
   RINOK(encoder.Encode(
       EXTERNAL_CODECS_LOC_VARS
       stream, NULL, &dataSize64, folderItem, SeqStream, packSizes, NULL))
   folders.Add(folderItem);
   return S_OK;
-}
-
-HRESULT COutArchive::EncodeStream(
-    DECL_EXTERNAL_CODECS_LOC_VARS
-    CEncoder &encoder, const CByteBuffer &data,
-    CRecordVector<UInt64> &packSizes, CObjectVector<CFolder> &folders)
-{
-  return EncodeStream(
-      EXTERNAL_CODECS_LOC_VARS
-      encoder, data, data.GetCapacity(), packSizes, folders);
 }
 
 void COutArchive::WriteHeader(
@@ -643,7 +633,7 @@ void COutArchive::WriteHeader(
   if (numEmptyStreams > 0)
   {
     WriteByte(NID::kEmptyStream);
-    WriteNumber((emptyStreamVector.Size() + 7) / 8);
+    WriteNumber(Bv_GetSizeInBytes(emptyStreamVector));
     WriteBoolVector(emptyStreamVector);
 
     CBoolVector emptyFileVector, antiVector;
@@ -668,14 +658,14 @@ void COutArchive::WriteHeader(
     if (numEmptyFiles > 0)
     {
       WriteByte(NID::kEmptyFile);
-      WriteNumber((emptyFileVector.Size() + 7) / 8);
+      WriteNumber(Bv_GetSizeInBytes(emptyFileVector));
       WriteBoolVector(emptyFileVector);
     }
 
     if (numAntiItems > 0)
     {
       WriteByte(NID::kAnti);
-      WriteNumber((antiVector.Size() + 7) / 8);
+      WriteNumber(Bv_GetSizeInBytes(antiVector));
       WriteBoolVector(antiVector);
     }
   }
@@ -806,8 +796,8 @@ HRESULT COutArchive::WriteDatabase(
       CObjectVector<CFolder> folders;
       RINOK(EncodeStream(
           EXTERNAL_CODECS_LOC_VARS
-          encoder, (const Byte *)buf,
-          _countSize, packSizes, folders));
+          encoder, buf,
+          packSizes, folders));
 
       _writeToStream = true;
       

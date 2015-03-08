@@ -3,16 +3,15 @@
 #ifndef __IFOLDER_ARCHIVE_H
 #define __IFOLDER_ARCHIVE_H
 
-#include "../../Archive/IArchive.h"
-// #include "../Format/Common/ArchiveInterface.h"
-#include "../../UI/FileManager/IFolder.h"
-#include "../Common/IFileExtractCallback.h"
-#include "../Common/ExtractMode.h"
-#include "../../UI/Common/LoadCodecs.h"
-
 #include "../../IDecl.h"
+#include "../../Archive/IArchive.h"
+#include "../../UI/Common/LoadCodecs.h"
+#include "../../UI/FileManager/IFolder.h"
 
-#define FOLDER_ARCHIVE_INTERFACE_SUB(i, base,  x) DECL_INTERFACE_SUB(i, base, 0x01, x)
+#include "../Common/ExtractMode.h"
+#include "../Common/IFileExtractCallback.h"
+
+#define FOLDER_ARCHIVE_INTERFACE_SUB(i, base, x) DECL_INTERFACE_SUB(i, base, 0x01, x)
 #define FOLDER_ARCHIVE_INTERFACE(i, x) FOLDER_ARCHIVE_INTERFACE_SUB(i, IUnknown, x)
 
 #define INTERFACE_IArchiveFolder(x) \
@@ -28,7 +27,7 @@ FOLDER_ARCHIVE_INTERFACE(IArchiveFolder, 0x05)
 };
 
 #define INTERFACE_IInFolderArchive(x) \
-  STDMETHOD(Open)(const wchar_t *filePath, BSTR *archiveType, IArchiveOpenCallback *openArchiveCallback) x; \
+  STDMETHOD(Open)(IInStream *inStream, const wchar_t *filePath, const wchar_t *arcFormat, BSTR *archiveTypeRes, IArchiveOpenCallback *openArchiveCallback) x; \
   STDMETHOD(ReOpen)(IArchiveOpenCallback *openArchiveCallback) x; \
   STDMETHOD(Close)() x; \
   STDMETHOD(GetNumberOfProperties)(UInt32 *numProperties) x; \
@@ -38,7 +37,7 @@ FOLDER_ARCHIVE_INTERFACE(IArchiveFolder, 0x05)
       NExtract::NOverwriteMode::EEnum overwriteMode, const wchar_t *path, \
       Int32 testMode, IFolderArchiveExtractCallback *extractCallback2) x; \
 
-FOLDER_ARCHIVE_INTERFACE(IInFolderArchive, 0x06)
+FOLDER_ARCHIVE_INTERFACE(IInFolderArchive, 0x0E)
 {
   INTERFACE_IInFolderArchive(PURE)
 };

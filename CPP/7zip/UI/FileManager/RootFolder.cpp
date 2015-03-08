@@ -2,35 +2,38 @@
 
 #include "StdAfx.h"
 
-#include "resource.h"
-
-#include "RootFolder.h"
-
 #include "Common/StringConvert.h"
-#include "../../PropID.h"
-#include "Windows/Defs.h"
+
+#include "Windows/DLL.h"
 #include "Windows/PropVariant.h"
 
-#include "FSDrives.h"
-#include "PhysDriveFolder.h"
-#include "NetFolder.h"
-#include "SysIconUtils.h"
+#include "../../PropID.h"
+
+#include "FSFolder.h"
 #include "LangUtils.h"
+#ifndef UNDER_CE
+#include "NetFolder.h"
+#include "FSDrives.h"
+#endif
+#include "RootFolder.h"
+#include "SysIconUtils.h"
+
+#include "resource.h"
 
 using namespace NWindows;
 
-
-static const STATPROPSTG kProperties[] =
+static const STATPROPSTG kProps[] =
 {
   { NULL, kpidName, VT_BSTR}
 };
 
-// static const wchar_t *kMyComputerTitle = L"Computer";
-// static const wchar_t *kMyNetworkTitle = L"Network";
-
 UString RootFolder_GetName_Computer(int &iconIndex)
 {
+  #ifdef UNDER_CE
+  GetRealIconIndex(L"\\", FILE_ATTRIBUTE_DIRECTORY, iconIndex);
+  #else
   iconIndex = GetIconIndexForCSIDL(CSIDL_DRIVES);
+  #endif
   return LangString(IDS_COMPUTER, 0x03020300);
 }
 
@@ -46,16 +49,30 @@ UString RootFolder_GetName_Documents(int &iconIndex)
   return LangString(IDS_DOCUMENTS, 0x03020302); ;
 }
 
-const int ROOT_INDEX_COMPUTER = 0;
-const int ROOT_INDEX_DOCUMENTS = 1;
-const int ROOT_INDEX_NETWORK = 2;
+enum
+{
+  ROOT_INDEX_COMPUTER = 0
+  #ifndef UNDER_CE
+  , ROOT_INDEX_DOCUMENTS
+  , ROOT_INDEX_NETWORK
+  , ROOT_INDEX_VOLUMES
+  #endif
+};
+
+#ifndef UNDER_CE
+static const wchar_t *kVolPrefix = L"\\\\.";
+#endif
 
 void CRootFolder::Init()
 {
   _names[ROOT_INDEX_COMPUTER] = RootFolder_GetName_Computer(_iconIndices[ROOT_INDEX_COMPUTER]);
+  #ifndef UNDER_CE
   _names[ROOT_INDEX_DOCUMENTS] = RootFolder_GetName_Documents(_iconIndices[ROOT_INDEX_DOCUMENTS]);
   _names[ROOT_INDEX_NETWORK] = RootFolder_GetName_Network(_iconIndices[ROOT_INDEX_NETWORK]);
-};
+  _names[ROOT_INDEX_VOLUMES] = kVolPrefix;
+  _iconIndices[ROOT_INDEX_VOLUMES] = GetIconIndexForCSIDL(CSIDL_DRIVES);
+  #endif
+}
 
 STDMETHODIMP CRootFolder::LoadItems()
 {
@@ -89,7 +106,11 @@ UString GetMyDocsPath()
   UString us;
   WCHAR s[MAX_PATH + 1];
   SHGetSpecialFolderPathWp getW = (SHGetSpecialFolderPathWp)
-      ::GetProcAddress(::GetModuleHandleA("shell32.dll"), "SHGetSpecialFolderPathW");
+      #ifdef UNDER_CE
+      My_GetProcAddress(GetModuleHandle(TEXT("coredll.dll")), "SHGetSpecialFolderPath");
+      #else
+      My_GetProcAddress(GetModuleHandle(TEXT("shell32.dll")), "SHGetSpecialFolderPathW");
+      #endif
   if (getW && getW(0, s, CSIDL_PERSONAL, FALSE))
     us = s;
   #ifndef _UNICODE
@@ -109,19 +130,27 @@ UString GetMyDocsPath()
 
 STDMETHODIMP CRootFolder::BindToFolder(UInt32 index, IFolderFolder **resultFolder)
 {
+  *resultFolder = NULL;
+  CMyComPtr<IFolderFolder> subFolder;
+  #ifdef UNDER_CE
   if (index == ROOT_INDEX_COMPUTER)
   {
+    NFsFolder::CFSFolder *fsFolder = new NFsFolder::CFSFolder;
+    subFolder = fsFolder;
+    fsFolder->InitToRoot();
+  }
+  #else
+  if (index == ROOT_INDEX_COMPUTER || index == ROOT_INDEX_VOLUMES)
+  {
     CFSDrives *fsDrivesSpec = new CFSDrives;
-    CMyComPtr<IFolderFolder> subFolder = fsDrivesSpec;
-    fsDrivesSpec->Init();
-    *resultFolder = subFolder.Detach();
+    subFolder = fsDrivesSpec;
+    fsDrivesSpec->Init(index == ROOT_INDEX_VOLUMES);
   }
   else if (index == ROOT_INDEX_NETWORK)
   {
     CNetFolder *netFolderSpec = new CNetFolder;
-    CMyComPtr<IFolderFolder> subFolder = netFolderSpec;
+    subFolder = netFolderSpec;
     netFolderSpec->Init(0, 0, _names[ROOT_INDEX_NETWORK] + WCHAR_PATH_SEPARATOR);
-    *resultFolder = subFolder.Detach();
   }
   else if (index == ROOT_INDEX_DOCUMENTS)
   {
@@ -129,13 +158,14 @@ STDMETHODIMP CRootFolder::BindToFolder(UInt32 index, IFolderFolder **resultFolde
     if (!s.IsEmpty())
     {
       NFsFolder::CFSFolder *fsFolderSpec = new NFsFolder::CFSFolder;
-      CMyComPtr<IFolderFolder> subFolder = fsFolderSpec;
+      subFolder = fsFolderSpec;
       RINOK(fsFolderSpec->Init(s, NULL));
-      *resultFolder = subFolder.Detach();
     }
   }
+  #endif
   else
     return E_INVALIDARG;
+  *resultFolder = subFolder.Detach();
   return S_OK;
 }
 
@@ -160,9 +190,14 @@ STDMETHODIMP CRootFolder::BindToFolder(const wchar_t *name, IFolderFolder **resu
   for (int i = 0; i < kNumRootFolderItems; i++)
     if (AreEqualNames(name2, _names[i]))
       return BindToFolder((UInt32)i, resultFolder);
+  #ifdef UNDER_CE
+  if (name2 == L"\\")
+    return BindToFolder((UInt32)ROOT_INDEX_COMPUTER, resultFolder);
+  #else
   if (AreEqualNames(name2, L"My Documents") ||
       AreEqualNames(name2, L"Documents"))
     return BindToFolder((UInt32)ROOT_INDEX_DOCUMENTS, resultFolder);
+  #endif
   if (AreEqualNames(name2, L"My Computer") ||
       AreEqualNames(name2, L"Computer"))
     return BindToFolder((UInt32)ROOT_INDEX_COMPUTER, resultFolder);
@@ -178,13 +213,15 @@ STDMETHODIMP CRootFolder::BindToFolder(const wchar_t *name, IFolderFolder **resu
 
   CMyComPtr<IFolderFolder> subFolder;
   
-  if (name2.Left(4) == L"\\\\.\\")
+  #ifndef UNDER_CE
+  if (name2.Left(4) == kVolPrefix)
   {
-    CPhysDriveFolder *folderSpec = new CPhysDriveFolder;
+    CFSDrives *folderSpec = new CFSDrives;
     subFolder = folderSpec;
-    RINOK(folderSpec->Init(name2.Mid(4, 2)));
+    folderSpec->Init(true);
   }
   else
+  #endif
   {
     if (name2[name2.Length () - 1] != WCHAR_PATH_SEPARATOR)
       name2 += WCHAR_PATH_SEPARATOR;
@@ -192,6 +229,7 @@ STDMETHODIMP CRootFolder::BindToFolder(const wchar_t *name, IFolderFolder **resu
     subFolder = fsFolderSpec;
     if (fsFolderSpec->Init(name2, 0) != S_OK)
     {
+      #ifndef UNDER_CE
       if (name2[0] == WCHAR_PATH_SEPARATOR)
       {
         CNetFolder *netFolderSpec = new CNetFolder;
@@ -199,6 +237,7 @@ STDMETHODIMP CRootFolder::BindToFolder(const wchar_t *name, IFolderFolder **resu
         netFolderSpec->Init(name2);
       }
       else
+      #endif
         return E_INVALIDARG;
     }
   }
@@ -212,23 +251,7 @@ STDMETHODIMP CRootFolder::BindToParentFolder(IFolderFolder **resultFolder)
   return S_OK;
 }
 
-STDMETHODIMP CRootFolder::GetNumberOfProperties(UInt32 *numProperties)
-{
-  *numProperties = sizeof(kProperties) / sizeof(kProperties[0]);
-  return S_OK;
-}
-
-STDMETHODIMP CRootFolder::GetPropertyInfo(UInt32 index,
-    BSTR *name, PROPID *propID, VARTYPE *varType)
-{
-  if (index >= sizeof(kProperties) / sizeof(kProperties[0]))
-    return E_INVALIDARG;
-  const STATPROPSTG &prop = kProperties[index];
-  *propID = prop.propid;
-  *varType = prop.vt;
-  *name = 0;
-  return S_OK;
-}
+IMP_IFolderFolder_Props(CRootFolder)
 
 STDMETHODIMP CRootFolder::GetFolderProperty(PROPID propID, PROPVARIANT *value)
 {
@@ -242,7 +265,7 @@ STDMETHODIMP CRootFolder::GetFolderProperty(PROPID propID, PROPVARIANT *value)
   return S_OK;
 }
 
-STDMETHODIMP CRootFolder::GetSystemIconIndex(UInt32 index, INT32 *iconIndex)
+STDMETHODIMP CRootFolder::GetSystemIconIndex(UInt32 index, Int32 *iconIndex)
 {
   *iconIndex = _iconIndices[index];
   return S_OK;

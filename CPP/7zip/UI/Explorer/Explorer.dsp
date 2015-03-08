@@ -198,6 +198,14 @@ SOURCE=..\Common\CompressCall.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\Common\ExtractingFilePath.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\Common\ExtractingFilePath.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\Common\ZipRegistry.cpp
 # End Source File
 # Begin Source File
@@ -223,34 +231,6 @@ SOURCE=.\MyMessages.cpp
 # Begin Source File
 
 SOURCE=.\MyMessages.h
-# End Source File
-# End Group
-# Begin Group "Dialogs"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\FoldersPage.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\FoldersPage.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\FoldersPageRes.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\SystemPage.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SystemPage.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\SystemPageRes.h
 # End Source File
 # End Group
 # Begin Group "FileManager"
@@ -515,6 +495,14 @@ SOURCE=..\..\..\Windows\Menu.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Windows\Process.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Windows\Process.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Windows\Registry.cpp
 # End Source File
 # Begin Source File
@@ -557,14 +545,6 @@ SOURCE=".\7-zip.dll.manifest"
 # Begin Source File
 
 SOURCE=.\ContextMenuFlags.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\OptionsDialog.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\OptionsDialog.h
 # End Source File
 # Begin Source File
 

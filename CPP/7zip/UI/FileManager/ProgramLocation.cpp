@@ -1,10 +1,11 @@
-// ProgramLocation.h
+// ProgramLocation.cpp
 
 #include "StdAfx.h"
 
+#include "../../../../C/Types.h"
+
 #include "ProgramLocation.h"
 
-#include "Windows/FileName.h"
 #include "Windows/DLL.h"
 
 using namespace NWindows;
@@ -21,4 +22,3 @@ bool GetProgramFolderPath(UString &folder)
   folder = folder.Left(pos + 1);
   return true;
 }
-

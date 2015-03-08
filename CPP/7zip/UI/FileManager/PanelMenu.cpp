@@ -1,28 +1,28 @@
 #include "StdAfx.h"
 
 #include "Common/StringConvert.h"
-#include "Windows/Menu.h"
-#include "Windows/COM.h"
-#include "Windows/PropVariant.h"
-#include "Windows/Clipboard.h"
-#include "Windows/PropVariantConversions.h"
-#include "../Common/PropIDUtils.h"
-#include "../../PropID.h"
 
-#include "Panel.h"
-#include "PluginInterface.h"
-#include "MyLoadMenu.h"
+#include "Windows/COM.h"
+#include "Windows/Clipboard.h"
+#include "Windows/Menu.h"
+#include "Windows/PropVariant.h"
+#include "Windows/PropVariantConversions.h"
+
+#include "../../PropID.h"
+#include "../Common/PropIDUtils.h"
+#include "../Explorer/ContextMenu.h"
+
 #include "App.h"
 #include "LangUtils.h"
-#include "resource.h"
+#include "MyLoadMenu.h"
 #include "PropertyName.h"
+
+#include "resource.h"
 #include "PropertyNameRes.h"
 
 using namespace NWindows;
 
-// {23170F69-40C1-278A-1000-000100020000}
-DEFINE_GUID(CLSID_CZipContextMenu,
-0x23170F69, 0x40C1, 0x278A, 0x10, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00);
+LONG g_DllRefCount = 0;
 
 static const UINT kSevenZipStartMenuID = kPluginMenuStartID ;
 static const UINT kSystemStartMenuID = kPluginMenuStartID + 100;
@@ -30,7 +30,7 @@ static const UINT kSystemStartMenuID = kPluginMenuStartID + 100;
 void CPanel::InvokeSystemCommand(const char *command)
 {
   NCOM::CComInitializer comInitializer;
-  if (!IsFSFolder() && !IsFSDrivesFolder())
+  if (!IsFsOrPureDrivesFolder())
     return;
   CRecordVector<UInt32> operatedIndices;
   GetOperatedItemIndices(operatedIndices);
@@ -48,7 +48,8 @@ void CPanel::InvokeSystemCommand(const char *command)
   contextMenu->InvokeCommand(&ci);
 }
 
-static const wchar_t *kSeparator = L"--------------------------------------\n";
+static const wchar_t *kSeparator = L"----------------------------\n";
+static const wchar_t *kSeparatorSmall = L"----\n";
 static const wchar_t *kPropValueSeparator = L": ";
 
 extern UString ConvertSizeToString(UInt64 value);
@@ -58,26 +59,28 @@ static void AddPropertyString(PROPID propID, const wchar_t *nameBSTR,
 {
   if (prop.vt != VT_EMPTY)
   {
-    const UString name = GetNameOfProperty(propID, nameBSTR);
     UString val;
 
-    if ((
+    if ((prop.vt == VT_UI8 || prop.vt == VT_UI4) && (
         propID == kpidSize ||
         propID == kpidPackSize ||
         propID == kpidNumSubDirs ||
         propID == kpidNumSubFiles ||
         propID == kpidNumBlocks ||
+        propID == kpidClusterSize ||
+        propID == kpidTotalSize ||
+        propID == kpidFreeSpace ||
         propID == kpidPhySize ||
         propID == kpidHeadersSize ||
-        propID == kpidClusterSize
-        ) && (prop.vt == VT_UI8 || prop.vt == VT_UI4))
+        propID == kpidFreeSpace
+        ))
       val = ConvertSizeToString(ConvertPropVariantToUInt64(prop));
     else
       val = ConvertPropertyToString(prop, propID);
 
     if (!val.IsEmpty())
     {
-      s += name;
+      s += GetNameOfProperty(propID, nameBSTR);
       s += kPropValueSeparator;
       /*
       if (propID == kpidComment)
@@ -91,9 +94,9 @@ static void AddPropertyString(PROPID propID, const wchar_t *nameBSTR,
 
 void CPanel::Properties()
 {
-  CMyComPtr<IGetFolderArchiveProperties> getFolderArchiveProperties;
-  _folder.QueryInterface(IID_IGetFolderArchiveProperties, &getFolderArchiveProperties);
-  if (!getFolderArchiveProperties)
+  CMyComPtr<IGetFolderArcProps> getFolderArcProps;
+  _folder.QueryInterface(IID_IGetFolderArcProps, &getFolderArcProps);
+  if (!getFolderArcProps)
   {
     InvokeSystemCommand("properties");
     return;
@@ -129,10 +132,12 @@ void CPanel::Properties()
       message += kSeparator;
     }
         
-    message += LangString(IDS_PROPERTY_FILE_TYPE, 0x02000214);
+    /*
+    message += LangString(IDS_PROP_FILE_TYPE, 0x02000214);
     message += kPropValueSeparator;
     message += GetFolderTypeID();
     message += L"\n";
+    */
 
     {
       NCOM::CPropVariant prop;
@@ -164,30 +169,66 @@ void CPanel::Properties()
       }
     }
 
-    CMyComPtr<IGetFolderArchiveProperties> getFolderArchiveProperties;
-    _folder.QueryInterface(IID_IGetFolderArchiveProperties, &getFolderArchiveProperties);
-    if (getFolderArchiveProperties)
+    CMyComPtr<IGetFolderArcProps> getFolderArcProps;
+    _folder.QueryInterface(IID_IGetFolderArcProps, &getFolderArcProps);
+    if (getFolderArcProps)
     {
-      CMyComPtr<IFolderArchiveProperties> getProps;
-      getFolderArchiveProperties->GetFolderArchiveProperties(&getProps);
+      CMyComPtr<IFolderArcProps> getProps;
+      getFolderArcProps->GetFolderArcProps(&getProps);
       if (getProps)
       {
-        UInt32 numProps;
-        if (getProps->GetNumberOfArchiveProperties(&numProps) == S_OK)
+        UInt32 numLevels;
+        if (getProps->GetArcNumLevels(&numLevels) != S_OK)
+          numLevels = 0;
+        for (UInt32 level2 = 0; level2 < numLevels; level2++)
         {
-          if (numProps > 0)
-            message += kSeparator;
-          for (UInt32 i = 0; i < numProps; i++)
           {
-            CMyComBSTR name;
-            PROPID propID;
-            VARTYPE vt;
-            if (getProps->GetArchivePropertyInfo(i, &name, &propID, &vt) != S_OK)
-              continue;
-            NCOM::CPropVariant prop;
-            if (getProps->GetArchiveProperty(propID, &prop) != S_OK)
-              continue;
-            AddPropertyString(propID, name, prop, message);
+            UInt32 level = numLevels - 1 - level2;
+            UInt32 numProps;
+            if (getProps->GetArcNumProps(level, &numProps) == S_OK)
+            {
+              message += kSeparator;
+              for (Int32 i = -3; i < (Int32)numProps; i++)
+              {
+                CMyComBSTR name;
+                PROPID propID;
+                VARTYPE vt;
+                switch (i)
+                {
+                  case -3: propID = kpidPath; break;
+                  case -2: propID = kpidType; break;
+                  case -1: propID = kpidError; break;
+                  default:
+                    if (getProps->GetArcPropInfo(level, i, &name, &propID, &vt) != S_OK)
+                      continue;
+                }
+                NCOM::CPropVariant prop;
+                if (getProps->GetArcProp(level, propID, &prop) != S_OK)
+                  continue;
+                AddPropertyString(propID, name, prop, message);
+              }
+            }
+          }
+          if (level2 != numLevels - 1)
+          {
+            UInt32 level = numLevels - 1 - level2;
+            UInt32 numProps;
+            if (getProps->GetArcNumProps2(level, &numProps) == S_OK)
+            {
+              message += kSeparatorSmall;
+              for (Int32 i = 0; i < (Int32)numProps; i++)
+              {
+                CMyComBSTR name;
+                PROPID propID;
+                VARTYPE vt;
+                if (getProps->GetArcPropInfo2(level, i, &name, &propID, &vt) != S_OK)
+                  continue;
+                NCOM::CPropVariant prop;
+                if (getProps->GetArcProp2(level, propID, &prop) != S_OK)
+                  continue;
+                AddPropertyString(propID, name, prop, message);
+              }
+            }
           }
         }
       }
@@ -204,9 +245,9 @@ void CPanel::EditCut()
 void CPanel::EditCopy()
 {
   /*
-  CMyComPtr<IGetFolderArchiveProperties> getFolderArchiveProperties;
-  _folder.QueryInterface(IID_IGetFolderArchiveProperties, &getFolderArchiveProperties);
-  if (!getFolderArchiveProperties)
+  CMyComPtr<IGetFolderArcProps> getFolderArcProps;
+  _folder.QueryInterface(IID_IGetFolderArcProps, &getFolderArcProps);
+  if (!getFolderArcProps)
   {
     InvokeSystemCommand("copy");
     return;
@@ -437,12 +478,15 @@ void CPanel::CreateSevenZipMenu(HMENU menuSpec,
 
   bool sevenZipMenuCreated = false;
 
-  CMyComPtr<IContextMenu> contextMenu;
-  if (contextMenu.CoCreateInstance(CLSID_CZipContextMenu, IID_IContextMenu) == S_OK)
+  CZipContextMenu *contextMenuSpec = new CZipContextMenu;
+  CMyComPtr<IContextMenu> contextMenu = contextMenuSpec;
+  // if (contextMenu.CoCreateInstance(CLSID_CZipContextMenu, IID_IContextMenu) == S_OK)
   {
+    /*
     CMyComPtr<IInitContextMenu> initContextMenu;
     if (contextMenu.QueryInterface(IID_IInitContextMenu, &initContextMenu) != S_OK)
       return;
+    */
     UString currentFolderUnicode = _currentFolderPrefix;
     UStringVector names;
     int i;
@@ -453,7 +497,7 @@ void CPanel::CreateSevenZipMenu(HMENU menuSpec,
       namePointers.Add(names[i]);
     
     // NFile::NDirectory::MySetCurrentDirectory(currentFolderUnicode);
-    if (initContextMenu->InitContextMenu(currentFolderUnicode, &namePointers.Front(),
+    if (contextMenuSpec->InitContextMenu(currentFolderUnicode, &namePointers.Front(),
         operatedIndices.Size()) == S_OK)
     {
       HRESULT res = contextMenu->QueryContextMenu(menu, 0, kSevenZipStartMenuID,
@@ -485,8 +529,10 @@ void CPanel::CreateFileMenu(HMENU menuSpec,
   if (g_App.ShowSystemMenu)
     CreateSystemMenu(menu, operatedIndices, systemContextMenu);
 
+  /*
   if (menu.GetItemCount() > 0)
     menu.AppendItem(MF_SEPARATOR, 0, (LPCTSTR)0);
+  */
 
   int i;
   for (i = 0; i < operatedIndices.Size(); i++)
@@ -512,18 +558,28 @@ bool CPanel::InvokePluginCommand(int id,
   else
     offset = id  - kSevenZipStartMenuID;
 
-  CMINVOKECOMMANDINFOEX commandInfo;
+  #ifdef UNDER_CE
+  CMINVOKECOMMANDINFO
+  #else
+  CMINVOKECOMMANDINFOEX
+  #endif
+    commandInfo;
   commandInfo.cbSize = sizeof(commandInfo);
-  commandInfo.fMask = CMIC_MASK_UNICODE;
+  commandInfo.fMask = 0
+  #ifndef UNDER_CE
+  | CMIC_MASK_UNICODE
+  #endif
+  ;
   commandInfo.hwnd = GetParent();
   commandInfo.lpVerb = (LPCSTR)(MAKEINTRESOURCE(offset));
   commandInfo.lpParameters = NULL;
   CSysString currentFolderSys = GetSystemString(_currentFolderPrefix);
   commandInfo.lpDirectory = (LPCSTR)(LPCTSTR)(currentFolderSys);
   commandInfo.nShow = SW_SHOW;
+  commandInfo.lpParameters = NULL;
+  #ifndef UNDER_CE
   commandInfo.lpTitle = "";
   commandInfo.lpVerbW = (LPCWSTR)(MAKEINTRESOURCEW(offset));
-  commandInfo.lpParameters = NULL;
   UString currentFolderUnicode = _currentFolderPrefix;
   commandInfo.lpDirectoryW = currentFolderUnicode;
   commandInfo.lpTitleW = L"";
@@ -531,6 +587,7 @@ bool CPanel::InvokePluginCommand(int id,
   // commandInfo.ptInvoke.y = yPos;
   commandInfo.ptInvoke.x = 0;
   commandInfo.ptInvoke.y = 0;
+  #endif
   HRESULT result;
   if (isSystemMenu)
     result = systemContextMenu->InvokeCommand(LPCMINVOKECOMMANDINFO(&commandInfo));
@@ -546,6 +603,12 @@ bool CPanel::InvokePluginCommand(int id,
 
 bool CPanel::OnContextMenu(HANDLE windowHandle, int xPos, int yPos)
 {
+  if (::GetParent((HWND)windowHandle) == _listView)
+  {
+    ShowColumnsContextMenu(xPos, yPos);
+    return true;
+  }
+
   if (windowHandle != _listView)
     return false;
   /*
@@ -595,7 +658,11 @@ bool CPanel::OnContextMenu(HANDLE windowHandle, int xPos, int yPos)
   CMyComPtr<IContextMenu> systemContextMenu;
   CreateFileMenu(menu, sevenZipContextMenu, systemContextMenu, false);
 
-  int result = menu.Track(TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY,
+  int result = menu.Track(TPM_LEFTALIGN
+      #ifndef UNDER_CE
+      | TPM_RIGHTBUTTON
+      #endif
+      | TPM_RETURNCMD | TPM_NONOTIFY,
     xPos, yPos, _listView);
 
   if (result == 0)

@@ -1,13 +1,14 @@
 PROG = 7zG.exe
-LIBS = $(LIBS) user32.lib advapi32.lib oleaut32.lib shell32.lib comctl32.lib htmlhelp.lib ole32.lib comdlg32.lib
 CFLAGS = $(CFLAGS) -I ../../../  \
   -DLANG \
-  -DCOMPRESS_MT \
-  -DWIN_LONG_PATH \
-  -DEXTERNAL_LZMA \
   -DEXTERNAL_CODECS \
-  -DBENCH_MT \
-  -D_7ZIP_LARGE_PAGES \
+
+!IFDEF UNDER_CE
+LIBS = $(LIBS) ceshell.lib Commctrl.lib
+!ELSE
+LIBS = $(LIBS) comctl32.lib htmlhelp.lib comdlg32.lib
+CFLAGS = $(CFLAGS) -DWIN_LONG_PATH -DSUPPORT_DEVICE_FILE -D_7ZIP_LARGE_PAGES
+!ENDIF
 
 GUI_OBJS = \
   $O\BenchmarkDialog.obj \
@@ -58,8 +59,10 @@ WIN_CTRL_OBJS = \
   $O\ListView.obj \
 
 7ZIP_COMMON_OBJS = \
+  $O\CreateCoder.obj \
   $O\FilePathAutoRename.obj \
   $O\FileStreams.obj \
+  $O\FilterCoder.obj \
   $O\ProgressUtils.obj \
   $O\StreamUtils.obj \
 
@@ -67,6 +70,7 @@ UI_COMMON_OBJS = \
   $O\ArchiveCommandLine.obj \
   $O\ArchiveExtractCallback.obj \
   $O\ArchiveOpenCallback.obj \
+  $O\Bench.obj \
   $O\DefaultName.obj \
   $O\EnumDirItems.obj \
   $O\Extract.obj \
@@ -85,8 +89,8 @@ UI_COMMON_OBJS = \
   $O\WorkDir.obj \
   $O\ZipRegistry.obj \
 
-LZMA_BENCH_OBJS = \
-  $O\LzmaBench.obj \
+AR_COMMON_OBJS = \
+  $O\OutStreamWithCRC.obj \
 
 FM_OBJS = \
   $O\ExtractCallback.obj \
@@ -98,16 +102,22 @@ FM_OBJS = \
   $O\RegistryUtils.obj \
   $O\SplitUtils.obj \
   $O\StringUtils.obj \
-  $O\MessagesDialog.obj \
   $O\OverwriteDialog.obj \
   $O\PasswordDialog.obj \
   $O\ProgressDialog2.obj \
 
+!IFDEF UNDER_CE
+FM_OBJS = $(FM_OBJS) \
+  $O\BrowseDialog.obj \
+  $O\SysIconUtils.obj \
+!ENDIF
+
 C_OBJS = \
   $O\Alloc.obj \
+  $O\CpuArch.obj \
   $O\Threads.obj \
 
-!include "../../Crc2.mak"
+!include "../../Crc.mak"
 
 OBJS = \
   $O\StdAfx.obj \
@@ -117,12 +127,13 @@ OBJS = \
   $(WIN_CTRL_OBJS) \
   $(7ZIP_COMMON_OBJS) \
   $(UI_COMMON_OBJS) \
+  $(AR_COMMON_OBJS) \
   $(FM_OBJS)\
   $O\MyMessages.obj \
   $O\CopyCoder.obj \
   $(LZMA_BENCH_OBJS) \
   $(C_OBJS) \
-  $(CRC_OBJS) \
+  $(ASM_OBJS) \
   $O\resource.res
 
 !include "../../../Build.mak"
@@ -139,16 +150,16 @@ $(7ZIP_COMMON_OBJS): ../../Common/$(*B).cpp
 	$(COMPL)
 $(UI_COMMON_OBJS): ../Common/$(*B).cpp
 	$(COMPL)
+$(AR_COMMON_OBJS): ../../Archive/Common/$(*B).cpp
+	$(COMPL)
 $(FM_OBJS): ../FileManager/$(*B).cpp
 	$(COMPL)
 $O\MyMessages.obj: ../Explorer/MyMessages.cpp
 	$(COMPL)
 
-
 $O\CopyCoder.obj: ../../Compress/$(*B).cpp
-	$(COMPL)
-$(LZMA_BENCH_OBJS): ../../Compress/LZMA_Alone/$(*B).cpp
 	$(COMPL)
 $(C_OBJS): ../../../../C/$(*B).c
 	$(COMPL_O2)
-!include "../../Crc.mak"
+
+!include "../../Asm.mak"

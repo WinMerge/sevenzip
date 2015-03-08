@@ -1,15 +1,17 @@
 // CompressDialog.h
 
-#ifndef __COMPRESSDIALOG_H
-#define __COMPRESSDIALOG_H
+#ifndef __COMPRESS_DIALOG_H
+#define __COMPRESS_DIALOG_H
 
-#include "../Common/ZipRegistry.h"
-#include "../Common/LoadCodecs.h"
-#include "CompressDialogRes.h"
-
-#include "Windows/Control/Dialog.h"
-#include "Windows/Control/Edit.h"
 #include "Windows/Control/ComboBox.h"
+#include "Windows/Control/Edit.h"
+
+#include "../Common/LoadCodecs.h"
+#include "../Common/ZipRegistry.h"
+
+#include "../FileManager/DialogSize.h"
+
+#include "CompressDialogRes.h"
 
 namespace NCompressDialog
 {
@@ -20,7 +22,7 @@ namespace NCompressDialog
       kAdd,
       kUpdate,
       kFresh,
-      kSynchronize,
+      kSynchronize
     };
   }
   struct CInfo
@@ -52,7 +54,7 @@ namespace NCompressDialog
 
     bool GetFullPathName(UString &result) const;
 
-    int ArchiverInfoIndex;
+    int FormatIndex;
 
     UString Password;
     bool EncryptHeadersIsAllowed;
@@ -107,7 +109,7 @@ class CCompressDialog: public NWindows::NControl::CModalDialog
 
   void SetLevel();
   
-  void SetMethod();
+  void SetMethod(int keepMethodId = -1);
   int GetMethodID();
   UString GetMethodSpec();
   UString GetEncryptionMethodSpec();
@@ -151,14 +153,20 @@ class CCompressDialog: public NWindows::NControl::CModalDialog
   void UpdatePasswordControl();
   bool IsShowPasswordChecked() const
     { return IsButtonChecked(IDC_COMPRESS_CHECK_SHOW_PASSWORD) == BST_CHECKED; }
+
+  int GetFormatIndex();
 public:
-  CObjectVector<CArcInfoEx> m_ArchiverInfoList;
+  CObjectVector<CArcInfoEx> *ArcFormats;
+  CRecordVector<int> ArcIndices;
 
   NCompressDialog::CInfo Info;
   UString OriginalFileName; // for bzip2, gzip2
 
   INT_PTR Create(HWND wndParent = 0)
-    { return CModalDialog::Create(IDD_DIALOG_COMPRESS, wndParent); }
+  {
+    BIG_DIALOG_SIZE(400, 304);
+    return CModalDialog::Create(SIZED_DIALOG(IDD_DIALOG_COMPRESS), wndParent);
+  }
 
 protected:
 

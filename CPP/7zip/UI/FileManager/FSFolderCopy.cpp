@@ -4,13 +4,15 @@
 
 #include <Winbase.h>
 
-#include "FSFolder.h"
-#include "Windows/FileDir.h"
-#include "Windows/Error.h"
-
 #include "Common/StringConvert.h"
 
+#include "Windows/DLL.h"
+#include "Windows/Error.h"
+#include "Windows/FileDir.h"
+
 #include "../../Common/FilePathAutoRename.h"
+
+#include "FSFolder.h"
 
 using namespace NWindows;
 using namespace NFile;
@@ -39,6 +41,29 @@ struct CProgressInfo
   UInt64 StartPos;
   IProgress *Progress;
 };
+
+#ifndef PROGRESS_CONTINUE
+
+#define PROGRESS_CONTINUE 0
+#define PROGRESS_CANCEL 1
+
+#define COPY_FILE_FAIL_IF_EXISTS 0x00000001
+
+typedef
+DWORD
+(WINAPI* LPPROGRESS_ROUTINE)(
+    LARGE_INTEGER TotalFileSize,
+    LARGE_INTEGER TotalBytesTransferred,
+    LARGE_INTEGER StreamSize,
+    LARGE_INTEGER StreamBytesTransferred,
+    DWORD dwStreamNumber,
+    DWORD dwCallbackReason,
+    HANDLE hSourceFile,
+    HANDLE hDestinationFile,
+    LPVOID lpData
+    );
+
+#endif
 
 static DWORD CALLBACK CopyProgressRoutine(
   LARGE_INTEGER /* TotalFileSize */,          // file size
@@ -93,11 +118,17 @@ static bool MyCopyFile(LPCWSTR existingFile, LPCWSTR newFile, IProgress *progres
   if (g_IsNT)
   #endif
   {
+    const wchar_t *k_DllName =
+        #ifdef UNDER_CE
+        L"coredll.dll"
+        #else
+        L"kernel32.dll"
+        #endif
+        ;
     CopyFileExPointerW copyFunctionW = (CopyFileExPointerW)
-        ::GetProcAddress(::GetModuleHandleW(L"kernel32.dll"),
-        "CopyFileExW");
+        My_GetProcAddress(::GetModuleHandleW(k_DllName), "CopyFileExW");
     if (copyFunctionW == 0)
-      return false;
+      return BOOLToBool(::CopyFileW(existingFile, newFile, TRUE));
     if (copyFunctionW(existingFile, newFile, CopyProgressRoutine,
         &progressInfo, &CancelFlag, COPY_FILE_FAIL_IF_EXISTS))
       return true;
@@ -140,6 +171,7 @@ typedef BOOL (WINAPI * MoveFileWithProgressPointer)(
 
 static bool MyMoveFile(LPCWSTR existingFile, LPCWSTR newFile, IProgress *progress, UInt64 &completedSize)
 {
+  #ifndef UNDER_CE
   // if (IsItWindows2000orHigher())
   // {
     CProgressInfo progressInfo;
@@ -147,7 +179,7 @@ static bool MyMoveFile(LPCWSTR existingFile, LPCWSTR newFile, IProgress *progres
     progressInfo.StartPos = completedSize;
 
     MoveFileWithProgressPointer moveFunction = (MoveFileWithProgressPointer)
-        ::GetProcAddress(::GetModuleHandle(TEXT("kernel32.dll")),
+        My_GetProcAddress(::GetModuleHandle(TEXT("kernel32.dll")),
         "MoveFileWithProgressW");
     if (moveFunction != 0)
     {
@@ -171,6 +203,7 @@ static bool MyMoveFile(LPCWSTR existingFile, LPCWSTR newFile, IProgress *progres
     }
   // }
   // else
+  #endif
     return NDirectory::MyMoveFile(existingFile, newFile);
 }
 
@@ -189,7 +222,7 @@ static HRESULT MyCopyFile(
     return E_ABORT;
   }
 
-  INT32 writeAskResult;
+  Int32 writeAskResult;
   CMyComBSTR destPathResult;
   RINOK(callback->AskWrite(
       srcPath,
@@ -340,7 +373,7 @@ HRESULT MyMoveFile(
     return E_ABORT;
   }
 
-  INT32 writeAskResult;
+  Int32 writeAskResult;
   CMyComBSTR destPathResult;
   RINOK(callback->AskWrite(
       srcPath,
@@ -510,5 +543,5 @@ STDMETHODIMP CFSFolder::CopyFrom(const wchar_t * /* fromFolderPath */,
   */
   return E_NOTIMPL;
 }
-  
+
 }

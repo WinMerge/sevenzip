@@ -5,45 +5,38 @@
 #include "ContextMenu.h"
 
 #include "Common/StringConvert.h"
-#include "Common/MyCom.h"
 
-#include "Windows/Shell.h"
-#include "Windows/Memory.h"
 #include "Windows/COM.h"
-#include "Windows/FileFind.h"
 #include "Windows/FileDir.h"
-#include "Windows/FileName.h"
-#include "Windows/Thread.h"
-#include "Windows/Window.h"
-
+#include "Windows/FileFind.h"
+#include "Windows/Memory.h"
 #include "Windows/Menu.h"
-#include "Windows/ResourceString.h"
+#include "Windows/Process.h"
+#include "Windows/Shell.h"
+
+#include "../Common/ArchiveName.h"
+#include "../Common/CompressCall.h"
+#include "../Common/ExtractingFilePath.h"
+#include "../Common/ZipRegistry.h"
 
 #include "../FileManager/FormatUtils.h"
 #include "../FileManager/ProgramLocation.h"
-
-#include "../Common/ZipRegistry.h"
-#include "../Common/ArchiveName.h"
 
 #ifdef LANG
 #include "../FileManager/LangUtils.h"
 #endif
 
-#include "resource.h"
 #include "ContextMenuFlags.h"
-
-// #include "ExtractEngine.h"
-// #include "TestEngine.h"
-// #include "CompressEngine.h"
 #include "MyMessages.h"
 
-#include "../GUI/ExtractRes.h"
-#include "../Common/CompressCall.h"
+#include "resource.h"
 
 using namespace NWindows;
 
-///////////////////////////////
-// IShellExtInit
+
+#ifndef UNDER_CE
+#define EMAIL_SUPPORT 1
+#endif
 
 extern LONG g_DllRefCount;
     
@@ -52,10 +45,11 @@ CZipContextMenu::~CZipContextMenu() { InterlockedDecrement(&g_DllRefCount); }
 
 HRESULT CZipContextMenu::GetFileNames(LPDATAOBJECT dataObject, UStringVector &fileNames)
 {
+  #ifndef UNDER_CE
   fileNames.Clear();
-  if(dataObject == NULL)
+  if (dataObject == NULL)
     return E_FAIL;
-  FORMATETC fmte = {CF_HDROP,  NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+  FORMATETC fmte = {CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
   NCOM::CStgMedium stgMedium;
   HRESULT result = dataObject->GetData(&fmte, &stgMedium);
   if (result != S_OK)
@@ -66,18 +60,20 @@ HRESULT CZipContextMenu::GetFileNames(LPDATAOBJECT dataObject, UStringVector &fi
   NMemory::CGlobalLock globalLock(stgMedium->hGlobal);
   drop.Attach((HDROP)globalLock.GetPointer());
   drop.QueryFileNames(fileNames);
-
+  #endif
   return S_OK;
 }
 
-STDMETHODIMP CZipContextMenu::Initialize(LPCITEMIDLIST pidlFolder,
-    LPDATAOBJECT dataObject, HKEY /* hkeyProgID */)
+// IShellExtInit
+
+STDMETHODIMP CZipContextMenu::Initialize(LPCITEMIDLIST pidlFolder, LPDATAOBJECT dataObject, HKEY /* hkeyProgID */)
 {
   // OutputDebugString(TEXT("::Initialize\r\n"));
   _dropMode = false;
   _dropPath.Empty();
   if (pidlFolder != 0)
   {
+    #ifndef UNDER_CE
     if (NShell::GetPathFromIDList(pidlFolder, _dropPath))
     {
       // OutputDebugString(path);
@@ -86,6 +82,7 @@ STDMETHODIMP CZipContextMenu::Initialize(LPCITEMIDLIST pidlFolder,
       _dropMode = !_dropPath.IsEmpty();
     }
     else
+    #endif
       _dropPath.Empty();
   }
 
@@ -97,11 +94,10 @@ STDMETHODIMP CZipContextMenu::Initialize(LPCITEMIDLIST pidlFolder,
   return GetFileNames(dataObject, _fileNames);
 }
 
-STDMETHODIMP CZipContextMenu::InitContextMenu(const wchar_t * /* folder */,
-    const wchar_t **names, UINT32 numFiles)
+HRESULT CZipContextMenu::InitContextMenu(const wchar_t * /* folder */, const wchar_t **names, UInt32 numFiles)
 {
   _fileNames.Clear();
-  for (UINT32 i = 0; i < numFiles; i++)
+  for (UInt32 i = 0; i < numFiles; i++)
     _fileNames.Add(names[i]);
   _dropMode = false;
   return S_OK;
@@ -127,12 +123,12 @@ static LPCTSTR kCompressToEmailVerb = TEXT("SevenCompressToEmail");
 
 struct CContextMenuCommand
 {
-  UINT32 flag;
+  UInt32 flag;
   CZipContextMenu::ECommandInternalID CommandInternalID;
   LPCWSTR Verb;
   UINT ResourceID;
   UINT ResourceHelpID;
-  UINT32 LangID;
+  UInt32 LangID;
 };
 
 static CContextMenuCommand g_Commands[] =
@@ -227,7 +223,7 @@ static CContextMenuCommand g_Commands[] =
   }
 };
 
-int FindCommand(CZipContextMenu::ECommandInternalID &id)
+static int FindCommand(CZipContextMenu::ECommandInternalID &id)
 {
   for (int i = 0; i < sizeof(g_Commands) / sizeof(g_Commands[0]); i++)
     if (g_Commands[i].CommandInternalID == id)
@@ -235,8 +231,7 @@ int FindCommand(CZipContextMenu::ECommandInternalID &id)
   return -1;
 }
 
-void CZipContextMenu::FillCommand(ECommandInternalID id,
-    UString &mainString, CCommandMapItem &commandMapItem)
+void CZipContextMenu::FillCommand(ECommandInternalID id, UString &mainString, CCommandMapItem &commandMapItem)
 {
   int i = FindCommand(id);
   if (i < 0)
@@ -297,7 +292,7 @@ static UString GetSubFolderNameForExtract(const UString &archiveName)
       res = res.Left(dotPos);
     res.TrimRight();
   }
-  return res;
+  return GetCorrectFullFsPath(res);
 }
 
 static UString GetReducedString(const UString &s)
@@ -309,53 +304,69 @@ static UString GetReducedString(const UString &s)
   return s.Left(kFirstPartSize) + UString(L" ... ") + s.Right(kMaxSize - kFirstPartSize);
 }
 
-static UString GetQuotedString(const UString &s)
-{
-  return UString(L'\"') + s + UString(L'\"');
-}
-
 static UString GetQuotedReducedString(const UString &s)
 {
-  return GetQuotedString(GetReducedString(s));
+  UString s2 = GetReducedString(s);
+  s2.Replace(L"&", L"&&");
+  return GetQuotedString(s2);
 }
 
-static const wchar_t *kExtractExludeExtensions[] =
-{
-  L"txt", L"htm", L"html", L"xml", L"xsd", L"xsl", L"xslt", L"asp", L"aspx", L"css", L"shtml",
-  L"bmp", L"gif", L"jpeg", L"jpg", L"png", L"tiff", L"ico",
-  L"3gp", L"avi", L"mov", L"mpeg", L"mpg", L"mpe", L"wmv",
-  L"aac", L"ape", L"fla", L"flac", L"la", L"mp3", L"m4a", L"mp4", L"ofr", L"ogg",
-  L"pac", L"ra", L"rm", L"rka", L"shn", L"swa", L"tta", L"wv", L"wma", L"wav",
-  L"ps", L"eps",
-  L"inl", L"inc", L"idl", L"h", L"hpp", L"hxx", L"c", L"cpp", L"cxx", L"rc", L"java",
-  L"cs", L"pas", L"bas", L"vb", L"cls", L"ctl", L"frm", L"dlg", L"def",
-  L"f77", L"f", L"f90", L"f95",
-  L"asm", L"sql", L"manifest", L"dep",
-  L"mak", L"clw", L"csproj", L"vcproj", L"sln", L"dsp", L"dsw",
-  L"bat", L"cmd",
-  L"awk", L"sed", L"hta", L"js", L"php", L"php3", L"php4", L"php5",
-  L"phptml", L"pl", L"pm", L"py", L"pyo", L"rb", L"sh", L"tcl", L"vbs",
-  L"tex", L"ans", L"asc", L"srt", L"reg", L"ini", L"rtf", L"pdf"
-};
+static const char *kExtractExludeExtensions =
+  " 3gp"
+  " aac ans ape asc asm asp aspx avi awk"
+  " bas bat bmp"
+  " c cs cls clw cmd cpp csproj css ctl cxx"
+  " def dep dlg dsp dsw"
+  " eps"
+  " f f77 f90 f95 fla flac frm"
+  " gif"
+  " h hpp hta htm html hxx"
+  " ico idl inc ini inl"
+  " java jpeg jpg js"
+  " la"
+  " mak manifest wmv mov mp3 mp4 mpe mpeg mpg m4a"
+  " ofr ogg"
+  " pac pas pdf php php3 php4 php5 phptml pl pm png ps py pyo"
+  " ra rb rc reg rka rm rtf"
+  " sed sh shn shtml sln sql srt swa"
+  " tcl tex tiff tta txt"
+  " vb vcproj vbs"
+  " wav wma wv"
+  " xml xsd xsl xslt"
+  " ";
 
-static bool DoNeedExtract(const UString &name)
+static const char *kNoOpenAsExtensions =
+  " 7z arj bz2 cab chm cpio dmg flv gz lha lzh lzma rar swm tar tbz2 tgz wim xar xz z zip ";
+
+static bool FindExt(const char *p, const UString &name)
 {
   int extPos = name.ReverseFind('.');
   if (extPos < 0)
-    return true;
+    return false;
   UString ext = name.Mid(extPos + 1);
   ext.MakeLower();
-  for (int i = 0; i < sizeof(kExtractExludeExtensions) / sizeof(kExtractExludeExtensions[0]); i++)
-    if (ext.Compare(kExtractExludeExtensions[i]) == 0)
-      return false;
-  return true;
+  AString ext2 = UnicodeStringToMultiByte(ext);
+  for (int i = 0; p[i] != 0;)
+  {
+    int j;
+    for (j = i; p[j] != ' '; j++);
+    if (ext2.Length() == j - i && memcmp(p + i, (const char *)ext2, ext2.Length()) == 0)
+      return true;
+    i = j + 1;
+  }
+  return false;
+}
+
+static bool DoNeedExtract(const UString &name)
+{
+  return !FindExt(kExtractExludeExtensions, name);
 }
 
 STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
       UINT commandIDFirst, UINT commandIDLast, UINT flags)
 {
   LoadLangOneTime();
-  if(_fileNames.Size() == 0)
+  if (_fileNames.Size() == 0)
     return E_FAIL;
   UINT currentCommandID = commandIDFirst;
   if ((flags & 0x000F) != CMF_NORMAL  &&
@@ -368,13 +379,14 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
   CMenu popupMenu;
   CMenuDestroyer menuDestroyer;
 
-  bool cascadedMenu = ReadCascadedMenu();
+  CContextMenuInfo ci;
+  ci.Load();
   MENUITEMINFO menuItem;
   UINT subIndex = indexMenu;
-  if (cascadedMenu)
+  if (ci.Cascaded)
   {
     CCommandMapItem commandMapItem;
-    if(!popupMenu.CreatePopup())
+    if (!popupMenu.CreatePopup())
       return E_FAIL;
     menuDestroyer.Attach(popupMenu);
     commandMapItem.CommandInternalID = kCommandNULL;
@@ -390,40 +402,81 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
     popupMenu.Attach(hMenu);
   }
 
-  UINT32 contextMenuFlags;
-  if (!ReadContextMenuStatus(contextMenuFlags))
-    contextMenuFlags = NContextMenuFlags::GetDefaultFlags();
+  UInt32 contextMenuFlags = ci.Flags;
 
   UString mainString;
-  if(_fileNames.Size() == 1 && currentCommandID + 6 <= commandIDLast)
+  if (_fileNames.Size() == 1 && currentCommandID + 6 <= commandIDLast)
   {
     const UString &fileName = _fileNames.Front();
     UString folderPrefix;
     NFile::NDirectory::GetOnlyDirPrefix(fileName, folderPrefix);
    
     NFile::NFind::CFileInfoW fileInfo;
-    if (!NFile::NFind::FindFile(fileName, fileInfo))
+    if (!fileInfo.Find(fileName))
       return E_FAIL;
     if (!fileInfo.IsDir() && DoNeedExtract(fileInfo.Name))
     {
       // Open
-      if ((contextMenuFlags & NContextMenuFlags::kOpen) != 0)
+      bool thereIsMainOpenItem = ((contextMenuFlags & NContextMenuFlags::kOpen) != 0);
+      if (thereIsMainOpenItem)
       {
         CCommandMapItem commandMapItem;
         FillCommand(kOpen, mainString, commandMapItem);
         MyInsertMenu(popupMenu, subIndex++, currentCommandID++, mainString);
         _commandMap.Add(commandMapItem);
       }
+      if ((contextMenuFlags & NContextMenuFlags::kOpenAs) != 0 &&
+          (!thereIsMainOpenItem || !FindExt(kNoOpenAsExtensions, fileInfo.Name)))
+      {
+        CMenu subMenu;
+        if (subMenu.CreatePopup())
+        {
+          CCommandMapItem commandMapItem;
+          
+          CMenuItem menuItem;
+          menuItem.fType = MFT_STRING;
+          menuItem.fMask = MIIM_SUBMENU | MIIM_TYPE | MIIM_ID;
+          menuItem.wID = currentCommandID++;
+          menuItem.hSubMenu = subMenu;
+          menuItem.StringValue = LangString(IDS_CONTEXT_OPEN, 0x02000103);
+          popupMenu.InsertItem(subIndex++, true, menuItem);
+          
+          commandMapItem.CommandInternalID = kCommandNULL;
+          commandMapItem.Verb = kMainVerb;
+          commandMapItem.HelpString = LangString(IDS_CONTEXT_OPEN_HELP, 0x02000104);
+          _commandMap.Add(commandMapItem);
+          
+          UINT subIndex2 = 0;
+          const wchar_t *exts[] = { L"", L"*", L"7z", L"zip", L"cab", L"rar" };
+          for (int i = (thereIsMainOpenItem ? 1 : 0); i < sizeof(exts) / sizeof(exts[0]); i++)
+          {
+            CCommandMapItem commandMapItem;
+            if (i == 0)
+              FillCommand(kOpen, mainString, commandMapItem);
+            else
+            {
+              mainString = exts[i];
+              commandMapItem.CommandInternalID = kOpen;
+              commandMapItem.Verb = (UString)kMainVerb + L".Open." + mainString;
+              commandMapItem.HelpString = mainString;
+              commandMapItem.ArcType = mainString;
+            }
+            MyInsertMenu(subMenu, subIndex2++, currentCommandID++, mainString);
+            _commandMap.Add(commandMapItem);
+          }
+          subMenu.Detach();
+        }
+      }
     }
   }
 
-  if(_fileNames.Size() > 0 && currentCommandID + 10 <= commandIDLast)
+  if (_fileNames.Size() > 0 && currentCommandID + 10 <= commandIDLast)
   {
     bool needExtract = false;
     for(int i = 0; i < _fileNames.Size(); i++)
     {
       NFile::NFind::CFileInfoW fileInfo;
-      if (!NFile::NFind::FindFile(_fileNames[i], fileInfo))
+      if (!fileInfo.Find(_fileNames[i]))
         return E_FAIL;
       if (!fileInfo.IsDir() && DoNeedExtract(fileInfo.Name))
         needExtract = true;
@@ -434,7 +487,7 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
       UString folderPrefix;
       NFile::NDirectory::GetOnlyDirPrefix(fileName, folderPrefix);
       NFile::NFind::CFileInfoW fileInfo;
-      if (!NFile::NFind::FindFile(fileName, fileInfo))
+      if (!fileInfo.Find(fileName))
         return E_FAIL;
       // Extract
       if ((contextMenuFlags & NContextMenuFlags::kExtract) != 0)
@@ -506,22 +559,23 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
         commandMapItem.Folder = _dropPath;
       else
         commandMapItem.Folder = archivePathPrefix;
-      commandMapItem.Archive = archiveName;
+      commandMapItem.ArcName = archiveName;
       FillCommand(kCompress, mainString, commandMapItem);
       MyInsertMenu(popupMenu, subIndex++, currentCommandID++, mainString);
       _commandMap.Add(commandMapItem);
     }
 
-    
+    #ifdef EMAIL_SUPPORT
     // CompressEmail
     if ((contextMenuFlags & NContextMenuFlags::kCompressEmail) != 0 && !_dropMode)
     {
       CCommandMapItem commandMapItem;
-      commandMapItem.Archive = archiveName;
+      commandMapItem.ArcName = archiveName;
       FillCommand(kCompressEmail, mainString, commandMapItem);
       MyInsertMenu(popupMenu, subIndex++, currentCommandID++, mainString);
       _commandMap.Add(commandMapItem);
     }
+    #endif
 
     // CompressTo7z
     if (contextMenuFlags & NContextMenuFlags::kCompressTo7z)
@@ -533,25 +587,27 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
         commandMapItem.Folder = _dropPath;
       else
         commandMapItem.Folder = archivePathPrefix;
-      commandMapItem.Archive = archiveName7z;
-      commandMapItem.ArchiveType = L"7z";
+      commandMapItem.ArcName = archiveName7z;
+      commandMapItem.ArcType = L"7z";
       s = MyFormatNew(s, GetQuotedReducedString(archiveName7z));
       MyInsertMenu(popupMenu, subIndex++, currentCommandID++, s);
       _commandMap.Add(commandMapItem);
     }
 
+    #ifdef EMAIL_SUPPORT
     // CompressTo7zEmail
     if ((contextMenuFlags & NContextMenuFlags::kCompressTo7zEmail) != 0  && !_dropMode)
     {
       CCommandMapItem commandMapItem;
       UString s;
       FillCommand(kCompressTo7zEmail, s, commandMapItem);
-      commandMapItem.Archive = archiveName7z;
-      commandMapItem.ArchiveType = L"7z";
+      commandMapItem.ArcName = archiveName7z;
+      commandMapItem.ArcType = L"7z";
       s = MyFormatNew(s, GetQuotedReducedString(archiveName7z));
       MyInsertMenu(popupMenu, subIndex++, currentCommandID++, s);
       _commandMap.Add(commandMapItem);
     }
+    #endif
 
     // CompressToZip
     if (contextMenuFlags & NContextMenuFlags::kCompressToZip)
@@ -563,25 +619,27 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
         commandMapItem.Folder = _dropPath;
       else
         commandMapItem.Folder = archivePathPrefix;
-      commandMapItem.Archive = archiveNameZip;
-      commandMapItem.ArchiveType = L"zip";
+      commandMapItem.ArcName = archiveNameZip;
+      commandMapItem.ArcType = L"zip";
       s = MyFormatNew(s, GetQuotedReducedString(archiveNameZip));
       MyInsertMenu(popupMenu, subIndex++, currentCommandID++, s);
       _commandMap.Add(commandMapItem);
     }
 
+    #ifdef EMAIL_SUPPORT
     // CompressToZipEmail
     if ((contextMenuFlags & NContextMenuFlags::kCompressToZipEmail) != 0  && !_dropMode)
     {
       CCommandMapItem commandMapItem;
       UString s;
       FillCommand(kCompressToZipEmail, s, commandMapItem);
-      commandMapItem.Archive = archiveNameZip;
-      commandMapItem.ArchiveType = L"zip";
+      commandMapItem.ArcName = archiveNameZip;
+      commandMapItem.ArcType = L"zip";
       s = MyFormatNew(s, GetQuotedReducedString(archiveNameZip));
       MyInsertMenu(popupMenu, subIndex++, currentCommandID++, s);
       _commandMap.Add(commandMapItem);
     }
+    #endif
   }
 
 
@@ -589,7 +647,7 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
   // PRB: Duplicate Menu Items In the File Menu For a Shell Context Menu Extension
   // ID: Q214477
 
-  if (cascadedMenu)
+  if (ci.Cascaded)
   {
     CMenuItem menuItem;
     menuItem.fType = MFT_STRING;
@@ -610,21 +668,16 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
 int CZipContextMenu::FindVerb(const UString &verb)
 {
   for(int i = 0; i < _commandMap.Size(); i++)
-    if(_commandMap[i].Verb.Compare(verb) == 0)
+    if (_commandMap[i].Verb.Compare(verb) == 0)
       return i;
   return -1;
 }
 
-extern const char *kShellFolderClassIDString;
-
-
-static UString GetProgramCommand()
+static UString Get7zFmPath()
 {
   UString path;
-  UString folder;
-  if (GetProgramFolderPath(folder))
-    path = folder;
-  return GetQuotedString(path + L"7zFM.exe");
+  GetProgramFolderPath(path);
+  return path + L"7zFM.exe";
 }
 
 STDMETHODIMP CZipContextMenu::InvokeCommand(LPCMINVOKECOMMANDINFO commandInfo)
@@ -634,46 +687,50 @@ STDMETHODIMP CZipContextMenu::InvokeCommand(LPCMINVOKECOMMANDINFO commandInfo)
 
   // It's fix for bug: crashing in XP. See example in MSDN: "Creating Context Menu Handlers".
 
+  #ifndef UNDER_CE
   if (commandInfo->cbSize == sizeof(CMINVOKECOMMANDINFOEX) &&
       (commandInfo->fMask & CMIC_MASK_UNICODE) != 0)
   {
     LPCMINVOKECOMMANDINFOEX commandInfoEx = (LPCMINVOKECOMMANDINFOEX)commandInfo;
-    if(HIWORD(commandInfoEx->lpVerbW) == 0)
+    if (HIWORD(commandInfoEx->lpVerbW) == 0)
       commandOffset = LOWORD(commandInfo->lpVerb);
     else
       commandOffset = FindVerb(commandInfoEx->lpVerbW);
   }
   else
-    if(HIWORD(commandInfo->lpVerb) == 0)
+  #endif
+    if (HIWORD(commandInfo->lpVerb) == 0)
       commandOffset = LOWORD(commandInfo->lpVerb);
     else
       commandOffset = FindVerb(GetUnicodeString(commandInfo->lpVerb));
 
-  if(commandOffset < 0 || commandOffset >= _commandMap.Size())
+  if (commandOffset < 0 || commandOffset >= _commandMap.Size())
     return E_FAIL;
 
   const CCommandMapItem commandMapItem = _commandMap[commandOffset];
-  ECommandInternalID commandInternalID = commandMapItem.CommandInternalID;
+  ECommandInternalID cmdID = commandMapItem.CommandInternalID;
 
   try
   {
-    switch(commandInternalID)
+    switch(cmdID)
     {
       case kOpen:
       {
         UString params;
-        params = GetProgramCommand();
-        params += L' ';
-        params += GetQuotedString(_fileNames[0]);
-        MyCreateProcess(params, 0, false, 0);
+        params = GetQuotedString(_fileNames[0]);
+        if (commandMapItem.ArcType)
+        {
+          params += L" -t";
+          params += commandMapItem.ArcType;
+        }
+        MyCreateProcess(Get7zFmPath(), params);
         break;
       }
       case kExtract:
       case kExtractHere:
       case kExtractTo:
       {
-        ExtractArchives(_fileNames, commandMapItem.Folder,
-            (commandInternalID == kExtract));
+        ExtractArchives(_fileNames, commandMapItem.Folder, (cmdID == kExtract));
         break;
       }
       case kTest:
@@ -689,14 +746,14 @@ STDMETHODIMP CZipContextMenu::InvokeCommand(LPCMINVOKECOMMANDINFO commandInfo)
       case kCompressToZipEmail:
       {
         bool email =
-            (commandInternalID == kCompressEmail) ||
-            (commandInternalID == kCompressTo7zEmail) ||
-            (commandInternalID == kCompressToZipEmail);
+            (cmdID == kCompressEmail) ||
+            (cmdID == kCompressTo7zEmail) ||
+            (cmdID == kCompressToZipEmail);
         bool showDialog =
-            (commandInternalID == kCompress) ||
-            (commandInternalID == kCompressEmail);
+            (cmdID == kCompress) ||
+            (cmdID == kCompressEmail);
         CompressFiles(commandMapItem.Folder,
-            commandMapItem.Archive, commandMapItem.ArchiveType,
+            commandMapItem.ArcName, commandMapItem.ArcType,
             _fileNames, email, showDialog, false);
         break;
       }
@@ -704,19 +761,19 @@ STDMETHODIMP CZipContextMenu::InvokeCommand(LPCMINVOKECOMMANDINFO commandInfo)
   }
   catch(...)
   {
-    ShowErrorMessageRes(IDS_ERROR, 0x02000605);
+    ::MessageBoxW(0, L"Error", L"7-Zip", MB_ICONERROR);
   }
   return S_OK;
 }
 
 static void MyCopyString(void *dest, const wchar_t *src, bool writeInUnicode)
 {
-  if(writeInUnicode)
+  if (writeInUnicode)
   {
     MyStringCopy((wchar_t *)dest, src);
   }
   else
-    lstrcpyA((char *)dest, GetAnsiString(src));
+    MyStringCopy((char *)dest, (const char *)GetAnsiString(src));
 }
 
 STDMETHODIMP CZipContextMenu::GetCommandString(UINT_PTR commandOffset, UINT uType,
@@ -725,23 +782,47 @@ STDMETHODIMP CZipContextMenu::GetCommandString(UINT_PTR commandOffset, UINT uTyp
   int cmdOffset = (int)commandOffset;
   switch(uType)
   {
+    #ifdef UNDER_CE
+    case GCS_VALIDATE:
+    #else
     case GCS_VALIDATEA:
     case GCS_VALIDATEW:
-      if(cmdOffset < 0 || cmdOffset >= _commandMap.Size())
+    #endif
+      if (cmdOffset < 0 || cmdOffset >= _commandMap.Size())
         return S_FALSE;
       else
         return S_OK;
   }
-  if(cmdOffset < 0 || cmdOffset >= _commandMap.Size())
+  if (cmdOffset < 0 || cmdOffset >= _commandMap.Size())
     return E_FAIL;
-  if(uType == GCS_HELPTEXTA || uType == GCS_HELPTEXTW)
+  #ifdef UNDER_CE
+  if (uType == GCS_HELPTEXT)
+  #else
+  if (uType == GCS_HELPTEXTA || uType == GCS_HELPTEXTW)
+  #endif
   {
-    MyCopyString(pszName, _commandMap[cmdOffset].HelpString, uType == GCS_HELPTEXTW);
+    MyCopyString(pszName, _commandMap[cmdOffset].HelpString,
+      #ifdef UNDER_CE
+      true
+      #else
+      uType == GCS_HELPTEXTW
+      #endif
+      );
     return NO_ERROR;
   }
-  if(uType == GCS_VERBA || uType == GCS_VERBW)
+  #ifdef UNDER_CE
+  if (uType == GCS_VERB)
+  #else
+  if (uType == GCS_VERBA || uType == GCS_VERBW)
+  #endif
   {
-    MyCopyString(pszName, _commandMap[cmdOffset].Verb, uType == GCS_VERBW);
+    MyCopyString(pszName, _commandMap[cmdOffset].Verb,
+      #ifdef UNDER_CE
+      true
+      #else
+      uType == GCS_VERBW
+      #endif
+      );
     return NO_ERROR;
   }
   return E_FAIL;

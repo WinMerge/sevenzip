@@ -42,6 +42,9 @@ void ConvertUInt64ToString(UInt64 value, wchar_t *s)
   *s = L'\0';
 }
 
+void ConvertUInt32ToString(UInt32 value, char *s) { ConvertUInt64ToString(value, s); }
+void ConvertUInt32ToString(UInt32 value, wchar_t *s) { ConvertUInt64ToString(value, s); }
+
 void ConvertInt64ToString(Int64 value, char *s)
 {
   if (value < 0)
@@ -60,4 +63,15 @@ void ConvertInt64ToString(Int64 value, wchar_t *s)
     value = -value;
   }
   ConvertUInt64ToString(value, s);
+}
+
+void ConvertUInt32ToHexWithZeros(UInt32 value, char *s)
+{
+  for (int i = 0; i < 8; i++)
+  {
+    int t = value & 0xF;
+    value >>= 4;
+    s[7 - i] = (char)((t < 10) ? ('0' + t) : ('A' + (t - 10)));
+  }
+  s[8] = '\0';
 }

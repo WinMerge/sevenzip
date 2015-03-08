@@ -2,18 +2,17 @@
 
 #include "StdAfx.h"
 
-extern "C"
-{
 #include "../../../C/Alloc.h"
 #include "../../../C/HuffEnc.h"
-}
 
 #include "Common/ComTry.h"
 
 #include "DeflateEncoder.h"
 
-#if _MSC_VER >= 1300
-#define NO_INLINE __declspec(noinline)
+#undef NO_INLINE
+
+#ifdef _MSC_VER
+#define NO_INLINE MY_NO_INLINE
 #else
 #define NO_INLINE
 #endif
@@ -583,7 +582,7 @@ NO_INLINE UInt32 Huffman_GetPrice(const UInt32 *freqs, const Byte *lens, UInt32 
   for (i = 0; i < num; i++)
     price += lens[i] * freqs[i];
   return price;
-};
+}
 
 NO_INLINE UInt32 Huffman_GetPrice_Spec(const UInt32 *freqs, const Byte *lens, UInt32 num, const Byte *extraBits, UInt32 extraBase)
 {

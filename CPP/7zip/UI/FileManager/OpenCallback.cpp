@@ -2,64 +2,62 @@
 
 #include "StdAfx.h"
 
-#include "OpenCallback.h"
-
 #include "Common/StringConvert.h"
+
 #include "Windows/PropVariant.h"
 
 #include "../../Common/FileStreams.h"
 
+#include "OpenCallback.h"
 #include "PasswordDialog.h"
+
+using namespace NWindows;
 
 STDMETHODIMP COpenArchiveCallback::SetTotal(const UInt64 *numFiles, const UInt64 *numBytes)
 {
+  RINOK(ProgressDialog.Sync.ProcessStopAndPause());
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
-    _numFilesTotalDefined = (numFiles != NULL);
-    _numBytesTotalDefined = (numBytes != NULL);
-    if (_numFilesTotalDefined)
+    NSynchronization::CCriticalSectionLock lock(_criticalSection);
+    if (numFiles != NULL)
     {
-      ProgressDialog.ProgressSynch.SetNumFilesTotal(*numFiles);
-      ProgressDialog.ProgressSynch.SetProgress(*numFiles, 0);
+      ProgressDialog.Sync.SetNumFilesTotal(*numFiles);
+      ProgressDialog.Sync.SetBytesProgressMode(false);
     }
-    else if (_numBytesTotalDefined)
-      ProgressDialog.ProgressSynch.SetProgress(*numBytes, 0);
+    if (numBytes != NULL)
+      ProgressDialog.Sync.SetNumBytesTotal(*numBytes);
   }
   return S_OK;
 }
 
 STDMETHODIMP COpenArchiveCallback::SetCompleted(const UInt64 *numFiles, const UInt64 *numBytes)
 {
-  NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
-  RINOK(ProgressDialog.ProgressSynch.ProcessStopAndPause());
+  RINOK(ProgressDialog.Sync.ProcessStopAndPause());
+  NSynchronization::CCriticalSectionLock lock(_criticalSection);
   if (numFiles != NULL)
-  {
-    ProgressDialog.ProgressSynch.SetNumFilesCur(*numFiles);
-    if (_numFilesTotalDefined)
-      ProgressDialog.ProgressSynch.SetPos(*numFiles);
-  }
-  if (numBytes != NULL && _numBytesTotalDefined)
-    ProgressDialog.ProgressSynch.SetPos(*numBytes);
+    ProgressDialog.Sync.SetNumFilesCur(*numFiles);
+  if (numBytes != NULL)
+    ProgressDialog.Sync.SetPos(*numBytes);
   return S_OK;
 }
 
 STDMETHODIMP COpenArchiveCallback::SetTotal(const UInt64 total)
 {
-  ProgressDialog.ProgressSynch.SetProgress(total, 0);
+  RINOK(ProgressDialog.Sync.ProcessStopAndPause());
+  ProgressDialog.Sync.SetNumBytesTotal(total);
   return S_OK;
 }
 
 STDMETHODIMP COpenArchiveCallback::SetCompleted(const UInt64 *completed)
 {
-  RINOK(ProgressDialog.ProgressSynch.ProcessStopAndPause());
+  RINOK(ProgressDialog.Sync.ProcessStopAndPause());
   if (completed != NULL)
-    ProgressDialog.ProgressSynch.SetPos(*completed);
+    ProgressDialog.Sync.SetPos(*completed);
   return S_OK;
 }
 
 STDMETHODIMP COpenArchiveCallback::GetProperty(PROPID propID, PROPVARIANT *value)
 {
-  NWindows::NCOM::CPropVariant prop;
+  NCOM::CPropVariant prop;
   if (_subArchiveMode)
   {
     switch(propID)
@@ -91,10 +89,10 @@ STDMETHODIMP COpenArchiveCallback::GetStream(const wchar_t *name,
   if (_subArchiveMode)
     return S_FALSE;
 
-  NWindows::NFile::NFind::CFileInfoW fileInfo;
+  NFile::NFind::CFileInfoW fileInfo;
 
   UString fullPath = _folderPrefix + name;
-  if (!NWindows::NFile::NFind::FindFile(fullPath, fileInfo))
+  if (!fileInfo.Find(fullPath))
     return S_FALSE;
   _fileInfo = fileInfo;
   if (_fileInfo.IsDir())
@@ -114,6 +112,7 @@ STDMETHODIMP COpenArchiveCallback::CryptoGetTextPassword(BSTR *password)
   {
     CPasswordDialog dialog;
    
+    ProgressDialog.WaitCreating();
     if (dialog.Create(ProgressDialog) == IDCANCEL)
       return E_ABORT;
 

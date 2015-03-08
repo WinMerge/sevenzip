@@ -34,22 +34,23 @@ const UInt32 kNumFilesMax = 10;
 
 class CHandler:
   public IInArchive,
+  public IInArchiveGetStream,
   public CMyUnknownImp
 {
   UInt64 _startPos;
-  CMyComPtr<IInStream> _inStream;
+  CMyComPtr<IInStream> _stream;
   UInt32 _numItems;
   CItem _items[kNumFilesMax + 1];
   HRESULT Open2(IInStream *stream);
 public:
-  MY_UNKNOWN_IMP1(IInArchive)
+  MY_UNKNOWN_IMP2(IInArchive, IInArchiveGetStream)
   INTERFACE_IInArchive(;)
+  STDMETHOD(GetStream)(UInt32 index, ISequentialInStream **stream);
 };
 
 STATPROPSTG kProps[] =
 {
-  { NULL, kpidSize, VT_UI8},
-  { NULL, kpidPackSize, VT_UI8}
+  { NULL, kpidSize, VT_UI8}
 };
 
 IMP_IInArchive_Props
@@ -166,7 +167,7 @@ STDMETHODIMP CHandler::Open(IInStream *inStream,
   {
     if (Open2(inStream) != S_OK)
       return S_FALSE;
-    _inStream = inStream;
+    _stream = inStream;
   }
   catch(...) { return S_FALSE; }
   return S_OK;
@@ -175,7 +176,7 @@ STDMETHODIMP CHandler::Open(IInStream *inStream,
 
 STDMETHODIMP CHandler::Close()
 {
-  _inStream.Release();
+  _stream.Release();
   _numItems = 0;
   return S_OK;
 }
@@ -186,12 +187,11 @@ STDMETHODIMP CHandler::GetNumberOfItems(UInt32 *numItems)
   return S_OK;
 }
 
-STDMETHODIMP CHandler::Extract(const UInt32* indices, UInt32 numItems,
-    Int32 _aTestMode, IArchiveExtractCallback *extractCallback)
+STDMETHODIMP CHandler::Extract(const UInt32 *indices, UInt32 numItems,
+    Int32 testMode, IArchiveExtractCallback *extractCallback)
 {
   COM_TRY_BEGIN
-  bool testMode = (_aTestMode != 0);
-  bool allFilesMode = (numItems == UInt32(-1));
+  bool allFilesMode = (numItems == (UInt32)-1);
   if (allFilesMode)
     numItems = _numItems;
   if (numItems == 0)
@@ -203,7 +203,6 @@ STDMETHODIMP CHandler::Extract(const UInt32* indices, UInt32 numItems,
   extractCallback->SetTotal(totalSize);
 
   UInt64 currentTotalSize = 0;
-  UInt64 currentItemSize;
   
   NCompress::CCopyCoder *copyCoderSpec = new NCompress::CCopyCoder();
   CMyComPtr<ICompressCoder> copyCoder = copyCoderSpec;
@@ -214,43 +213,46 @@ STDMETHODIMP CHandler::Extract(const UInt32* indices, UInt32 numItems,
 
   CLimitedSequentialInStream *streamSpec = new CLimitedSequentialInStream;
   CMyComPtr<ISequentialInStream> inStream(streamSpec);
-  streamSpec->SetStream(_inStream);
+  streamSpec->SetStream(_stream);
 
-  for (i = 0; i < numItems; i++, currentTotalSize += currentItemSize)
+  for (i = 0; i < numItems; i++)
   {
     lps->InSize = lps->OutSize = currentTotalSize;
     RINOK(lps->SetCur());
     CMyComPtr<ISequentialOutStream> realOutStream;
     Int32 askMode = testMode ?
-        NArchive::NExtract::NAskMode::kTest :
-        NArchive::NExtract::NAskMode::kExtract;
+        NExtract::NAskMode::kTest :
+        NExtract::NAskMode::kExtract;
     UInt32 index = allFilesMode ? i : indices[i];
     const CItem &item = _items[index];
     RINOK(extractCallback->GetStream(index, &realOutStream, askMode));
-    currentItemSize = item.Size;
+    currentTotalSize += item.Size;
     
-    
-    
-    
-    
-    
-    if (!testMode && (!realOutStream))
+    if (!testMode && !realOutStream)
       continue;
     RINOK(extractCallback->PrepareOperation(askMode));
     if (testMode)
     {
-      RINOK(extractCallback->SetOperationResult(NArchive::NExtract::NOperationResult::kOK));
+      RINOK(extractCallback->SetOperationResult(NExtract::NOperationResult::kOK));
       continue;
     }
-    RINOK(_inStream->Seek(_startPos + item.Offset, STREAM_SEEK_SET, NULL));
+    RINOK(_stream->Seek(_startPos + item.Offset, STREAM_SEEK_SET, NULL));
     streamSpec->Init(item.Size);
     RINOK(copyCoder->Code(inStream, realOutStream, NULL, NULL, progress));
     realOutStream.Release();
     RINOK(extractCallback->SetOperationResult((copyCoderSpec->TotalSize == item.Size) ?
-        NArchive::NExtract::NOperationResult::kOK:
-        NArchive::NExtract::NOperationResult::kDataError));
+        NExtract::NOperationResult::kOK:
+        NExtract::NOperationResult::kDataError));
   }
   return S_OK;
+  COM_TRY_END
+}
+
+STDMETHODIMP CHandler::GetStream(UInt32 index, ISequentialInStream **stream)
+{
+  COM_TRY_BEGIN
+  const CItem &item = _items[index];
+  return CreateLimitedInStream(_stream, _startPos + item.Offset, item.Size, stream);
   COM_TRY_END
 }
 

@@ -78,7 +78,7 @@ NFileOperationReturnCode::EEnum CPlugin::PutFiles(
   const int kXMid = 38;
 
   NCompression::CInfo compressionInfo;
-  ReadCompressionInfo(compressionInfo);
+  compressionInfo.Load();
 
   int methodIndex = 0;
   int i;
@@ -145,16 +145,16 @@ NFileOperationReturnCode::EEnum CPlugin::PutFiles(
   else if (dialogItems[kModeRadioIndex + 1].Selected)
     actionSet = &kUpdateActionSet;
   else if (dialogItems[kModeRadioIndex + 2].Selected)
-      actionSet = &kFreshActionSet;
+    actionSet = &kFreshActionSet;
   else if (dialogItems[kModeRadioIndex + 3].Selected)
-      actionSet = &kSynchronizeActionSet;
+    actionSet = &kSynchronizeActionSet;
   else
     throw 51751;
 
-  SaveCompressionInfo(compressionInfo);
+  compressionInfo.Save();
 
   NWorkDir::CInfo workDirInfo;
-  ReadWorkDirInfo(workDirInfo);
+  workDirInfo.Load();
   UString workDir = GetWorkDir(workDirInfo, m_FileName);
   CreateComplexDirectory(workDir);
 
@@ -234,7 +234,7 @@ NFileOperationReturnCode::EEnum CPlugin::PutFiles(
   CUpdateCallback100Imp *updateCallbackSpec = new CUpdateCallback100Imp;
   CMyComPtr<IFolderArchiveUpdateCallback> updateCallback(updateCallbackSpec );
   
-  updateCallbackSpec->Init(/* m_ArchiveHandler, */ &progressBox);
+  updateCallbackSpec->Init(/* m_ArchiveHandler, */ progressBoxPointer);
 
   if (SetOutProperties(outArchive, compressionInfo.Level) != S_OK)
     return NFileOperationReturnCode::kError;
@@ -412,21 +412,21 @@ HRESULT CompressFiles(const CObjectVector<PluginPanelItem> &pluginPanelItems)
   for(i = 0; i < pluginPanelItems.Size(); i++)
   {
     const PluginPanelItem &panelItem = pluginPanelItems[i];
-    CSysString fullName;
+    UString fullName;
     if (strcmp(panelItem.FindData.cFileName, "..") == 0 &&
         NFind::NAttributes::IsDir(panelItem.FindData.dwFileAttributes))
       return E_FAIL;
     if (strcmp(panelItem.FindData.cFileName, ".") == 0 &&
         NFind::NAttributes::IsDir(panelItem.FindData.dwFileAttributes))
       return E_FAIL;
-    if (!MyGetFullPathName(panelItem.FindData.cFileName, fullName))
+    UString fileNameUnicode = MultiByteToUnicodeString(panelItem.FindData.cFileName, CP_OEMCP);
+    if (!MyGetFullPathName(fileNameUnicode, fullName))
       return E_FAIL;
-    fileNames.Add(MultiByteToUnicodeString(fullName, CP_OEMCP));
+    fileNames.Add(fullName);
   }
 
   NCompression::CInfo compressionInfo;
-  // CZipRegistryManager aZipRegistryManager;
-  ReadCompressionInfo(compressionInfo);
+  compressionInfo.Load();
   
   int archiverIndex = 0;
 
@@ -442,7 +442,7 @@ HRESULT CompressFiles(const CObjectVector<PluginPanelItem> &pluginPanelItems)
       {
         if (archiverIndex == -1)
           archiverIndex = i;
-        if (arcInfo.Name.CompareNoCase(compressionInfo.ArchiveType) == 0)
+        if (arcInfo.Name.CompareNoCase(compressionInfo.ArcType) == 0)
           archiverIndex = i;
       }
     }
@@ -497,7 +497,7 @@ HRESULT CompressFiles(const CObjectVector<PluginPanelItem> &pluginPanelItems)
     const CArcInfoEx &arcInfo = codecs->Formats[archiverIndex];
 
     char updateAddToArchiveString[512];
-    const AString s = GetSystemString(arcInfo.Name, CP_OEMCP);
+    const AString s = UnicodeStringToMultiByte(arcInfo.Name, CP_OEMCP);
 
     sprintf(updateAddToArchiveString,
         g_StartupInfo.GetMsgString(NMessageID::kUpdateAddToArchive), (const char *)s);
@@ -647,11 +647,11 @@ HRESULT CompressFiles(const CObjectVector<PluginPanelItem> &pluginPanelItems)
   }
 
   const CArcInfoEx &archiverInfoFinal = codecs->Formats[archiverIndex];
-  compressionInfo.ArchiveType = archiverInfoFinal.Name;
-  SaveCompressionInfo(compressionInfo);
+  compressionInfo.ArcType = archiverInfoFinal.Name;
+  compressionInfo.Save();
 
   NWorkDir::CInfo workDirInfo;
-  ReadWorkDirInfo(workDirInfo);
+  workDirInfo.Load();
 
   UString fullArchiveName;
   if (!MyGetFullPathName(archiveName, fullArchiveName))
@@ -683,7 +683,7 @@ HRESULT CompressFiles(const CObjectVector<PluginPanelItem> &pluginPanelItems)
   CMyComPtr<IOutFolderArchive> outArchive;
 
   CMyComPtr<IInFolderArchive> archiveHandler;
-  if(NFind::FindFile(fullArchiveName, fileInfo))
+  if(fileInfo.Find(fullArchiveName))
   {
     if (fileInfo.IsDir())
       throw "There is Directory with such name";
@@ -692,8 +692,8 @@ HRESULT CompressFiles(const CObjectVector<PluginPanelItem> &pluginPanelItems)
     archiveHandler = agentSpec;
     // CLSID realClassID;
     CMyComBSTR archiveType;
-    RINOK(agentSpec->Open(
-        GetUnicodeString(fullArchiveName, CP_OEMCP),
+    RINOK(agentSpec->Open(NULL,
+        GetUnicodeString(fullArchiveName, CP_OEMCP), UString(),
         // &realClassID,
         &archiveType,
         NULL));
@@ -742,7 +742,7 @@ HRESULT CompressFiles(const CObjectVector<PluginPanelItem> &pluginPanelItems)
   CUpdateCallback100Imp *updateCallbackSpec = new CUpdateCallback100Imp;
   CMyComPtr<IFolderArchiveUpdateCallback> updateCallback(updateCallbackSpec );
   
-  updateCallbackSpec->Init(/* archiveHandler, */ &progressBox);
+  updateCallbackSpec->Init(/* archiveHandler, */ progressBoxPointer);
 
 
   RINOK(SetOutProperties(outArchive, compressionInfo.Level));
@@ -778,4 +778,3 @@ HRESULT CompressFiles(const CObjectVector<PluginPanelItem> &pluginPanelItems)
   
   return S_OK;
 }
-

@@ -1,17 +1,14 @@
-PROG = 7za.exe
-LIBS = $(LIBS) user32.lib oleaut32.lib Advapi32.lib
-
+PROG = 7zr.exe
+MY_CONSOLE = 1
 CFLAGS = $(CFLAGS) -I ../../../ \
   -D_NO_CRYPTO \
-  -DWIN_LONG_PATH \
-  -DCOMPRESS_MT \
-  -DCOMPRESS_MF_MT \
-  -D_NO_CRYPTO \
-  -DBREAK_HANDLER \
-  -DBENCH_MT \
 
+!IFNDEF UNDER_CE
+CFLAGS = $(CFLAGS) -DWIN_LONG_PATH
+!ENDIF
 
 CONSOLE_OBJS = \
+  $O\BenchCon.obj \
   $O\ConsoleClose.obj \
   $O\ExtractCallbackConsole.obj \
   $O\List.obj \
@@ -53,6 +50,7 @@ WIN_OBJS = \
 
 7ZIP_COMMON_OBJS = \
   $O\CreateCoder.obj \
+  $O\CWrappers.obj \
   $O\FilePathAutoRename.obj \
   $O\FileStreams.obj \
   $O\InBuffer.obj \
@@ -74,6 +72,7 @@ UI_COMMON_OBJS = \
   $O\ArchiveCommandLine.obj \
   $O\ArchiveExtractCallback.obj \
   $O\ArchiveOpenCallback.obj \
+  $O\Bench.obj \
   $O\DefaultName.obj \
   $O\EnumDirItems.obj \
   $O\Extract.obj \
@@ -90,6 +89,11 @@ UI_COMMON_OBJS = \
   $O\UpdatePair.obj \
   $O\UpdateProduce.obj \
   $O\WorkDir.obj \
+
+AR_OBJS = \
+  $O\LzmaHandler.obj \
+  $O\SplitHandler.obj \
+  $O\XzHandler.obj \
 
 AR_COMMON_OBJS = \
   $O\CoderMixer2.obj \
@@ -121,17 +125,6 @@ AR_COMMON_OBJS = \
   $O\7zSpecStream.obj \
   $O\7zUpdate.obj \
 
-LZM_OBJS = \
-  $O\LzmaArcRegister.obj \
-  $O\LzmaFiltersDecode.obj \
-  $O\LzmaHandler.obj \
-  $O\LzmaIn.obj \
-
-SPLIT_OBJS = \
-  $O\SplitHandler.obj \
-  $O\SplitHandlerOut.obj \
-  $O\SplitRegister.obj \
-
 COMPRESS_OBJS = \
   $O\Bcj2Coder.obj \
   $O\Bcj2Register.obj \
@@ -141,28 +134,40 @@ COMPRESS_OBJS = \
   $O\BranchMisc.obj \
   $O\BranchRegister.obj \
   $O\ByteSwap.obj \
-  $O\ByteSwapRegister.obj \
   $O\CopyCoder.obj \
   $O\CopyRegister.obj \
+  $O\DeltaFilter.obj \
+  $O\Lzma2Decoder.obj \
+  $O\Lzma2Encoder.obj \
+  $O\Lzma2Register.obj \
   $O\LzmaDecoder.obj \
   $O\LzmaEncoder.obj \
   $O\LzmaRegister.obj \
 
-LZMA_BENCH_OBJS = \
-  $O\LzmaBench.obj \
-  $O\LzmaBenchCon.obj \
-
 C_OBJS = \
-  $O\7zCrc.obj \
+  $O\7zStream.obj \
+  $O\Alloc.obj \
   $O\Bra.obj \
   $O\Bra86.obj \
   $O\BraIA64.obj \
-  $O\Alloc.obj \
-  $O\LzmaDec.obj \
-  $O\LzmaEnc.obj \
+  $O\CpuArch.obj \
+  $O\Delta.obj \
   $O\LzFind.obj \
   $O\LzFindMt.obj \
+  $O\Lzma2Dec.obj \
+  $O\Lzma2Enc.obj \
+  $O\LzmaDec.obj \
+  $O\LzmaEnc.obj \
+  $O\MtCoder.obj \
+  $O\Sha256.obj \
   $O\Threads.obj \
+  $O\Xz.obj \
+  $O\XzCrc64.obj \
+  $O\XzDec.obj \
+  $O\XzEnc.obj \
+  $O\XzIn.obj \
+
+!include "../../Crc.mak"
 
 OBJS = \
   $O\StdAfx.obj \
@@ -171,14 +176,12 @@ OBJS = \
   $(WIN_OBJS) \
   $(7ZIP_COMMON_OBJS) \
   $(UI_COMMON_OBJS) \
+  $(AR_OBJS) \
   $(AR_COMMON_OBJS) \
   $(7Z_OBJS) \
-  $(LZM_OBJS) \
-  $(SPLIT_OBJS) \
   $(COMPRESS_OBJS) \
-  $(LZMA_BENCH_OBJS) \
   $(C_OBJS) \
-  $(CRC_OBJS) \
+  $(ASM_OBJS) \
   $O\resource.res
 
 
@@ -195,18 +198,16 @@ $(7ZIP_COMMON_OBJS): ../../Common/$(*B).cpp
 	$(COMPL)
 $(UI_COMMON_OBJS): ../../UI/Common/$(*B).cpp
 	$(COMPL)
+$(AR_OBJS): ../../Archive/$(*B).cpp
+	$(COMPL)
 $(AR_COMMON_OBJS): ../../Archive/Common/$(*B).cpp
 	$(COMPL)
 
 $(7Z_OBJS): ../../Archive/7z/$(*B).cpp
 	$(COMPL)
-$(LZM_OBJS): ../../Archive/Lzma/$(*B).cpp
-	$(COMPL)
-$(SPLIT_OBJS): ../../Archive/Split/$(*B).cpp
-	$(COMPL)
 $(COMPRESS_OBJS): ../../Compress/$(*B).cpp
 	$(COMPL_O2)
-$(LZMA_BENCH_OBJS): ../../Compress/LZMA_Alone/$(*B).cpp
-	$(COMPL)
 $(C_OBJS): ../../../../C/$(*B).c
 	$(COMPL_O2)
+
+!include "../../Asm.mak"

@@ -2,11 +2,8 @@
 
 #include "StdAfx.h"
 
-extern "C"
-{
-  #include "../../../../C/7zCrc.h"
-  #include "../../../../C/CpuArch.h"
-}
+#include "../../../../C/7zCrc.h"
+#include "../../../../C/CpuArch.h"
 
 #include "../../Common/StreamObjects.h"
 #include "../../Common/StreamUtils.h"
@@ -123,7 +120,7 @@ public:
     kUnsupportedVersion = 0,
     kUnsupported,
     kIncorrect,
-    kEndOfData,
+    kEndOfData
   } Cause;
   CInArchiveException(CCauseType cause): Cause(cause) {};
 };
@@ -198,16 +195,16 @@ void CInByte2::ReadBytes(Byte *data, size_t size)
     data[i] = _buffer[_pos++];
 }
 
-void CInByte2::SkeepData(UInt64 size)
+void CInByte2::SkipData(UInt64 size)
 {
   if (size > _size - _pos)
     ThrowEndOfData();
   _pos += (size_t)size;
 }
 
-void CInByte2::SkeepData()
+void CInByte2::SkipData()
 {
-  SkeepData(ReadNumber());
+  SkipData(ReadNumber());
 }
 
 UInt64 CInByte2::ReadNumber()
@@ -283,28 +280,46 @@ void CInByte2::ReadString(UString &s)
   _pos += rem + 2;
 }
 
-static inline bool TestSignatureCandidate(const Byte *p)
+static inline bool TestSignature(const Byte *p)
 {
   for (int i = 0; i < kSignatureSize; i++)
     if (p[i] != kSignature[i])
       return false;
-  return (p[0x1A] == 0 && p[0x1B] == 0);
+  return CrcCalc(p + 12, 20) == GetUi32(p + 8);
 }
+
+#ifdef FORMAT_7Z_RECOVERY
+static inline bool TestSignature2(const Byte *p)
+{
+  int i;
+  for (i = 0; i < kSignatureSize; i++)
+    if (p[i] != kSignature[i])
+      return false;
+  if (CrcCalc(p + 12, 20) == GetUi32(p + 8))
+    return true;
+  for (i = 8; i < kHeaderSize; i++)
+    if (p[i] != 0)
+      return false;
+  return (p[6] != 0 || p[7] != 0);
+}
+#else
+#define TestSignature2(p) TestSignature(p)
+#endif
 
 HRESULT CInArchive::FindAndReadSignature(IInStream *stream, const UInt64 *searchHeaderSizeLimit)
 {
   RINOK(ReadStream_FALSE(stream, _header, kHeaderSize));
 
-  if (TestSignatureCandidate(_header))
+  if (TestSignature2(_header))
     return S_OK;
 
   CByteBuffer byteBuffer;
   const UInt32 kBufferSize = (1 << 16);
   byteBuffer.SetCapacity(kBufferSize);
   Byte *buffer = byteBuffer;
-  UInt32 numPrevBytes = kHeaderSize - 1;
-  memcpy(buffer, _header + 1, numPrevBytes);
-  UInt64 curTestPos = _arhiveBeginStreamPosition + 1;
+  UInt32 numPrevBytes = kHeaderSize;
+  memcpy(buffer, _header, kHeaderSize);
+  UInt64 curTestPos = _arhiveBeginStreamPosition;
   for (;;)
   {
     if (searchHeaderSizeLimit != NULL)
@@ -319,14 +334,14 @@ HRESULT CInArchive::FindAndReadSignature(IInStream *stream, const UInt64 *search
       if (processedSize == 0)
         return S_FALSE;
     }
-    while (numPrevBytes < kHeaderSize);
-    UInt32 numTests = numPrevBytes - kHeaderSize + 1;
+    while (numPrevBytes <= kHeaderSize);
+    UInt32 numTests = numPrevBytes - kHeaderSize;
     for (UInt32 pos = 0; pos < numTests; pos++)
     {
       for (; buffer[pos] != '7' && pos < numTests; pos++);
       if (pos == numTests)
         break;
-      if (TestSignatureCandidate(buffer + pos))
+      if (TestSignature(buffer + pos))
       {
         memcpy(_header, buffer + pos, kHeaderSize);
         curTestPos += pos;
@@ -363,7 +378,7 @@ void CInArchive::ReadArchiveProperties(CInArchiveInfo & /* archiveInfo */)
   {
     if (ReadID() == NID::kEnd)
       break;
-    SkeepData();
+    SkipData();
   }
 }
 
@@ -456,7 +471,7 @@ void CInArchive::WaitAttribute(UInt64 attribute)
       return;
     if (type == NID::kEnd)
       ThrowIncorrect();
-    SkeepData();
+    SkipData();
   }
 }
 
@@ -502,7 +517,7 @@ void CInArchive::ReadPackInfo(
       ReadHashDigests(numPackStreams, packCRCsDefined, packCRCs);
       continue;
     }
-    SkeepData();
+    SkipData();
   }
   if (packCRCsDefined.IsEmpty())
   {
@@ -563,7 +578,7 @@ void CInArchive::ReadUnpackInfo(
       }
       continue;
     }
-    SkeepData();
+    SkipData();
   }
 }
 
@@ -590,7 +605,7 @@ void CInArchive::ReadSubStreamsInfo(
       break;
     if (type == NID::kEnd)
       break;
-    SkeepData();
+    SkipData();
   }
 
   if (numUnpackStreamsInFolders.IsEmpty())
@@ -665,7 +680,7 @@ void CInArchive::ReadSubStreamsInfo(
       return;
     }
     else
-      SkeepData();
+      SkipData();
     type = ReadID();
   }
 }
@@ -815,7 +830,7 @@ HRESULT CInArchive::ReadAndDecodePackedStreams(
       ThrowUnsupported();
     data.SetCapacity(unpackSize);
     
-    CSequentialOutStreamImp2 *outStreamSpec = new CSequentialOutStreamImp2;
+    CBufPtrSeqOutStream *outStreamSpec = new CBufPtrSeqOutStream;
     CMyComPtr<ISequentialOutStream> outStream = outStreamSpec;
     outStreamSpec->Init(data, unpackSize);
     
@@ -826,7 +841,7 @@ HRESULT CInArchive::ReadAndDecodePackedStreams(
       #ifndef _NO_CRYPTO
       , getTextPassword, passwordIsDefined
       #endif
-      #ifdef COMPRESS_MT
+      #if !defined(_7ZIP_ST) && !defined(_SFX)
       , false, 1
       #endif
       );
@@ -1006,7 +1021,7 @@ HRESULT CInArchive::ReadHeader(
         db.ArchiveInfo.FileInfoPopIDs.Add(type);
     }
     else
-      SkeepData(size);
+      SkipData(size);
     bool checkRecordsSize = (db.ArchiveInfo.Version.Major > 0 ||
         db.ArchiveInfo.Version.Minor > 2);
     if (checkRecordsSize && _inByteBack->_pos - ppp != size)
@@ -1167,21 +1182,22 @@ HRESULT CInArchive::ReadDatabase2(
     nextHeaderCRC = CrcCalc(buf + i, (size_t)nextHeaderSize);
     RINOK(_stream->Seek(cur, STREAM_SEEK_SET, NULL));
   }
+  else
   #endif
-
-  #ifdef FORMAT_7Z_RECOVERY
-  crcFromArchive = crc;
-  #endif
+  {
+    if (crc != crcFromArchive)
+      ThrowIncorrect();
+  }
 
   db.ArchiveInfo.StartPositionAfterHeader = _arhiveBeginStreamPosition + kHeaderSize;
-
-  if (crc != crcFromArchive)
-    ThrowIncorrect();
 
   if (nextHeaderSize == 0)
     return S_OK;
 
   if (nextHeaderSize > (UInt64)0xFFFFFFFF)
+    return S_FALSE;
+
+  if ((Int64)nextHeaderOffset < 0)
     return S_FALSE;
 
   RINOK(_stream->Seek(nextHeaderOffset, STREAM_SEEK_CUR, NULL));

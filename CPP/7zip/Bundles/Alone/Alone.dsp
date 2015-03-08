@@ -44,7 +44,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /Gz /MT /W3 /GX /O1 /I "..\..\..\\" /D "NDEBUG" /D "_MBCS" /D "WIN32" /D "_CONSOLE" /D "COMPRESS_MF_MT" /D "COMPRESS_MT" /D "COMPRESS_BZIP2_MT" /D "BREAK_HANDLER" /D "_7ZIP_LARGE_PAGES" /D "BENCH_MT" /Yu"StdAfx.h" /FD /c
+# ADD CPP /nologo /Gz /MT /W3 /GX /O1 /I "..\..\..\\" /D "NDEBUG" /D "_MBCS" /D "WIN32" /D "_CONSOLE" /D "_7ZIP_LARGE_PAGES" /D "SUPPORT_DEVICE_FILE" /Yu"StdAfx.h" /FD /c
 # ADD BASE RSC /l 0x419 /d "NDEBUG"
 # ADD RSC /l 0x419 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -69,7 +69,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /Gz /MDd /W3 /Gm /GX /ZI /Od /I "..\..\..\\" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "_CONSOLE" /D "COMPRESS_MF_MT" /D "COMPRESS_MT" /D "COMPRESS_BZIP2_MT" /D "BREAK_HANDLER" /D "_7ZIP_LARGE_PAGES" /D "BENCH_MT" /Yu"StdAfx.h" /FD /GZ /c
+# ADD CPP /nologo /Gz /MDd /W3 /Gm /GX /ZI /Od /I "..\..\..\\" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "_CONSOLE" /D "_7ZIP_LARGE_PAGES" /D "SUPPORT_DEVICE_FILE" /Yu"StdAfx.h" /FD /GZ /c
 # ADD BASE RSC /l 0x419 /d "_DEBUG"
 # ADD RSC /l 0x419 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -93,8 +93,8 @@ LINK32=link.exe
 # PROP Intermediate_Dir "ReleaseU"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "EXCLUDE_COM" /D "NO_REGISTRY" /D "FORMAT_7Z" /D "FORMAT_BZIP2" /D "FORMAT_ZIP" /D "FORMAT_TAR" /D "FORMAT_GZIP" /D "COMPRESS_LZMA" /D "COMPRESS_BCJ_X86" /D "COMPRESS_BCJ2" /D "COMPRESS_COPY" /D "COMPRESS_MF_PAT" /D "COMPRESS_MF_BT" /D "COMPRESS_PPMD" /D "COMPRESS_DEFLATE" /D "COMPRESS_IMPLODE" /D "COMPRESS_BZIP2" /D "CRYPTO_ZIP" /Yu"StdAfx.h" /FD /c
-# ADD CPP /nologo /Gz /MD /W3 /GX /O1 /I "..\..\..\\" /D "NDEBUG" /D "UNICODE" /D "_UNICODE" /D "WIN32" /D "_CONSOLE" /D "COMPRESS_MF_MT" /D "COMPRESS_MT" /D "COMPRESS_BZIP2_MT" /D "BREAK_HANDLER" /D "_7ZIP_LARGE_PAGES" /D "BENCH_MT" /Yu"StdAfx.h" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "EXCLUDE_COM" /D "NO_REGISTRY" /Yu"StdAfx.h" /FD /c
+# ADD CPP /nologo /Gz /MD /W3 /GX /O1 /I "..\..\..\\" /D "NDEBUG" /D "UNICODE" /D "_UNICODE" /D "WIN32" /D "_CONSOLE" /D "_7ZIP_LARGE_PAGES" /D "SUPPORT_DEVICE_FILE" /Yu"StdAfx.h" /FD /c
 # ADD BASE RSC /l 0x419 /d "NDEBUG"
 # ADD RSC /l 0x419 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -120,8 +120,8 @@ LINK32=link.exe
 # PROP Intermediate_Dir "DebugU"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_CONSOLE" /D "EXCLUDE_COM" /D "NO_REGISTRY" /D "FORMAT_7Z" /D "FORMAT_BZIP2" /D "FORMAT_ZIP" /D "FORMAT_TAR" /D "FORMAT_GZIP" /D "COMPRESS_LZMA" /D "COMPRESS_BCJ_X86" /D "COMPRESS_BCJ2" /D "COMPRESS_COPY" /D "COMPRESS_MF_PAT" /D "COMPRESS_MF_BT" /D "COMPRESS_PPMD" /D "COMPRESS_DEFLATE" /D "COMPRESS_IMPLODE" /D "COMPRESS_BZIP2" /D "CRYPTO_ZIP" /D "_MBCS" /Yu"StdAfx.h" /FD /GZ /c
-# ADD CPP /nologo /Gz /W3 /Gm /GX /ZI /Od /I "..\..\..\\" /D "_DEBUG" /D "_UNICODE" /D "UNICODE" /D "WIN32" /D "_CONSOLE" /D "COMPRESS_MF_MT" /D "COMPRESS_MT" /D "COMPRESS_BZIP2_MT" /D "BREAK_HANDLER" /D "_7ZIP_LARGE_PAGES" /D "BENCH_MT" /Yu"StdAfx.h" /FD /GZ /c
+# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_CONSOLE" /D "EXCLUDE_COM" /D "NO_REGISTRY" /D "_MBCS" /Yu"StdAfx.h" /FD /GZ /c
+# ADD CPP /nologo /Gz /MDd /W3 /Gm /GX /ZI /Od /I "..\..\..\\" /D "_DEBUG" /D "_UNICODE" /D "UNICODE" /D "WIN32" /D "_CONSOLE" /D "_7ZIP_LARGE_PAGES" /D "SUPPORT_DEVICE_FILE" /Yu"StdAfx.h" /FD /GZ /c
 # ADD BASE RSC /l 0x419 /d "_DEBUG"
 # ADD RSC /l 0x419 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -145,6 +145,14 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=..\..\UI\Console\ArError.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\UI\Console\BenchCon.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\UI\Console\BenchCon.h
 # End Source File
 # Begin Source File
 
@@ -321,27 +329,11 @@ SOURCE=..\..\..\Common\MyVector.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Common\MyWindows.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\Common\MyWindows.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\Common\NewHandler.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\Common\NewHandler.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\Common\Random.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\Common\Random.h
 # End Source File
 # Begin Source File
 
@@ -530,6 +522,14 @@ SOURCE=..\..\Archive\Common\CrossThreadProgress.cpp
 # Begin Source File
 
 SOURCE=..\..\Archive\Common\CrossThreadProgress.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\CWrappers.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\CWrappers.h
 # End Source File
 # Begin Source File
 
@@ -868,7 +868,23 @@ SOURCE=..\..\Compress\ImplodeHuffmanDecoder.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\Compress\Lzma.h
+SOURCE=..\..\Compress\Lzma2Decoder.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Compress\Lzma2Decoder.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Compress\Lzma2Encoder.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Compress\Lzma2Encoder.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Compress\Lzma2Register.cpp
 # End Source File
 # Begin Source File
 
@@ -1002,6 +1018,14 @@ SOURCE=..\..\Compress\PpmdSubAlloc.h
 
 SOURCE=..\..\Compress\PpmdType.h
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\Compress\PpmdZip.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Compress\PpmdZip.h
+# End Source File
 # End Group
 # Begin Group "RangeCoder"
 
@@ -1091,26 +1115,6 @@ SOURCE=..\..\Compress\QuantumDecoder.cpp
 SOURCE=..\..\Compress\QuantumDecoder.h
 # End Source File
 # End Group
-# Begin Group "LZMA_Alone"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\..\Compress\LZMA_Alone\LzmaBench.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Compress\LZMA_Alone\LzmaBench.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Compress\LZMA_Alone\LzmaBenchCon.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Compress\LZMA_Alone\LzmaBenchCon.h
-# End Source File
-# End Group
 # Begin Source File
 
 SOURCE=..\..\Compress\Bcj2Coder.cpp
@@ -1185,7 +1189,7 @@ SOURCE=..\..\Compress\ByteSwap.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\ByteSwapRegister.cpp
+SOURCE=..\..\Compress\DeltaFilter.cpp
 # End Source File
 # Begin Source File
 
@@ -1313,94 +1317,6 @@ SOURCE=..\..\Archive\7z\7zUpdate.cpp
 # Begin Source File
 
 SOURCE=..\..\Archive\7z\7zUpdate.h
-# End Source File
-# End Group
-# Begin Group "bz2"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\..\Archive\BZip2\bz2Register.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\BZip2\BZip2Handler.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\BZip2\BZip2Handler.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\BZip2\BZip2HandlerOut.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\BZip2\BZip2Item.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\BZip2\BZip2Update.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\BZip2\BZip2Update.h
-# End Source File
-# End Group
-# Begin Group "gz"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipHandler.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipHandler.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipHandlerOut.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipHeader.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipHeader.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipIn.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipIn.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipItem.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipOut.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipOut.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipRegister.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipUpdate.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\GZip\GZipUpdate.h
 # End Source File
 # End Group
 # Begin Group "tar"
@@ -1623,22 +1539,6 @@ SOURCE=..\..\Archive\Common\ParseProperties.cpp
 SOURCE=..\..\Archive\Common\ParseProperties.h
 # End Source File
 # End Group
-# Begin Group "split"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\..\Archive\Split\SplitHandler.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\Split\SplitHandler.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\Split\SplitRegister.cpp
-# End Source File
-# End Group
 # Begin Group "cab"
 
 # PROP Default_Filter ""
@@ -1683,42 +1583,34 @@ SOURCE=..\..\Archive\Cab\CabItem.h
 SOURCE=..\..\Archive\Cab\CabRegister.cpp
 # End Source File
 # End Group
-# Begin Group "Lzma - Ar"
-
-# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\Archive\Lzma\LzmaArcRegister.cpp
+SOURCE=..\..\Archive\Bz2Handler.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Archive\Lzma\LzmaFiltersDecode.cpp
+SOURCE=..\..\Archive\DeflateProps.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Archive\Lzma\LzmaFiltersDecode.h
+SOURCE=..\..\Archive\DeflateProps.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Archive\Lzma\LzmaHandler.cpp
+SOURCE=..\..\Archive\GzHandler.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Archive\Lzma\LzmaHandler.h
+SOURCE=..\..\Archive\LzmaHandler.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Archive\Lzma\LzmaIn.cpp
+SOURCE=..\..\Archive\SplitHandler.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Archive\Lzma\LzmaIn.h
+SOURCE=..\..\Archive\XzHandler.cpp
 # End Source File
-# Begin Source File
-
-SOURCE=..\..\Archive\Lzma\LzmaItem.h
-# End Source File
-# End Group
 # Begin Source File
 
 SOURCE=..\..\Archive\ZHandler.cpp
@@ -1750,6 +1642,14 @@ SOURCE=..\..\UI\Common\ArchiveOpenCallback.cpp
 # Begin Source File
 
 SOURCE=..\..\UI\Common\ArchiveOpenCallback.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\UI\Common\Bench.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\UI\Common\Bench.h
 # End Source File
 # Begin Source File
 
@@ -2082,6 +1982,142 @@ SOURCE=..\..\PropID.h
 # Begin Group "C"
 
 # PROP Default_Filter ""
+# Begin Group "Xz"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Xz.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Xz.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\XzCrc64.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\XzCrc64.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\XzDec.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\XzEnc.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\XzEnc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\XzIn.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=..\..\..\..\C\7zCrc.c
@@ -2112,6 +2148,54 @@ SOURCE=..\..\..\..\C\7zCrc.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\C\7zCrcOpt.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\7zStream.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\C\Aes.c
 
 !IF  "$(CFG)" == "Alone - Win32 Release"
@@ -2137,6 +2221,30 @@ SOURCE=..\..\..\..\C\Aes.c
 # Begin Source File
 
 SOURCE=..\..\..\..\C\Aes.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\AesOpt.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -2281,7 +2389,59 @@ SOURCE=..\..\..\..\C\BwtSort.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\C\CpuArch.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\C\CpuArch.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Delta.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Delta.h
 # End Source File
 # Begin Source File
 
@@ -2377,6 +2537,62 @@ SOURCE=..\..\..\..\C\LzHash.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\C\Lzma2Dec.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Lzma2Dec.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Lzma2Enc.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Lzma2Enc.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\C\LzmaDec.c
 
 !IF  "$(CFG)" == "Alone - Win32 Release"
@@ -2430,6 +2646,190 @@ SOURCE=..\..\..\..\C\LzmaEnc.c
 # Begin Source File
 
 SOURCE=..\..\..\..\C\LzmaEnc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\MtCoder.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\MtCoder.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Ppmd.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Ppmd7.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Ppmd7.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Ppmd7Dec.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Ppmd7Enc.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Ppmd8.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Ppmd8.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Ppmd8Dec.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Ppmd8Enc.c
+
+!IF  "$(CFG)" == "Alone - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Alone - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

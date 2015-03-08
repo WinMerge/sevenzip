@@ -2,27 +2,22 @@
 
 #include "StdAfx.h"
 
-#include "Common/StringConvert.h"
-#include "Common/MyCom.h"
-#include "Common/UTFConvert.h"
 #include "Common/IntToString.h"
-#include "Windows/Defs.h"
+#include "Common/UTFConvert.h"
 
 #include "../../Common/LimitedStreams.h"
+
 #include "ChmIn.h"
 
-namespace NArchive{
-namespace NChm{
+namespace NArchive {
+namespace NChm {
 
 // define CHM_LOW, if you want to see low level items
 // #define CHM_LOW
 
-static const GUID kChmLzxGuid =
-  { 0x7FC28940, 0x9D31, 0x11D0, 0x9B, 0x27, 0x00, 0xA0, 0xC9, 0x1E, 0x9C, 0x7C };
-static const GUID kHelp2LzxGuid =
-  { 0x0A9007C6, 0x4076, 0x11D3, 0x87, 0x89, 0x00, 0x00, 0xF8, 0x10, 0x57, 0x54 };
-static const GUID kDesGuid =
-  { 0x67F6E4A2, 0x60BF, 0x11D3, 0x85, 0x40, 0x00, 0xC0, 0x4F, 0x58, 0xC3, 0xCF };
+static const GUID kChmLzxGuid   = { 0x7FC28940, 0x9D31, 0x11D0, { 0x9B, 0x27, 0x00, 0xA0, 0xC9, 0x1E, 0x9C, 0x7C } };
+static const GUID kHelp2LzxGuid = { 0x0A9007C6, 0x4076, 0x11D3, { 0x87, 0x89, 0x00, 0x00, 0xF8, 0x10, 0x57, 0x54 } };
+static const GUID kDesGuid =      { 0x67F6E4A2, 0x60BF, 0x11D3, { 0x85, 0x40, 0x00, 0xC0, 0x4F, 0x58, 0xC3, 0xCF } };
 
 static bool AreGuidsEqual(REFGUID g1, REFGUID g2)
 {
@@ -96,9 +91,8 @@ UString CMethodInfo::GetName() const
   if (IsLzx())
   {
     s = L"LZX:";
-    UInt32 numDictBits = LzxInfo.GetNumDictBits();
-    wchar_t temp[32];
-    ConvertUInt64ToString(numDictBits, temp);
+    wchar_t temp[16];
+    ConvertUInt32ToString(LzxInfo.GetNumDictBits(), temp);
     s += temp;
   }
   else
@@ -111,7 +105,7 @@ UString CMethodInfo::GetName() const
       s2 = GetGuidString();
       if (ControlData.GetCapacity() > 0)
       {
-        s2 += ":";
+        s2 += ':';
         for (size_t i = 0; i < ControlData.GetCapacity(); i++)
           PrintByte(ControlData[i], s2);
       }
@@ -141,7 +135,7 @@ UString CSectionInfo::GetMethodName() const
   for (int i = 0; i < Methods.Size(); i++)
   {
     if (i != 0)
-      s += L" ";
+      s += L' ';
     s += Methods[i].GetName();
   }
   return s;
@@ -155,7 +149,7 @@ Byte CInArchive::ReadByte()
   return b;
 }
 
-void CInArchive::Skeep(size_t size)
+void CInArchive::Skip(size_t size)
 {
   while (size-- != 0)
     ReadByte();
@@ -221,7 +215,7 @@ void CInArchive::ReadString(int size, AString &s)
     char c = (char)ReadByte();
     if (c == 0)
     {
-      Skeep(size);
+      Skip(size);
       return;
     }
     s += c;
@@ -236,7 +230,7 @@ void CInArchive::ReadUString(int size, UString &s)
     wchar_t c = ReadUInt16();
     if (c == 0)
     {
-      Skeep(2 * size);
+      Skip(2 * size);
       return;
     }
     s += c;
@@ -372,12 +366,12 @@ HRESULT CInArchive::OpenChm(IInStream *inStream, CDatabase &database)
         RINOK(ReadDirEntry(database));
         numItems++;
       }
-      Skeep(quickrefLength - 2);
+      Skip(quickrefLength - 2);
       if (ReadUInt16() != numItems)
         return S_FALSE;
     }
     else
-      Skeep(dirChunkSize - 4);
+      Skip(dirChunkSize - 4);
   }
   return S_OK;
 }
@@ -579,7 +573,7 @@ HRESULT CInArchive::OpenHelp2(IInStream *inStream, CDatabase &database)
         }
         numItems++;
       }
-      Skeep(quickrefLength - 2);
+      Skip(quickrefLength - 2);
       if (ReadUInt16() != numItems)
         return S_FALSE;
       if (numItems > numDirEntries)
@@ -587,7 +581,7 @@ HRESULT CInArchive::OpenHelp2(IInStream *inStream, CDatabase &database)
       numDirEntries -= numItems;
     }
     else
-      Skeep(dirChunkSize - 4);
+      Skip(dirChunkSize - 4);
   }
   return numDirEntries == 0 ? S_OK : S_FALSE;
 }

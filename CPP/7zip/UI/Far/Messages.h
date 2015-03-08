@@ -20,6 +20,7 @@ enum EEnum
   kYes,
   kNo,
   
+  kPath,
   kName,
   kExtension,
   kIsFolder,
@@ -64,6 +65,17 @@ enum EEnum
   kChecksum,
   kCharacts,
   kVa,
+  kId,
+  kShortName,
+  kCreatorApp,
+  kSectorSize,
+  kPosixAttrib,
+  kLink,
+
+  kTotalSize,
+  kFreeSpace,
+  kClusterSize,
+  kLabel,
 
   kGetPasswordTitle,
   kEnterPasswordForFile,

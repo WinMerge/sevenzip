@@ -23,13 +23,19 @@ static const char *kHelpQuestionMessage =
 NUserAnswerMode::EEnum ScanUserYesNoAllQuit(CStdOutStream *outStream)
 {
   (*outStream) << kFirstQuestionMessage;
-  for(;;)
+  for (;;)
   {
     (*outStream) << kHelpQuestionMessage;
+    outStream->Flush();
     AString scannedString = g_StdIn.ScanStringUntilNewLine();
     scannedString.Trim();
-    if(!scannedString.IsEmpty())
-      switch(::MyCharUpper(scannedString[0]))
+    if (!scannedString.IsEmpty())
+      switch(
+        ::MyCharUpper(
+        #ifdef UNDER_CE
+        (wchar_t)
+        #endif
+        scannedString[0]))
       {
         case kYes:
           return NUserAnswerMode::kYes;
@@ -47,10 +53,35 @@ NUserAnswerMode::EEnum ScanUserYesNoAllQuit(CStdOutStream *outStream)
   }
 }
 
+#ifdef _WIN32
+#ifndef UNDER_CE
+#define MY_DISABLE_ECHO
+#endif
+#endif
+
 UString GetPassword(CStdOutStream *outStream)
 {
-  (*outStream) << "\nEnter password:";
+  (*outStream) << "\nEnter password"
+      #ifdef MY_DISABLE_ECHO
+      " (will not be echoed)"
+      #endif
+      ":";
   outStream->Flush();
-  AString oemPassword = g_StdIn.ScanStringUntilNewLine();
-  return MultiByteToUnicodeString(oemPassword, CP_OEMCP);
+
+  #ifdef MY_DISABLE_ECHO
+  HANDLE console = GetStdHandle(STD_INPUT_HANDLE);
+  bool wasChanged = false;
+  DWORD mode = 0;
+  if (console != INVALID_HANDLE_VALUE && console != 0)
+    if (GetConsoleMode(console, &mode))
+      wasChanged = (SetConsoleMode(console, mode & ~ENABLE_ECHO_INPUT) != 0);
+  UString res = g_StdIn.ScanUStringUntilNewLine();
+  if (wasChanged)
+    SetConsoleMode(console, mode);
+  (*outStream) << "\n";
+  outStream->Flush();
+  return res;
+  #else
+  return g_StdIn.ScanUStringUntilNewLine();
+  #endif
 }

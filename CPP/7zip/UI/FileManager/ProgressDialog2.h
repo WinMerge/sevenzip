@@ -1,69 +1,84 @@
 // ProgressDialog2.h
 
-#ifndef __PROGRESSDIALOG2_H
-#define __PROGRESSDIALOG2_H
+#ifndef __PROGRESS_DIALOG2_H
+#define __PROGRESS_DIALOG2_H
 
-#include "ProgressDialog2Res.h"
-
-#include "Common/Types.h"
+#include "Windows/Synchronization.h"
+#include "Windows/Thread.h"
 
 #include "Windows/Control/Dialog.h"
+#include "Windows/Control/ListView.h"
 #include "Windows/Control/ProgressBar.h"
-#include "Windows/Synchronization.h"
 
-class CProgressSynch
+class CProgressSync
 {
-  NWindows::NSynchronization::CCriticalSection _criticalSection;
   bool _stopped;
   bool _paused;
-  UInt64 _total;
-  UInt64 _completed;
+  bool _bytesProgressMode;
+
+  UInt64 _totalBytes;
+  UInt64 _curBytes;
+  UInt64 _totalFiles;
+  UInt64 _curFiles;
   UInt64 _inSize;
   UInt64 _outSize;
-  UInt64 _totalFiles;
-  UInt64 _completedFiles;
-  UString TitleFileName;
-  UString CurrentFileName;
+  
+  UString _titleFileName;
+  UString _currentFileName;
+
 public:
-  CProgressSynch():
+  UStringVector Messages;
+  UString ErrorMessage;
+  UString ErrorMessageTitle;
+  
+  UString OkMessage;
+  UString OkMessageTitle;
+
+  NWindows::NSynchronization::CCriticalSection _cs;
+
+  CProgressSync():
       _stopped(false), _paused(false),
-      _total((UInt64)(Int64)-1),
-      _completed(0),
-      _totalFiles((UInt64)(Int64)-1),
-      _completedFiles(0),
+      _totalBytes((UInt64)(Int64)-1), _curBytes(0),
+      _totalFiles((UInt64)(Int64)-1), _curFiles(0),
       _inSize((UInt64)(Int64)-1),
-      _outSize((UInt64)(Int64)-1)
+      _outSize((UInt64)(Int64)-1),
+      _bytesProgressMode(true)
       {}
 
   bool GetStopped()
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
     return _stopped;
   }
   void SetStopped(bool value)
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
     _stopped = value;
   }
   bool GetPaused()
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
     return _paused;
   }
   void SetPaused(bool value)
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
     _paused = value;
+  }
+  void SetBytesProgressMode(bool bytesProgressMode)
+  {
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    _bytesProgressMode = bytesProgressMode;
   }
   void SetProgress(UInt64 total, UInt64 completed)
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
-    _total = total;
-    _completed = completed;
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    _totalBytes = total;
+    _curBytes = completed;
   }
   void SetRatioInfo(const UInt64 *inSize, const UInt64 *outSize)
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
     if (inSize)
       _inSize = *inSize;
     if (outSize)
@@ -71,52 +86,94 @@ public:
   }
   void SetPos(UInt64 completed)
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
-    _completed = completed;
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    _curBytes = completed;
+  }
+  void SetNumBytesTotal(UInt64 value)
+  {
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    _totalBytes = value;
   }
   void SetNumFilesTotal(UInt64 value)
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
     _totalFiles = value;
   }
   void SetNumFilesCur(UInt64 value)
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
-    _completedFiles = value;
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    _curFiles = value;
   }
   HRESULT ProcessStopAndPause();
   HRESULT SetPosAndCheckPaused(UInt64 completed);
   void GetProgress(UInt64 &total, UInt64 &completed,
-    UInt64 &totalFiles, UInt64 &completedFiles,
-    UInt64 &inSize, UInt64 &outSize)
+    UInt64 &totalFiles, UInt64 &curFiles,
+    UInt64 &inSize, UInt64 &outSize,
+    bool &bytesProgressMode)
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
-    total = _total;
-    completed = _completed;
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    total = _totalBytes;
+    completed = _curBytes;
     totalFiles = _totalFiles;
-    completedFiles = _completedFiles;
+    curFiles = _curFiles;
     inSize = _inSize;
     outSize = _outSize;
+    bytesProgressMode = _bytesProgressMode;
   }
   void SetTitleFileName(const UString &fileName)
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
-    TitleFileName = fileName;
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    _titleFileName = fileName;
   }
   void GetTitleFileName(UString &fileName)
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
-    fileName = TitleFileName;
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    fileName = _titleFileName;
   }
   void SetCurrentFileName(const UString &fileName)
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
-    CurrentFileName = fileName;
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    _currentFileName = fileName;
   }
   void GetCurrentFileName(UString &fileName)
   {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
-    fileName = CurrentFileName;
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    fileName = _currentFileName;
+  }
+
+  void AddErrorMessage(LPCWSTR message)
+  {
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    Messages.Add(message);
+  }
+
+  void SetErrorMessage(const UString &message)
+  {
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    ErrorMessage = message;
+  }
+
+  void SetOkMessage(const UString &message)
+  {
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    OkMessage = message;
+  }
+
+  void SetOkMessageTitle(const UString &title)
+  {
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    OkMessageTitle = title;
+  }
+
+  void SetErrorMessageTitle(const UString &title)
+  {
+    NWindows::NSynchronization::CCriticalSectionLock lock(_cs);
+    ErrorMessageTitle = title;
+  }
+
+  bool ThereIsMessage() const
+  {
+    return !Messages.IsEmpty() || !ErrorMessage.IsEmpty() || !OkMessage.IsEmpty();
   }
 };
 
@@ -124,11 +181,14 @@ class CU64ToI32Converter
 {
   UInt64 _numShiftBits;
 public:
-  void Init(UInt64 _range);
-  int Count(UInt64 aValue);
+  void Init(UInt64 range)
+  {
+    // Windows CE doesn't like big number here.
+    for (_numShiftBits = 0; range > (1 << 15); _numShiftBits++)
+      range >>= 1;
+  }
+  int Count(UInt64 value) { return int(value >> _numShiftBits); }
 };
-
-// class CProgressDialog: public NWindows::NControl::CModelessDialog
 
 enum ESpeedMode
 {
@@ -149,7 +209,8 @@ private:
   UString continueString;
   UString pausedString;
 
-
+  int buttonSizeX;
+  int buttonSizeY;
 
   UINT_PTR _timer;
 
@@ -158,6 +219,7 @@ private:
   UInt64 _previousPos;
   UInt64 _range;
   NWindows::NControl::CProgressBar m_ProgressBar;
+  NWindows::NControl::CListView _messageList;
 
   UInt32 _prevPercentValue;
   UInt32 _prevTime;
@@ -169,11 +231,31 @@ private:
 
   bool _foreground;
 
+  int _numReduceSymbols;
+
+  bool _wasCreated;
+  bool _needClose;
+
+  UInt32 _numPostedMessages;
+  UInt32 _numAutoSizeMessages;
+
+  bool _errorsWereDisplayed;
+
+  bool _waitCloseByCancelButton;
+  bool _cancelWasPressed;
+  
+  bool _inCancelMessageBox;
+  bool _externalCloseMessageWasReceived;
+
+  void UpdateStatInfo(bool showAll);
   bool OnTimer(WPARAM timerID, LPARAM callback);
   void SetRange(UInt64 range);
   void SetPos(UInt64 pos);
   virtual bool OnInit();
+  virtual bool OnSize(WPARAM wParam, int xSize, int ySize);
   virtual void OnCancel();
+  virtual void OnOK();
+  NWindows::NSynchronization::CManualResetEvent _createDialogEvent;
   NWindows::NSynchronization::CManualResetEvent _dialogCreatedEvent;
   #ifndef _SFX
   void AddToTitle(LPCWSTR string);
@@ -188,10 +270,25 @@ private:
   void SetTitleText();
   void ShowSize(int id, UInt64 value);
 
+  void UpdateMessagesDialog();
+
+  void AddMessageDirect(LPCWSTR message);
+  void AddMessage(LPCWSTR message);
+
+  bool OnExternalCloseMessage();
+  void EnableErrorsControls(bool enable);
+
+  void ShowAfterMessages(HWND wndParent);
+
+  void CheckNeedClose();
 public:
-  CProgressSynch ProgressSynch;
+  CProgressSync Sync;
   bool CompressingMode;
-  
+  bool WaitMode;
+  bool ShowCompressionInfo;
+  bool MessagesDisplayed; // = true if user pressed OK on all messages or there are no messages.
+  int IconID;
+
   #ifndef _SFX
   HWND MainWindow;
   UString MainTitle;
@@ -199,29 +296,64 @@ public:
   ~CProgressDialog();
   #endif
 
-  CProgressDialog(): _timer(0), CompressingMode(true)
-    #ifndef _SFX
-    ,MainWindow(0)
-    #endif
+  CProgressDialog();
+  void WaitCreating()
   {
-    if (_dialogCreatedEvent.Create() != S_OK)
-      throw 1334987;
+    _createDialogEvent.Set();
+    _dialogCreatedEvent.Lock();
   }
 
-  void WaitCreating() { _dialogCreatedEvent.Lock(); }
 
+  INT_PTR Create(const UString &title, NWindows::CThread &thread, HWND wndParent = 0);
 
-  INT_PTR Create(const UString &title, HWND wndParent = 0)
-  {
-    _title = title;
-    return CModalDialog::Create(IDD_DIALOG_PROGRESS, wndParent);
-  }
-
-  static const UINT kCloseMessage;
 
   virtual bool OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
 
-  void MyClose() { PostMessage(kCloseMessage);  };
+  void ProcessWasFinished();
 };
+
+
+class CProgressCloser
+{
+  CProgressDialog *_p;
+public:
+  CProgressCloser(CProgressDialog &p) : _p(&p) {}
+  ~CProgressCloser() { _p->ProcessWasFinished(); }
+};
+
+class CProgressThreadVirt
+{
+protected:
+  UString ErrorMessage;
+  UString ErrorPath1;
+  UString ErrorPath2;
+  UString OkMessage;
+  UString OkMessageTitle;
+
+  // error if any of HRESULT, ErrorMessage, ErrorPath
+  virtual HRESULT ProcessVirt() = 0;
+  void Process();
+public:
+  HRESULT Result;
+  bool ThreadFinishedOK; // if there is no fatal exception
+  CProgressDialog ProgressDialog;
+
+  static THREAD_FUNC_DECL MyThreadFunction(void *param)
+  {
+    CProgressThreadVirt *p = (CProgressThreadVirt *)param;
+    try
+    {
+      p->Process();
+      p->ThreadFinishedOK = true;
+    }
+    catch (...) { p->Result = E_FAIL; }
+    return 0;
+  }
+
+  HRESULT Create(const UString &title, HWND parentWindow = 0);
+  CProgressThreadVirt(): Result(E_FAIL), ThreadFinishedOK(false) {}
+};
+
+UString HResultToMessage(HRESULT errorCode);
 
 #endif

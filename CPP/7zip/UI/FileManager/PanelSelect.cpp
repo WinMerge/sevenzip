@@ -97,8 +97,7 @@ void CPanel::OnInsert()
   int nextIndex = focusedItem + 1;
   if (nextIndex < _listView.GetItemCount())
   {
-    _listView.SetItemState(nextIndex, LVIS_FOCUSED | LVIS_SELECTED,
-        LVIS_FOCUSED | LVIS_SELECTED);
+    _listView.SetItemState_FocusedSelected(nextIndex);
     _listView.EnsureVisible(nextIndex, false);
   }
 }
@@ -246,18 +245,26 @@ void CPanel::KillSelection()
   {
     int focused = _listView.GetFocusedItem();
     if (focused >= 0)
+    {
+      // CPanel::OnItemChanged notify for LVIS_SELECTED change doesn't work here. Why?
+      // so we change _selectedStatusVector[realIndex] here.
+      int realIndex = GetRealItemIndex(focused);
+      if (realIndex != kParentIndex)
+        _selectedStatusVector[realIndex] = true;
       _listView.SetItemState(focused, LVIS_SELECTED, LVIS_SELECTED);
+    }
   }
 }
 
-void CPanel::OnLeftClick(LPNMITEMACTIVATE itemActivate)
+void CPanel::OnLeftClick(MY_NMLISTVIEW_NMITEMACTIVATE *itemActivate)
 {
-  if(itemActivate->hdr.hwndFrom != HWND(_listView))
+  if (itemActivate->hdr.hwndFrom != HWND(_listView))
     return;
   // It will be work only for Version 4.71 (IE 4);
   int indexInList = itemActivate->iItem;
   if (indexInList < 0)
     return;
+  #ifndef UNDER_CE
   if ((itemActivate->uKeyFlags & LVKF_SHIFT) != 0)
   {
     // int focusedIndex = _listView.GetFocusedItem();
@@ -280,8 +287,10 @@ void CPanel::OnLeftClick(LPNMITEMACTIVATE itemActivate)
     }
   }
   else
+  #endif
   {
     _startGroupSelect = indexInList;
+    #ifndef UNDER_CE
     if ((itemActivate->uKeyFlags & LVKF_CONTROL) != 0)
     {
       int realIndex = GetRealItemIndex(indexInList);
@@ -291,7 +300,7 @@ void CPanel::OnLeftClick(LPNMITEMACTIVATE itemActivate)
         _listView.RedrawItem(indexInList);
       }
     }
+    #endif
   }
   return;
 }
-

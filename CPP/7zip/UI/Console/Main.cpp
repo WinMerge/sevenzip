@@ -2,49 +2,38 @@
 
 #include "StdAfx.h"
 
+#if defined( _WIN32) && defined( _7ZIP_LARGE_PAGES)
+#include "../../../../C/Alloc.h"
+#endif
+
 #include "Common/MyInitGuid.h"
 
 #include "Common/CommandLineParser.h"
-#include "Common/MyException.h"
 #include "Common/IntToString.h"
+#include "Common/MyException.h"
 #include "Common/StdOutStream.h"
 #include "Common/StringConvert.h"
 #include "Common/StringToInt.h"
 
-#include "Windows/FileDir.h"
-#include "Windows/FileName.h"
-#include "Windows/Defs.h"
 #include "Windows/Error.h"
 #ifdef _WIN32
 #include "Windows/MemoryLock.h"
 #endif
 
-#include "../../IPassword.h"
-#include "../../ICoder.h"
-#include "../Common/UpdateAction.h"
-#include "../Common/Update.h"
-#include "../Common/Extract.h"
 #include "../Common/ArchiveCommandLine.h"
 #include "../Common/ExitCode.h"
+#include "../Common/Extract.h"
 #ifdef EXTERNAL_CODECS
 #include "../Common/LoadCodecs.h"
 #endif
 
-#include "../../Compress/LZMA_Alone/LzmaBenchCon.h"
-
+#include "BenchCon.h"
+#include "ExtractCallbackConsole.h"
 #include "List.h"
 #include "OpenCallbackConsole.h"
-#include "ExtractCallbackConsole.h"
 #include "UpdateCallbackConsole.h"
 
 #include "../../MyVersion.h"
-
-#if defined( _WIN32) && defined( _7ZIP_LARGE_PAGES)
-extern "C"
-{
-#include "../../../../C/Alloc.h"
-}
-#endif
 
 using namespace NWindows;
 using namespace NFile;
@@ -108,8 +97,8 @@ static const char *kHelpString =
     "  -ssc[-]: set sensitive case mode\n"
     "  -ssw: compress shared files\n"
     "  -t{Type}: Set type of archive\n"
-    "  -v{Size}[b|k|m|g]: Create volumes\n"
     "  -u[-][p#][q#][r#][x#][y#][z#][!newArchiveName]: Update options\n"
+    "  -v{Size}[b|k|m|g]: Create volumes\n"
     "  -w[{path}]: assign Work directory. Empty path means a temporary directory\n"
     "  -x[r[-|0]]]{@listfile|!wildcard}: eXclude filenames\n"
     "  -y: assume Yes on all queries\n";
@@ -118,8 +107,9 @@ static const char *kHelpString =
 // exception messages
 
 static const char *kEverythingIsOk = "Everything is Ok";
-static const char *kUserErrorMessage  = "Incorrect command line"; // NExitCode::kUserError
+static const char *kUserErrorMessage = "Incorrect command line";
 static const char *kNoFormats = "7-Zip cannot find the code that works with archives.";
+static const char *kUnsupportedArcTypeMessage = "Unsupported archive type";
 
 static const wchar_t *kDefaultSfxModule = L"7zCon.sfx";
 
@@ -129,19 +119,19 @@ static void ShowMessageAndThrowException(CStdOutStream &s, LPCSTR message, NExit
   throw code;
 }
 
-static void PrintHelpAndExit(CStdOutStream &s) // yyy
+static void PrintHelpAndExit(CStdOutStream &s)
 {
   s << kHelpString;
   ShowMessageAndThrowException(s, kUserErrorMessage, NExitCode::kUserError);
 }
 
 #ifndef _WIN32
-static void GetArguments(int numArguments, const char *arguments[], UStringVector &parts)
+static void GetArguments(int numArgs, const char *args[], UStringVector &parts)
 {
   parts.Clear();
-  for(int i = 0; i < numArguments; i++)
+  for (int i = 0; i < numArgs; i++)
   {
-    UString s = MultiByteToUnicodeString(arguments[i]);
+    UString s = MultiByteToUnicodeString(args[i]);
     parts.Add(s);
   }
 }
@@ -178,15 +168,13 @@ static inline char GetHex(Byte value)
   return (char)((value < 10) ? ('0' + value) : ('A' + (value - 10)));
 }
 
-const char *kUnsupportedArcTypeMessage = "Unsupported archive type";
-
 int Main2(
   #ifndef _WIN32
-  int numArguments, const char *arguments[]
+  int numArgs, const char *args[]
   #endif
 )
 {
-  #ifdef _WIN32
+  #if defined(_WIN32) && !defined(UNDER_CE)
   SetFileApisToOEM();
   #endif
   
@@ -194,10 +182,10 @@ int Main2(
   #ifdef _WIN32
   NCommandLineParser::SplitCommandLine(GetCommandLineW(), commandStrings);
   #else
-  GetArguments(numArguments, arguments, commandStrings);
+  GetArguments(numArgs, args, commandStrings);
   #endif
 
-  if(commandStrings.Size() == 1)
+  if (commandStrings.Size() == 1)
   {
     ShowCopyrightAndHelp(g_StdOut, true);
     return 0;
@@ -210,7 +198,7 @@ int Main2(
 
   parser.Parse1(commandStrings, options);
 
-  if(options.HelpMode)
+  if (options.HelpMode)
   {
     ShowCopyrightAndHelp(g_StdOut, true);
     return 0;
@@ -266,8 +254,8 @@ int Main2(
       #ifdef EXTERNAL_CODECS
       if (arc.LibIndex >= 0)
       {
-        char s[32];
-        ConvertUInt64ToString(arc.LibIndex, s);
+        char s[16];
+        ConvertUInt32ToString(arc.LibIndex, s);
         PrintString(stdStream, s, 2);
       }
       else
@@ -321,8 +309,8 @@ int Main2(
       int libIndex = codecs->GetCodecLibIndex(j);
       if (libIndex >= 0)
       {
-        char s[32];
-        ConvertUInt64ToString(libIndex, s);
+        char s[16];
+        ConvertUInt32ToString(libIndex, s);
         PrintString(stdStream, s, 2);
       }
       else
@@ -365,10 +353,17 @@ int Main2(
     }
     else
     {
-      HRESULT res = LzmaBenchCon(
-        #ifdef EXTERNAL_LZMA
-        codecs,
-        #endif
+      HRESULT res;
+      #ifdef EXTERNAL_CODECS
+      CObjectVector<CCodecInfoEx> externalCodecs;
+      res = LoadExternalCodecs(compressCodecsInfo, externalCodecs);
+      if (res != S_OK)
+        throw CSystemException(res);
+      #endif
+      res = LzmaBenchCon(
+          #ifdef EXTERNAL_CODECS
+          compressCodecsInfo, &externalCodecs,
+          #endif
         (FILE *)stdStream, options.NumIterations, options.NumThreads, options.DictionarySize);
       if (res != S_OK)
       {
@@ -383,7 +378,7 @@ int Main2(
   }
   else if (isExtractGroupCommand || options.Command.CommandType == NCommandType::kList)
   {
-    if(isExtractGroupCommand)
+    if (isExtractGroupCommand)
     {
       CExtractCallbackConsole *ecs = new CExtractCallbackConsole;
       CMyComPtr<IFolderArchiveExtractCallback> extractCallback = ecs;
@@ -406,13 +401,15 @@ int Main2(
       #endif
 
       CExtractOptions eo;
+      eo.StdInMode = options.StdInMode;
       eo.StdOutMode = options.StdOutMode;
       eo.PathMode = options.Command.GetPathMode();
       eo.TestMode = options.Command.IsTestMode();
       eo.OverwriteMode = options.OverwriteMode;
       eo.OutputDir = options.OutputDir;
       eo.YesToAll = options.YesToAll;
-      #ifdef COMPRESS_MT
+      eo.CalcCrc = options.CalcCrc;
+      #if !defined(_7ZIP_ST) && !defined(_SFX)
       eo.Properties = options.ExtractProperties;
       #endif
       UString errorMessage;
@@ -457,6 +454,12 @@ int Main2(
       stdStream
            << "Size:       " << stat.UnpackSize << endl
            << "Compressed: " << stat.PackSize << endl;
+      if (options.CalcCrc)
+      {
+        char s[16];
+        ConvertUInt32ToHexWithZeros(stat.CrcSum, s);
+        stdStream << "CRC: " << s << endl;
+      }
     }
     else
     {
@@ -464,6 +467,7 @@ int Main2(
       HRESULT result = ListArchives(
           codecs,
           formatIndices,
+          options.StdInMode,
           options.ArchivePathsSorted,
           options.ArchivePathsFullSorted,
           options.WildcardCensor.Pairs.Front().Head,
@@ -483,10 +487,8 @@ int Main2(
         throw CSystemException(result);
     }
   }
-  else if(options.Command.IsFromUpdateGroup())
+  else if (options.Command.IsFromUpdateGroup())
   {
-    UString workingDir;
-
     CUpdateOptions &uo = options.UpdateOptions;
     if (uo.SfxMode && uo.SfxModule.IsEmpty())
       uo.SfxModule = kDefaultSfxModule;

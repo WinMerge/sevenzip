@@ -4,81 +4,60 @@
 
 #include "UpdateGUI.h"
 
-#include "resource.h"
-#include "Common/StringConvert.h"
 #include "Common/IntToString.h"
+#include "Common/StringConvert.h"
 #include "Common/StringToInt.h"
 
-#include "Windows/FileDir.h"
 #include "Windows/Error.h"
-#include "Windows/FileFind.h"
+#include "Windows/FileDir.h"
 #include "Windows/Thread.h"
 
-#include "../FileManager/FormatUtils.h"
-#include "../FileManager/ExtractCallback.h"
-#include "../FileManager/StringUtils.h"
-
-#include "../Common/ArchiveExtractCallback.h"
 #include "../Common/WorkDir.h"
+
 #include "../Explorer/MyMessages.h"
-#include "ExtractRes.h"
+
+#include "../FileManager/LangUtils.h"
+#include "../FileManager/ProgramLocation.h"
+#include "../FileManager/StringUtils.h"
+#include "../FileManager/resourceGui.h"
 
 #include "CompressDialog.h"
 #include "UpdateGUI.h"
 
+#include "resource2.h"
+
 using namespace NWindows;
 using namespace NFile;
 
-// static const wchar_t *kIncorrectOutDir = L"Incorrect output directory path";
 static const wchar_t *kDefaultSfxModule = L"7z.sfx";
 static const wchar_t *kSFXExtension = L"exe";
 
-struct CThreadUpdating
-{
-  CCodecs *codecs;
+extern void AddMessageToString(UString &dest, const UString &src);
 
+UString HResultToMessage(HRESULT errorCode);
+
+class CThreadUpdating: public CProgressThreadVirt
+{
+  HRESULT ProcessVirt();
+public:
+  CCodecs *codecs;
   CUpdateCallbackGUI *UpdateCallbackGUI;
   const NWildcard::CCensor *WildcardCensor;
   CUpdateOptions *Options;
-
-  CUpdateErrorInfo *ErrorInfo;
-  HRESULT Result;
-  
-  DWORD Process()
-  {
-    UpdateCallbackGUI->ProgressDialog.WaitCreating();
-    try
-    {
-      Result = UpdateArchive(codecs, *WildcardCensor, *Options,
-        *ErrorInfo, UpdateCallbackGUI, UpdateCallbackGUI);
-    }
-    catch(const UString &s)
-    {
-      ErrorInfo->Message = s;
-      Result = E_FAIL;
-    }
-    catch(const wchar_t *s)
-    {
-      ErrorInfo->Message = s;
-      Result = E_FAIL;
-    }
-    catch(const char *s)
-    {
-      ErrorInfo->Message = GetUnicodeString(s);
-      Result = E_FAIL;
-    }
-    catch(...)
-    {
-      Result = E_FAIL;
-    }
-    UpdateCallbackGUI->ProgressDialog.MyClose();
-    return 0;
-  }
-  static THREAD_FUNC_DECL MyThreadFunction(void *param)
-  {
-    return ((CThreadUpdating *)param)->Process();
-  }
 };
+ 
+HRESULT CThreadUpdating::ProcessVirt()
+{
+  CUpdateErrorInfo ei;
+  HRESULT res = UpdateArchive(codecs, *WildcardCensor, *Options,
+     ei, UpdateCallbackGUI, UpdateCallbackGUI);
+  ErrorMessage = ei.Message;
+  ErrorPath1 = ei.FileName;
+  ErrorPath2 = ei.FileName2;
+  if (ei.SystemError != S_OK && ei.SystemError != E_FAIL && ei.SystemError != E_ABORT)
+    return ei.SystemError;
+  return res;
+}
 
 static void AddProp(CObjectVector<CProperty> &properties, const UString &name, const UString &value)
 {
@@ -214,19 +193,22 @@ static void SetOutProperties(
 static HRESULT ShowDialog(
     CCodecs *codecs,
     const NWildcard::CCensor &censor,
-    CUpdateOptions &options, CUpdateCallbackGUI *callback)
+    CUpdateOptions &options, CUpdateCallbackGUI *callback, HWND hwndParent)
 {
   if (options.Commands.Size() != 1)
     throw "It must be one command";
   UString currentDirPrefix;
+  #ifndef UNDER_CE
   {
     if (!NDirectory::MyGetCurrentDirectory(currentDirPrefix))
       return E_FAIL;
     NName::NormalizeDirPathPrefix(currentDirPrefix);
   }
+  #endif
 
   bool oneFile = false;
   NFind::CFileInfoW fileInfo;
+  UString name;
   if (censor.Pairs.Size() > 0)
   {
     const NWildcard::CPair &pair = censor.Pairs[0];
@@ -235,14 +217,14 @@ static HRESULT ShowDialog(
       const NWildcard::CItem &item = pair.Head.IncludeItems[0];
       if (item.ForFile)
       {
-        UString name = pair.Prefix;
+        name = pair.Prefix;
         for (int i = 0; i < item.PathParts.Size(); i++)
         {
           if (i > 0)
             name += WCHAR_PATH_SEPARATOR;
           name += item.PathParts[i];
         }
-        if (NFind::FindFile(name, fileInfo))
+        if (fileInfo.Find(name))
         {
           if (censor.Pairs.Size() == 1 && pair.Head.IncludeItems.Size() == 1)
             oneFile = !fileInfo.IsDir();
@@ -253,13 +235,17 @@ static HRESULT ShowDialog(
     
   CCompressDialog dialog;
   NCompressDialog::CInfo &di = dialog.Info;
-  for(int i = 0; i < codecs->Formats.Size(); i++)
+  dialog.ArcFormats = &codecs->Formats;
+  for (int i = 0; i < codecs->Formats.Size(); i++)
   {
     const CArcInfoEx &ai = codecs->Formats[i];
+    if (ai.Name.CompareNoCase(L"swfc") == 0)
+      if (!oneFile || name.Right(4).CompareNoCase(L".swf") != 0)
+        continue;
     if (ai.UpdateEnabled && (oneFile || !ai.KeepName))
-      dialog.m_ArchiverInfoList.Add(ai);
+      dialog.ArcIndices.Add(i);
   }
-  if(dialog.m_ArchiverInfoList.Size() == 0)
+  if (dialog.ArcIndices.Size() == 0)
   {
     ShowErrorMessage(L"No Update Engines");
     return E_FAIL;
@@ -267,7 +253,7 @@ static HRESULT ShowDialog(
 
   // di.ArchiveName = options.ArchivePath.GetFinalPath();
   di.ArchiveName = options.ArchivePath.GetPathWithoutExt();
-  dialog.OriginalFileName = fileInfo.Name;
+  dialog.OriginalFileName = options.ArchivePath.Prefix + fileInfo.Name;
     
   di.CurrentDirPrefix = currentDirPrefix;
   di.SFXMode = options.SfxMode;
@@ -278,7 +264,7 @@ static HRESULT ShowDialog(
     
   di.KeepName = !oneFile;
     
-  if(dialog.Create(0) != IDOK)
+  if (dialog.Create(hwndParent) != IDOK)
     return E_ABORT;
     
   options.VolumesSizes = di.VolumeSizes;
@@ -309,7 +295,7 @@ static HRESULT ShowDialog(
     default:
       throw 1091756;
   }
-  const CArcInfoEx &archiverInfo = dialog.m_ArchiverInfoList[di.ArchiverInfoIndex];
+  const CArcInfoEx &archiverInfo = codecs->Formats[di.FormatIndex];
   callback->PasswordIsDefined = (!di.Password.IsEmpty());
   if (callback->PasswordIsDefined)
     callback->Password = di.Password;
@@ -338,24 +324,24 @@ static HRESULT ShowDialog(
 
   if (di.SFXMode)
     options.SfxMode = true;
-  options.MethodMode.FormatIndex = archiverInfo.FormatIndex;
+  options.MethodMode.FormatIndex = di.FormatIndex;
 
   options.ArchivePath.VolExtension = archiverInfo.GetMainExt();
-  if(di.SFXMode)
+  if (di.SFXMode)
     options.ArchivePath.BaseExtension = kSFXExtension;
   else
     options.ArchivePath.BaseExtension = options.ArchivePath.VolExtension;
   options.ArchivePath.ParseFromPath(di.ArchiveName);
 
   NWorkDir::CInfo workDirInfo;
-  ReadWorkDirInfo(workDirInfo);
+  workDirInfo.Load();
   options.WorkingDir.Empty();
   if (workDirInfo.Mode != NWorkDir::NMode::kCurrent)
   {
     UString fullPath;
     NDirectory::MyGetFullPathName(di.ArchiveName, fullPath);
     options.WorkingDir = GetWorkDir(workDirInfo, fullPath);
-    NFile::NDirectory::CreateComplexDirectory(options.WorkingDir);
+    NDirectory::CreateComplexDirectory(options.WorkingDir);
   }
   return S_OK;
 }
@@ -365,29 +351,49 @@ HRESULT UpdateGUI(
     const NWildcard::CCensor &censor,
     CUpdateOptions &options,
     bool showDialog,
-    CUpdateErrorInfo &errorInfo,
-    CUpdateCallbackGUI *callback)
+    bool &messageWasDisplayed,
+    CUpdateCallbackGUI *callback,
+    HWND hwndParent)
 {
+  messageWasDisplayed = false;
   if (showDialog)
   {
-    RINOK(ShowDialog(codecs, censor, options, callback));
+    RINOK(ShowDialog(codecs, censor, options, callback, hwndParent));
   }
   if (options.SfxMode && options.SfxModule.IsEmpty())
-    options.SfxModule = kDefaultSfxModule;
+  {
+    UString folder;
+    if (!GetProgramFolderPath(folder))
+      folder.Empty();
+    options.SfxModule = folder + kDefaultSfxModule;
+  }
 
   CThreadUpdating tu;
 
   tu.codecs = codecs;
 
   tu.UpdateCallbackGUI = callback;
+  tu.UpdateCallbackGUI->ProgressDialog = &tu.ProgressDialog;
   tu.UpdateCallbackGUI->Init();
+
+  UString title = LangString(IDS_PROGRESS_COMPRESSING, 0x02000DC0);
+
+  /*
+  if (hwndParent != 0)
+  {
+    tu.ProgressDialog.MainWindow = hwndParent;
+    // tu.ProgressDialog.MainTitle = fileName;
+    tu.ProgressDialog.MainAddTitle = title + L" ";
+  }
+  */
 
   tu.WildcardCensor = &censor;
   tu.Options = &options;
-  tu.ErrorInfo = &errorInfo;
+  tu.ProgressDialog.IconID = IDI_ICON;
 
-  NWindows::CThread thread;
-  RINOK(thread.Create(CThreadUpdating::MyThreadFunction, &tu))
-  tu.UpdateCallbackGUI->StartProgressDialog(LangString(IDS_PROGRESS_COMPRESSING, 0x02000DC0));
+  RINOK(tu.Create(title, hwndParent));
+
+  messageWasDisplayed = tu.ThreadFinishedOK &
+      tu.ProgressDialog.MessagesDisplayed;
   return tu.Result;
 }

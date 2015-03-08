@@ -3,13 +3,13 @@
 #ifndef __ARCHIVE_ISO_IN_H
 #define __ARCHIVE_ISO_IN_H
 
-#include "Common/MyCom.h"
 #include "Common/IntToString.h"
+#include "Common/MyCom.h"
 
 #include "../../IStream.h"
 
-#include "IsoItem.h"
 #include "IsoHeader.h"
+#include "IsoItem.h"
 
 namespace NArchive {
 namespace NIso {
@@ -111,6 +111,20 @@ struct CDateTime
   signed char GmtOffset; // min intervals from -48 (West) to +52 (East) recorded.
   bool NotSpecified() const { return Year == 0 && Month == 0 && Day == 0 &&
       Hour == 0 && Minute == 0 && Second == 0 && GmtOffset == 0; }
+
+  bool GetFileTime(FILETIME &ft) const
+  {
+    UInt64 value;
+    bool res = NWindows::NTime::GetSecondsSince1601(Year, Month, Day, Hour, Minute, Second, value);
+    if (res)
+    {
+      value -= (UInt64)((Int64)GmtOffset * 15 * 60);
+      value *= 10000000;
+    }
+    ft.dwLowDateTime = (DWORD)value;
+    ft.dwHighDateTime = (DWORD)(value >> 32);
+    return res;
+  }
 };
 
 struct CBootRecordDescriptor
@@ -159,8 +173,8 @@ struct CBootInitialEntry
     s += L"_";
     if (BootMediaType >= kNumBootMediaTypes)
     {
-      wchar_t name[32];
-      ConvertUInt64ToString(BootMediaType, name);
+      wchar_t name[16];
+      ConvertUInt32ToString(BootMediaType, name);
       s += name;
     }
     else
@@ -232,8 +246,8 @@ class CInArchive
   bool _bootIsDefined;
   CBootRecordDescriptor _bootDesc;
 
-  void Skeep(size_t size);
-  void SkeepZeros(size_t size);
+  void Skip(size_t size);
+  void SkipZeros(size_t size);
   Byte ReadByte();
   void ReadBytes(Byte *data, UInt32 size);
   UInt16 ReadUInt16Spec();
@@ -268,6 +282,7 @@ public:
   int MainVolDescIndex;
   UInt32 BlockSize;
   CObjectVector<CBootInitialEntry> BootEntries;
+  bool IncorrectBigEndian;
 
 
   bool IsJoliet() const { return VolDescs[MainVolDescIndex].IsJoliet(); }

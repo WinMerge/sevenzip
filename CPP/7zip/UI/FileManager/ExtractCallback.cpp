@@ -1,47 +1,32 @@
-// ExtractCallback.h
+// ExtractCallback.cpp
 
 #include "StdAfx.h"
 
-#include "ExtractCallback.h"
-
 #include "Windows/Error.h"
-#include "Windows/FileFind.h"
 #include "Windows/FileDir.h"
-#include "Windows/ResourceString.h"
+#include "Windows/FileFind.h"
 
+#include "../../Common/FilePathAutoRename.h"
+
+#include "../GUI/ExtractRes.h"
+
+#include "ExtractCallback.h"
+#include "FormatUtils.h"
 #include "OverwriteDialog.h"
 #ifndef _NO_CRYPTO
 #include "PasswordDialog.h"
 #endif
-#include "MessagesDialog.h"
-#include "../GUI/ExtractRes.h"
-#include "../GUI/resource.h"
-
-#include "Common/Wildcard.h"
-#include "Common/StringConvert.h"
-
-#include "FormatUtils.h"
-
-#include "../../Common/FilePathAutoRename.h"
 
 using namespace NWindows;
 using namespace NFile;
 using namespace NFind;
 
-CExtractCallbackImp::~CExtractCallbackImp()
-{
-  if (ShowMessages && !Messages.IsEmpty())
-  {
-    CMessagesDialog messagesDialog;
-    messagesDialog.Messages = &Messages;
-    messagesDialog.Create(ParentWindow);
-  }
-}
+CExtractCallbackImp::~CExtractCallbackImp() {}
 
 void CExtractCallbackImp::Init()
 {
-  Messages.Clear();
   NumArchiveErrors = 0;
+  ThereAreMessageErrors = false;
   #ifndef _SFX
   NumFolders = NumFiles = 0;
   NeedAddFile = false;
@@ -50,7 +35,8 @@ void CExtractCallbackImp::Init()
 
 void CExtractCallbackImp::AddErrorMessage(LPCWSTR message)
 {
-  Messages.Add(message);
+  ThereAreMessageErrors = true;
+  ProgressDialog->Sync.AddErrorMessage(message);
 }
 
 STDMETHODIMP CExtractCallbackImp::SetNumFiles(UInt64
@@ -60,40 +46,40 @@ STDMETHODIMP CExtractCallbackImp::SetNumFiles(UInt64
   )
 {
   #ifndef _SFX
-  ProgressDialog.ProgressSynch.SetNumFilesTotal(numFiles);
+  ProgressDialog->Sync.SetNumFilesTotal(numFiles);
   #endif
   return S_OK;
 }
 
 STDMETHODIMP CExtractCallbackImp::SetTotal(UInt64 total)
 {
-  ProgressDialog.ProgressSynch.SetProgress(total, 0);
+  ProgressDialog->Sync.SetProgress(total, 0);
   return S_OK;
 }
 
 STDMETHODIMP CExtractCallbackImp::SetCompleted(const UInt64 *value)
 {
-  RINOK(ProgressDialog.ProgressSynch.ProcessStopAndPause());
+  RINOK(ProgressDialog->Sync.ProcessStopAndPause());
   if (value != NULL)
-    ProgressDialog.ProgressSynch.SetPos(*value);
+    ProgressDialog->Sync.SetPos(*value);
   return S_OK;
 }
 
 HRESULT CExtractCallbackImp::Open_CheckBreak()
 {
-  return ProgressDialog.ProgressSynch.ProcessStopAndPause();
+  return ProgressDialog->Sync.ProcessStopAndPause();
 }
 
 HRESULT CExtractCallbackImp::Open_SetTotal(const UInt64 * /* numFiles */, const UInt64 * /* numBytes */)
 {
-  // if (numFiles != NULL) ProgressDialog.ProgressSynch.SetNumFilesTotal(*numFiles);
+  // if (numFiles != NULL) ProgressDialog->Sync.SetNumFilesTotal(*numFiles);
   return S_OK;
 }
 
 HRESULT CExtractCallbackImp::Open_SetCompleted(const UInt64 * /* numFiles */, const UInt64 * /* numBytes */)
 {
-  RINOK(ProgressDialog.ProgressSynch.ProcessStopAndPause());
-  // if (numFiles != NULL) ProgressDialog.ProgressSynch.SetNumFilesCur(*numFiles);
+  RINOK(ProgressDialog->Sync.ProcessStopAndPause());
+  // if (numFiles != NULL) ProgressDialog->Sync.SetNumFilesCur(*numFiles);
   return S_OK;
 }
 
@@ -127,7 +113,7 @@ void CExtractCallbackImp::Open_ClearPasswordWasAskedFlag()
 #ifndef _SFX
 STDMETHODIMP CExtractCallbackImp::SetRatioInfo(const UInt64 *inSize, const UInt64 *outSize)
 {
-  ProgressDialog.ProgressSynch.SetRatioInfo(inSize, outSize);
+  ProgressDialog->Sync.SetRatioInfo(inSize, outSize);
   return S_OK;
 }
 #endif
@@ -135,14 +121,14 @@ STDMETHODIMP CExtractCallbackImp::SetRatioInfo(const UInt64 *inSize, const UInt6
 /*
 STDMETHODIMP CExtractCallbackImp::SetTotalFiles(UInt64 total)
 {
-  ProgressDialog.ProgressSynch.SetNumFilesTotal(total);
+  ProgressDialog->Sync.SetNumFilesTotal(total);
   return S_OK;
 }
 
 STDMETHODIMP CExtractCallbackImp::SetCompletedFiles(const UInt64 *value)
 {
   if (value != NULL)
-    ProgressDialog.ProgressSynch.SetNumFilesCur(*value);
+    ProgressDialog->Sync.SetNumFilesCur(*value);
   return S_OK;
 }
 */
@@ -154,30 +140,16 @@ STDMETHODIMP CExtractCallbackImp::AskOverwrite(
 {
   COverwriteDialog dialog;
 
-  dialog.OldFileInfo.Time = *existTime;
-  dialog.OldFileInfo.SizeIsDefined = (existSize != NULL);
-  if (dialog.OldFileInfo.SizeIsDefined)
-    dialog.OldFileInfo.Size = *existSize;
+  dialog.OldFileInfo.SetTime(existTime);
+  dialog.OldFileInfo.SetSize(existSize);
   dialog.OldFileInfo.Name = existName;
 
-  if (newTime == 0)
-    dialog.NewFileInfo.TimeIsDefined = false;
-  else
-  {
-    dialog.NewFileInfo.TimeIsDefined = true;
-    dialog.NewFileInfo.Time = *newTime;
-  }
-  
-  dialog.NewFileInfo.SizeIsDefined = (newSize != NULL);
-  if (dialog.NewFileInfo.SizeIsDefined)
-    dialog.NewFileInfo.Size = *newSize;
+  dialog.NewFileInfo.SetTime(newTime);
+  dialog.NewFileInfo.SetSize(newSize);
   dialog.NewFileInfo.Name = newName;
   
-  /*
-  NOverwriteDialog::NResult::EEnum writeAnswer =
-    NOverwriteDialog::Execute(oldFileInfo, newFileInfo);
-  */
-  INT_PTR writeAnswer = dialog.Create(ProgressDialog); // ParentWindow doesn't work with 7z
+  ProgressDialog->WaitCreating();
+  INT_PTR writeAnswer = dialog.Create(*ProgressDialog);
   
   switch(writeAnswer)
   {
@@ -244,7 +216,8 @@ STDMETHODIMP CExtractCallbackImp::SetOperationResult(Int32 operationResult, bool
       }
       if (_needWriteArchivePath)
       {
-        AddErrorMessage(_currentArchivePath);
+        if (!_currentArchivePath.IsEmpty())
+          AddErrorMessage(_currentArchivePath);
         _needWriteArchivePath = false;
       }
       AddErrorMessage(
@@ -260,7 +233,7 @@ STDMETHODIMP CExtractCallbackImp::SetOperationResult(Int32 operationResult, bool
     NumFolders++;
   else
     NumFiles++;
-  ProgressDialog.ProgressSynch.SetNumFilesCur(NumFiles);
+  ProgressDialog->Sync.SetNumFilesCur(NumFiles);
   #endif
   return S_OK;
 }
@@ -271,7 +244,7 @@ STDMETHODIMP CExtractCallbackImp::SetOperationResult(Int32 operationResult, bool
 HRESULT CExtractCallbackImp::BeforeOpen(const wchar_t *name)
 {
   #ifndef _SFX
-  ProgressDialog.ProgressSynch.SetTitleFileName(name);
+  ProgressDialog->Sync.SetTitleFileName(name);
   #endif
   _currentArchivePath = name;
   return S_OK;
@@ -281,7 +254,7 @@ HRESULT CExtractCallbackImp::SetCurrentFilePath2(const wchar_t *path)
 {
   _currentFilePath = path;
   #ifndef _SFX
-  ProgressDialog.ProgressSynch.SetCurrentFileName(path);
+  ProgressDialog->Sync.SetCurrentFileName(path);
   #endif
   return S_OK;
 }
@@ -292,7 +265,7 @@ HRESULT CExtractCallbackImp::SetCurrentFilePath(const wchar_t *path)
   if (NeedAddFile)
     NumFiles++;
   NeedAddFile = true;
-  ProgressDialog.ProgressSynch.SetNumFilesCur(NumFiles);
+  ProgressDialog->Sync.SetNumFilesCur(NumFiles);
   #endif
   return SetCurrentFilePath2(path);
 }
@@ -351,6 +324,8 @@ HRESULT CExtractCallbackImp::ExtractResult(HRESULT result)
   return S_OK;
 }
 
+#ifndef _NO_CRYPTO
+
 HRESULT CExtractCallbackImp::SetPassword(const UString &password)
 {
   PasswordIsDefined = true;
@@ -364,7 +339,8 @@ STDMETHODIMP CExtractCallbackImp::CryptoGetTextPassword(BSTR *password)
   if (!PasswordIsDefined)
   {
     CPasswordDialog dialog;
-    if (dialog.Create(ProgressDialog) == IDCANCEL)
+    ProgressDialog->WaitCreating();
+    if (dialog.Create(*ProgressDialog) == IDCANCEL)
       return E_ABORT;
     Password = dialog.Password;
     PasswordIsDefined = true;
@@ -372,6 +348,7 @@ STDMETHODIMP CExtractCallbackImp::CryptoGetTextPassword(BSTR *password)
   return StringToBstr(Password, password);
 }
 
+#endif
 
 // IExtractCallBack3
 STDMETHODIMP CExtractCallbackImp::AskWrite(
@@ -392,7 +369,7 @@ STDMETHODIMP CExtractCallbackImp::AskWrite(
   UString destPathSys = destPathSpec;
   bool srcIsFolderSpec = IntToBool(srcIsFolder);
   CFileInfoW destFileInfo;
-  if (FindFile(destPathSys, destFileInfo))
+  if (destFileInfo.Find(destPathSys))
   {
     if (srcIsFolderSpec)
     {
@@ -474,4 +451,3 @@ STDMETHODIMP CExtractCallbackImp::AskWrite(
   *writeAnswer = BoolToInt(true);
   return StringToBstr(destPathResultTemp, destPathResult);
 }
-

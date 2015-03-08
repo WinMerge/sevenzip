@@ -17,8 +17,6 @@
 
 #include "../Compress/CopyCoder.h"
 
-#include "Common/DummyOutStream.h"
-
 static UInt16 Get16(const Byte *p, int be) { if (be) return GetBe16(p); return GetUi16(p); }
 static UInt32 Get32(const Byte *p, int be) { if (be) return GetBe32(p); return GetUi32(p); }
 static UInt64 Get64(const Byte *p, int be) { if (be) return GetBe64(p); return GetUi64(p); }
@@ -28,11 +26,11 @@ using namespace NWindows;
 namespace NArchive {
 namespace NElf {
 
-#define	ELF_CLASS_32	1
-#define	ELF_CLASS_64	2
+#define ELF_CLASS_32 1
+#define ELF_CLASS_64 2
 
-#define	ELF_DATA_2LSB	1
-#define	ELF_DATA_2MSB	2
+#define ELF_DATA_2LSB 1
+#define ELF_DATA_2MSB 2
 
 #define NUM_SCAN_SECTIONS_MAX (1 << 6)
 
@@ -279,9 +277,9 @@ static const CUInt32PCharPair g_AbiOS[] =
 
 static const CUInt32PCharPair g_SegmentFlags[] =
 {
-  { 1 << 0, "Execute" },
-  { 1 << 1, "Write" },
-  { 1 << 2, "Read" }
+  { 0, "Execute" },
+  { 1, "Write" },
+  { 2, "Read" }
 };
 
 static const char *g_Types[] =
@@ -321,7 +319,7 @@ public:
   INTERFACE_IInArchive(;)
 };
 
-#define	ELF_PT_PHDR 6
+#define ELF_PT_PHDR 6
 
 bool CHandler::Parse(const Byte *buf, UInt32 size)
 {
@@ -468,12 +466,11 @@ STDMETHODIMP CHandler::GetNumberOfItems(UInt32 *numItems)
   return S_OK;
 }
 
-STDMETHODIMP CHandler::Extract(const UInt32* indices, UInt32 numItems,
-    Int32 _aTestMode, IArchiveExtractCallback *extractCallback)
+STDMETHODIMP CHandler::Extract(const UInt32 *indices, UInt32 numItems,
+    Int32 testMode, IArchiveExtractCallback *extractCallback)
 {
   COM_TRY_BEGIN
-  bool testMode = (_aTestMode != 0);
-  bool allFilesMode = (numItems == UInt32(-1));
+  bool allFilesMode = (numItems == (UInt32)-1);
   if (allFilesMode)
     numItems = _sections.Size();
   if (numItems == 0)
@@ -498,36 +495,30 @@ STDMETHODIMP CHandler::Extract(const UInt32* indices, UInt32 numItems,
   CMyComPtr<ISequentialInStream> inStream(streamSpec);
   streamSpec->SetStream(_inStream);
 
-  CDummyOutStream *outStreamSpec = new CDummyOutStream;
-  CMyComPtr<ISequentialOutStream> outStream(outStreamSpec);
-
   for (i = 0; i < numItems; i++, currentTotalSize += currentItemSize)
   {
     lps->InSize = lps->OutSize = currentTotalSize;
     RINOK(lps->SetCur());
     Int32 askMode = testMode ?
-        NArchive::NExtract::NAskMode::kTest :
-        NArchive::NExtract::NAskMode::kExtract;
+        NExtract::NAskMode::kTest :
+        NExtract::NAskMode::kExtract;
     UInt32 index = allFilesMode ? i : indices[i];
     const CSegment &item = _sections[index];
     currentItemSize = item.PSize;
-    {
-      CMyComPtr<ISequentialOutStream> realOutStream;
-      RINOK(extractCallback->GetStream(index, &realOutStream, askMode));
-      if (!testMode && (!realOutStream))
-        continue;
-      outStreamSpec->SetStream(realOutStream);
-      outStreamSpec->Init();
-    }
+    
+    CMyComPtr<ISequentialOutStream> outStream;
+    RINOK(extractCallback->GetStream(index, &outStream, askMode));
+    if (!testMode && !outStream)
+      continue;
       
     RINOK(extractCallback->PrepareOperation(askMode));
     RINOK(_inStream->Seek(item.Offset, STREAM_SEEK_SET, NULL));
     streamSpec->Init(currentItemSize);
     RINOK(copyCoder->Code(inStream, outStream, NULL, NULL, progress));
-    outStreamSpec->ReleaseStream();
+    outStream.Release();
     RINOK(extractCallback->SetOperationResult(copyCoderSpec->TotalSize == currentItemSize ?
-        NArchive::NExtract::NOperationResult::kOK:
-        NArchive::NExtract::NOperationResult::kDataError));
+        NExtract::NOperationResult::kOK:
+        NExtract::NOperationResult::kDataError));
   }
   return S_OK;
   COM_TRY_END

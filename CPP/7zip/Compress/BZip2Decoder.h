@@ -5,7 +5,7 @@
 
 #include "../../Common/MyCom.h"
 
-#ifdef COMPRESS_BZIP2_MT
+#ifndef _7ZIP_ST
 #include "../../Windows/Synchronization.h"
 #include "../../Windows/Thread.h"
 #endif
@@ -31,7 +31,7 @@ struct CState
 {
   UInt32 *Counters;
 
-  #ifdef COMPRESS_BZIP2_MT
+  #ifndef _7ZIP_ST
 
   CDecoder *Decoder;
   NWindows::CThread Thread;
@@ -59,10 +59,9 @@ struct CState
 
 class CDecoder :
   public ICompressCoder,
-  #ifdef COMPRESS_BZIP2_MT
+  #ifndef _7ZIP_ST
   public ICompressSetCoderMt,
   #endif
-  public ICompressGetInStreamProcessedSize,
   public CMyUnknownImp
 {
 public:
@@ -71,38 +70,44 @@ public:
   NBitm::CDecoder<CInBuffer> m_InStream;
   Byte m_Selectors[kNumSelectorsMax];
   CHuffmanDecoder m_HuffmanDecoders[kNumTablesMax];
+  UInt64 _inStart;
+
 private:
 
-  UInt32 m_NumThreadsPrev;
+  bool _needInStreamInit;
 
-  UInt32 ReadBits(int numBits);
+  UInt32 ReadBits(unsigned numBits);
   Byte ReadByte();
   bool ReadBit();
   UInt32 ReadCrc();
-  HRESULT PrepareBlock(CState &state);
   HRESULT DecodeFile(bool &isBZ, ICompressProgressInfo *progress);
   HRESULT CodeReal(ISequentialInStream *inStream, ISequentialOutStream *outStream,
-      const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress);
+      bool &isBZ, ICompressProgressInfo *progress);
   class CDecoderFlusher
   {
     CDecoder *_decoder;
   public:
     bool NeedFlush;
-    CDecoderFlusher(CDecoder *decoder): _decoder(decoder), NeedFlush(true) {}
+    bool ReleaseInStream;
+    CDecoderFlusher(CDecoder *decoder, bool releaseInStream):
+      _decoder(decoder),
+      ReleaseInStream(releaseInStream),
+      NeedFlush(true) {}
     ~CDecoderFlusher()
     {
       if (NeedFlush)
         _decoder->Flush();
-      _decoder->ReleaseStreams();
+      _decoder->ReleaseStreams(ReleaseInStream);
     }
   };
 
 public:
   CBZip2CombinedCrc CombinedCrc;
-
-  #ifdef COMPRESS_BZIP2_MT
   ICompressProgressInfo *Progress;
+
+  #ifndef _7ZIP_ST
   CState *m_States;
+  UInt32 m_NumThreadsPrev;
 
   NWindows::NSynchronization::CManualResetEvent CanProcessEvent;
   NWindows::NSynchronization::CCriticalSection CS;
@@ -118,7 +123,6 @@ public:
   HRESULT Result2;
 
   UInt32 BlockSizeMax;
-  CDecoder();
   ~CDecoder();
   HRESULT Create();
   void Free();
@@ -127,31 +131,73 @@ public:
   CState m_States[1];
   #endif
 
+  CDecoder();
+
+  HRESULT SetRatioProgress(UInt64 packSize);
   HRESULT ReadSignatures(bool &wasFinished, UInt32 &crc);
 
-
   HRESULT Flush() { return m_OutStream.Flush(); }
-  void ReleaseStreams()
+  void ReleaseStreams(bool releaseInStream)
   {
-    m_InStream.ReleaseStream();
+    if (releaseInStream)
+      m_InStream.ReleaseStream();
     m_OutStream.ReleaseStream();
   }
 
-  #ifdef COMPRESS_BZIP2_MT
-  MY_UNKNOWN_IMP2(ICompressSetCoderMt, ICompressGetInStreamProcessedSize)
-  #else
-  MY_UNKNOWN_IMP1(ICompressGetInStreamProcessedSize)
+  MY_QUERYINTERFACE_BEGIN2(ICompressCoder)
+  #ifndef _7ZIP_ST
+  MY_QUERYINTERFACE_ENTRY(ICompressSetCoderMt)
   #endif
+
+  MY_QUERYINTERFACE_END
+  MY_ADDREF_RELEASE
 
   
   STDMETHOD(Code)(ISequentialInStream *inStream, ISequentialOutStream *outStream,
       const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress);
 
-  STDMETHOD(GetInStreamProcessedSize)(UInt64 *value);
+  STDMETHOD(SetInStream)(ISequentialInStream *inStream);
+  STDMETHOD(ReleaseInStream)();
 
-  #ifdef COMPRESS_BZIP2_MT
+  HRESULT CodeResume(ISequentialOutStream *outStream, bool &isBZ, ICompressProgressInfo *progress);
+  UInt64 GetInputProcessedSize() const { return m_InStream.GetProcessedSize(); }
+  
+  #ifndef _7ZIP_ST
   STDMETHOD(SetNumberOfThreads)(UInt32 numThreads);
   #endif
+};
+
+
+class CNsisDecoder :
+  public ISequentialInStream,
+  public ICompressSetInStream,
+  public ICompressSetOutStreamSize,
+  public CMyUnknownImp
+{
+  NBitm::CDecoder<CInBuffer> m_InStream;
+  Byte m_Selectors[kNumSelectorsMax];
+  CHuffmanDecoder m_HuffmanDecoders[kNumTablesMax];
+  CState m_State;
+  
+  int _nsisState;
+  UInt32 _tPos;
+  unsigned _prevByte;
+  unsigned _repRem;
+  unsigned _numReps;
+  UInt32 _blockSize;
+
+public:
+
+  MY_QUERYINTERFACE_BEGIN2(ISequentialInStream)
+  MY_QUERYINTERFACE_ENTRY(ICompressSetInStream)
+  MY_QUERYINTERFACE_ENTRY(ICompressSetOutStreamSize)
+  MY_QUERYINTERFACE_END
+  MY_ADDREF_RELEASE
+
+  STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
+  STDMETHOD(SetInStream)(ISequentialInStream *inStream);
+  STDMETHOD(ReleaseInStream)();
+  STDMETHOD(SetOutStreamSize)(const UInt64 *outSize);
 };
 
 }}

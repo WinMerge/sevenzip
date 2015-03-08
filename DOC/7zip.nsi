@@ -1,8 +1,8 @@
 ;--------------------------------
 ;Defines
 
-!define VERSION_MAJOR 4
-!define VERSION_MINOR 65
+!define VERSION_MAJOR 9
+!define VERSION_MINOR 20
 !define VERSION_POSTFIX_FULL ""
 !ifdef WIN64
 !ifdef IA64
@@ -54,7 +54,7 @@
   ;Compressor
 !ifndef NO_COMPRESSION
   SetCompressor /solid lzma
-  SetCompressorFilter 1
+  ; SetCompressorFilter 1
 !ifdef IA64
   SetCompressorDictSize 8
 !else
@@ -159,11 +159,7 @@ Section
   File descript.ion
   File History.txt
   File License.txt
-  File copying.txt
   File readme.txt
-  !ifndef WIN64
-  File 7zip_pad.xml
-  !endif
 
   # File 7-zip.dll
   # File 7-zipn.dll
@@ -210,7 +206,9 @@ Section
   File fur.txt
   File fy.txt
   File gl.txt
+  File gu.txt
   File he.txt
+  File hi.txt
   File hr.txt
   File hu.txt
   File hy.txt
@@ -220,6 +218,7 @@ Section
   File it.txt
   File ja.txt
   File ka.txt
+  File kk.txt
   File ko.txt
   File ku.txt
   File ku-ckb.txt
@@ -240,6 +239,7 @@ Section
   File pt-br.txt
   File ro.txt
   File ru.txt
+  File sa.txt
   File si.txt
   File sk.txt
   File sl.txt
@@ -251,6 +251,7 @@ Section
   File th.txt
   File tr.txt
   File tt.txt
+  File ug.txt
   File uk.txt
   File uz.txt
   File va.txt
@@ -399,7 +400,9 @@ Section "Uninstall"
   Delete $INSTDIR\Lang\fur.txt
   Delete $INSTDIR\Lang\fy.txt
   Delete $INSTDIR\Lang\gl.txt
+  Delete $INSTDIR\Lang\gu.txt
   Delete $INSTDIR\Lang\he.txt
+  Delete $INSTDIR\Lang\hi.txt
   Delete $INSTDIR\Lang\hr.txt
   Delete $INSTDIR\Lang\hu.txt
   Delete $INSTDIR\Lang\hy.txt
@@ -409,6 +412,7 @@ Section "Uninstall"
   Delete $INSTDIR\Lang\it.txt
   Delete $INSTDIR\Lang\ja.txt
   Delete $INSTDIR\Lang\ka.txt
+  Delete $INSTDIR\Lang\kk.txt
   Delete $INSTDIR\Lang\ko.txt
   Delete $INSTDIR\Lang\ku.txt
   Delete $INSTDIR\Lang\ku-ckb.txt
@@ -429,6 +433,7 @@ Section "Uninstall"
   Delete $INSTDIR\Lang\pt-br.txt
   Delete $INSTDIR\Lang\ro.txt
   Delete $INSTDIR\Lang\ru.txt
+  Delete $INSTDIR\Lang\sa.txt
   Delete $INSTDIR\Lang\si.txt
   Delete $INSTDIR\Lang\sk.txt
   Delete $INSTDIR\Lang\sl.txt
@@ -441,6 +446,7 @@ Section "Uninstall"
   Delete $INSTDIR\Lang\th.txt
   Delete $INSTDIR\Lang\tr.txt
   Delete $INSTDIR\Lang\tt.txt
+  Delete $INSTDIR\Lang\ug.txt
   Delete $INSTDIR\Lang\uk.txt
   Delete $INSTDIR\Lang\uz.txt
   Delete $INSTDIR\Lang\va.txt

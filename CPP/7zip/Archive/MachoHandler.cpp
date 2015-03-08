@@ -16,8 +16,6 @@
 
 #include "../Compress/CopyCoder.h"
 
-#include "Common/DummyOutStream.h"
-
 static UInt32 Get32(const Byte *p, int be) { if (be) return GetBe32(p); return GetUi32(p); }
 static UInt64 Get64(const Byte *p, int be) { if (be) return GetBe64(p); return GetUi64(p); }
 
@@ -35,15 +33,15 @@ namespace NMacho {
 #define MACH_MACHINE_PPC64 (MACH_ARCH_ABI64 | MACH_MACHINE_PPC)
 #define MACH_MACHINE_AMD64 (MACH_ARCH_ABI64 | MACH_MACHINE_386)
 
-#define	MACH_CMD_SEGMENT_32 1
-#define	MACH_CMD_SEGMENT_64 0x19
+#define MACH_CMD_SEGMENT_32 1
+#define MACH_CMD_SEGMENT_64 0x19
 
 #define MACH_SECT_TYPE_MASK 0x000000FF
 #define MACH_SECT_ATTR_MASK 0xFFFFFF00
 
 #define MACH_SECT_ATTR_ZEROFILL 1
 
-const char *g_SectTypes[] =
+static const char *g_SectTypes[] =
 {
   "REGULAR",
   "ZEROFILL",
@@ -62,7 +60,7 @@ const char *g_SectTypes[] =
   "16BYTE_LITERALS"
 };
 
-const char *g_FileTypes[] =
+static const char *g_FileTypes[] =
 {
   "0",
   "OBJECT",
@@ -79,16 +77,16 @@ const char *g_FileTypes[] =
 
 static const CUInt32PCharPair g_Flags[] =
 {
-  { (UInt32)1 << 31, "PURE_INSTRUCTIONS" },
-  { 1 << 30, "NO_TOC" },
-  { 1 << 29, "STRIP_STATIC_SYMS" },
-  { 1 << 28, "NO_DEAD_STRIP" },
-  { 1 << 27, "LIVE_SUPPORT" },
-  { 1 << 26, "SELF_MODIFYING_CODE" },
-  { 1 << 25, "DEBUG" },
-  { 1 << 10, "SOME_INSTRUCTIONS" },
-  { 1 <<  9, "EXT_RELOC" },
-  { 1 <<  8, "LOC_RELOC" }
+  { 31, "PURE_INSTRUCTIONS" },
+  { 30, "NO_TOC" },
+  { 29, "STRIP_STATIC_SYMS" },
+  { 28, "NO_DEAD_STRIP" },
+  { 27, "LIVE_SUPPORT" },
+  { 26, "SELF_MODIFYING_CODE" },
+  { 25, "DEBUG" },
+  { 10, "SOME_INSTRUCTIONS" },
+  {  9, "EXT_RELOC" },
+  {  8, "LOC_RELOC" }
 };
 
 static const CUInt32PCharPair g_MachinePairs[] =
@@ -113,11 +111,18 @@ struct CSection
   char Name[kNameSize];
   char SegName[kNameSize];
   UInt64 Va;
-  UInt64 Size;
-  UInt32 Pa;
+  UInt64 Pa;
+  UInt64 VSize;
+  UInt64 PSize;
+
   UInt32 Flags;
   int SegmentIndex;
-  UInt64 GetPackSize() const { return Flags == MACH_SECT_ATTR_ZEROFILL ? 0 : Size; }
+
+  bool IsDummy;
+
+  CSection(): IsDummy(false) {}
+  // UInt64 GetPackSize() const { return Flags == MACH_SECT_ATTR_ZEROFILL ? 0 : Size; }
+  UInt64 GetPackSize() const { return PSize; }
 };
 
 
@@ -197,8 +202,9 @@ bool CHandler::Parse(const Byte *buf, UInt32 size)
       if (cmdSize < offs)
         break;
 
+      UInt64 vmAddr, vmSize, phAddr, phSize;
+
       {
-        UInt64 vmAddr, vmSize, phAddr, phSize;
         if (cmd == MACH_CMD_SEGMENT_64)
         {
           vmAddr = Get64(buf + 0x18, be);
@@ -228,7 +234,19 @@ bool CHandler::Parse(const Byte *buf, UInt32 size)
       if (numSections > (1 << 8))
         return false;
 
-      while (numSections-- != 0)
+      if (numSections == 0)
+      {
+        CSection section;
+        section.IsDummy = true;
+        section.SegmentIndex = _segments.Size() - 1;
+          section.Va = vmAddr;
+          section.PSize = phSize;
+          section.VSize = vmSize;
+          section.Pa = phAddr;
+          section.Flags = 0;
+        _sections.Add(section);
+      }
+      else do
       {
         CSection section;
         UInt32 headerSize = (cmd == MACH_CMD_SEGMENT_64) ? 0x50 : 0x44;
@@ -238,23 +256,29 @@ bool CHandler::Parse(const Byte *buf, UInt32 size)
         if (cmd == MACH_CMD_SEGMENT_64)
         {
           section.Va = Get64(p + 0x20, be);
-          section.Size = Get64(p + 0x28, be);
+          section.VSize = Get64(p + 0x28, be);
           section.Pa = Get32(p + 0x30, be);
           section.Flags = Get32(p + 0x40, be);
         }
         else
         {
           section.Va = Get32(p + 0x20, be);
-          section.Size = Get32(p + 0x24, be);
+          section.VSize = Get32(p + 0x24, be);
           section.Pa = Get32(p + 0x28, be);
           section.Flags = Get32(p + 0x38, be);
         }
+        if (section.Flags == MACH_SECT_ATTR_ZEROFILL)
+          section.PSize = 0;
+        else
+          section.PSize = section.VSize;
         memcpy(section.Name, p, kNameSize);
         memcpy(section.SegName, p + kNameSize, kNameSize);
         section.SegmentIndex = _segments.Size() - 1;
         _sections.Add(section);
         offs += headerSize;
       }
+      while (--numSections);
+
       if (offs != cmdSize)
         return false;
     }
@@ -265,7 +289,7 @@ bool CHandler::Parse(const Byte *buf, UInt32 size)
   return reduceCommands || (size == 0);
 }
 
-STATPROPSTG kArcProps[] =
+static STATPROPSTG kArcProps[] =
 {
   { NULL, kpidCpu, VT_BSTR},
   { NULL, kpidBit64, VT_BOOL},
@@ -275,7 +299,7 @@ STATPROPSTG kArcProps[] =
   { NULL, kpidHeadersSize, VT_UI4}
 };
 
-STATPROPSTG kProps[] =
+static STATPROPSTG kProps[] =
 {
   { NULL, kpidPath, VT_BSTR},
   { NULL, kpidSize, VT_UI8},
@@ -335,10 +359,17 @@ STDMETHODIMP CHandler::GetProperty(UInt32 index, PROPID propID, PROPVARIANT *val
   const CSection &item = _sections[index];
   switch(propID)
   {
-    case kpidPath:  StringToProp(GetName(_segments[item.SegmentIndex].Name) + GetName(item.Name), prop); break;
-    case kpidSize:  prop = (UInt64)item.Size; break;
+    case kpidPath:
+    {
+      AString s = GetName(_segments[item.SegmentIndex].Name);
+      if (!item.IsDummy)
+        s += GetName(item.Name);
+      StringToProp(s, prop);
+      break;
+    }
+    case kpidSize:  /* prop = (UInt64)item.VSize; break; */
     case kpidPackSize:  prop = (UInt64)item.GetPackSize(); break;
-    case kpidCharacts:  StringToProp(SectFlagsToString(item.Flags), prop); break;
+    case kpidCharacts:  if (!item.IsDummy) StringToProp(SectFlagsToString(item.Flags), prop); break;
     case kpidOffset:  prop = item.Pa; break;
     case kpidVa:  prop = item.Va; break;
   }
@@ -401,12 +432,11 @@ STDMETHODIMP CHandler::GetNumberOfItems(UInt32 *numItems)
   return S_OK;
 }
 
-STDMETHODIMP CHandler::Extract(const UInt32* indices, UInt32 numItems,
-    Int32 _aTestMode, IArchiveExtractCallback *extractCallback)
+STDMETHODIMP CHandler::Extract(const UInt32 *indices, UInt32 numItems,
+    Int32 testMode, IArchiveExtractCallback *extractCallback)
 {
   COM_TRY_BEGIN
-  bool testMode = (_aTestMode != 0);
-  bool allFilesMode = (numItems == UInt32(-1));
+  bool allFilesMode = (numItems == (UInt32)-1);
   if (allFilesMode)
     numItems = _sections.Size();
   if (numItems == 0)
@@ -427,51 +457,34 @@ STDMETHODIMP CHandler::Extract(const UInt32* indices, UInt32 numItems,
   CMyComPtr<ICompressProgressInfo> progress = lps;
   lps->Init(extractCallback, false);
 
-  
-  
-  
-  
-
-
-
-
-  
   CLimitedSequentialInStream *streamSpec = new CLimitedSequentialInStream;
   CMyComPtr<ISequentialInStream> inStream(streamSpec);
   streamSpec->SetStream(_inStream);
-
-  CDummyOutStream *outStreamSpec = new CDummyOutStream;
-  CMyComPtr<ISequentialOutStream> outStream(outStreamSpec);
 
   for (i = 0; i < numItems; i++, currentTotalSize += currentItemSize)
   {
     lps->InSize = lps->OutSize = currentTotalSize;
     RINOK(lps->SetCur());
     Int32 askMode = testMode ?
-        NArchive::NExtract::NAskMode::kTest :
-        NArchive::NExtract::NAskMode::kExtract;
+        NExtract::NAskMode::kTest :
+        NExtract::NAskMode::kExtract;
     UInt32 index = allFilesMode ? i : indices[i];
     const CSection &item = _sections[index];
     currentItemSize = item.GetPackSize();
-    {
-      CMyComPtr<ISequentialOutStream> realOutStream;
-      RINOK(extractCallback->GetStream(index, &realOutStream, askMode));
-      if (!testMode && (!realOutStream))
-        continue;
-      outStreamSpec->SetStream(realOutStream);
-      outStreamSpec->Init();
-    }
+
+    CMyComPtr<ISequentialOutStream> outStream;
+    RINOK(extractCallback->GetStream(index, &outStream, askMode));
+    if (!testMode && !outStream)
+      continue;
     
     RINOK(extractCallback->PrepareOperation(askMode));
     RINOK(_inStream->Seek(item.Pa, STREAM_SEEK_SET, NULL));
     streamSpec->Init(currentItemSize);
     RINOK(copyCoder->Code(inStream, outStream, NULL, NULL, progress));
-    outStreamSpec->ReleaseStream();
-    RINOK(extractCallback->SetOperationResult((copyCoderSpec->TotalSize == currentItemSize) ?
-
-        NArchive::NExtract::NOperationResult::kOK:
-        
-        NArchive::NExtract::NOperationResult::kDataError));
+    outStream.Release();
+    RINOK(extractCallback->SetOperationResult(copyCoderSpec->TotalSize == currentItemSize ?
+        NExtract::NOperationResult::kOK:
+        NExtract::NOperationResult::kDataError));
   }
   return S_OK;
   COM_TRY_END
@@ -485,4 +498,3 @@ static CArcInfo g_ArcInfo =
 REGISTER_ARC(Macho)
 
 }}
-  
