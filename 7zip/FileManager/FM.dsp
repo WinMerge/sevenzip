@@ -319,6 +319,14 @@ SOURCE=.\AppState.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\EnumFormatEtc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\EnumFormatEtc.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\FileFolderPluginOpen.cpp
 # End Source File
 # Begin Source File
@@ -332,6 +340,14 @@ SOURCE=.\Panel.cpp
 # Begin Source File
 
 SOURCE=.\Panel.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PanelCopy.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PanelDrag.cpp
 # End Source File
 # Begin Source File
 
@@ -368,6 +384,10 @@ SOURCE=.\PanelSelect.cpp
 # Begin Source File
 
 SOURCE=.\PanelSort.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PanelSplitFile.cpp
 # End Source File
 # End Group
 # Begin Group "Dialog"
@@ -512,6 +532,27 @@ SOURCE=.\Resource\BenchmarkDialog\resource.h
 
 SOURCE=.\Resource\BenchmarkDialog\resource.rc
 # PROP Exclude_From_Build 1
+# End Source File
+# End Group
+# Begin Group "Split"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\Resource\SplitDialog\resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Resource\SplitDialog\resource.rc
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\Resource\SplitDialog\SplitDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Resource\SplitDialog\SplitDialog.h
 # End Source File
 # End Group
 # Begin Source File
@@ -763,11 +804,11 @@ SOURCE=..\..\Windows\Handle.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Windows\ItemIDListUtils.cpp
+SOURCE=..\..\Windows\Memory.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Windows\ItemIDListUtils.h
+SOURCE=..\..\Windows\Memory.h
 # End Source File
 # Begin Source File
 
@@ -835,14 +876,6 @@ SOURCE=..\..\Windows\Synchronization.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Windows\System.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Windows\System.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\Windows\Thread.h
 # End Source File
 # Begin Source File
@@ -865,6 +898,14 @@ SOURCE=..\..\Windows\Window.h
 # Begin Group "Common"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\..\Common\Alloc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\Alloc.h
+# End Source File
 # Begin Source File
 
 SOURCE=..\..\Common\Buffer.h
@@ -1109,6 +1150,10 @@ SOURCE=.\Move2.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MyCom2.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\MyLoadMenu.cpp
 # End Source File
 # Begin Source File
@@ -1146,6 +1191,14 @@ SOURCE=.\PropertyName.h
 # Begin Source File
 
 SOURCE=.\resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\SplitUtils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\SplitUtils.h
 # End Source File
 # Begin Source File
 

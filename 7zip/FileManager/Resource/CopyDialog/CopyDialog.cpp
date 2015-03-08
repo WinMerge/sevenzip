@@ -3,6 +3,8 @@
 #include "StdAfx.h"
 #include "CopyDialog.h"
 
+#include "Common/StringConvert.h"
+
 #include "Windows/Control/Static.h"
 #include "Windows/Shell.h"
 #include "Windows/FileName.h"
@@ -33,20 +35,20 @@ bool CCopyDialog::OnInit()
   staticContol.Attach(GetItem(IDC_COPY_STATIC));
   staticContol.SetText(Static);
   for(int i = 0; i < Strings.Size(); i++)
-    _path.AddString(Strings[i]);
+    _path.AddString(GetSystemString(Strings[i]));
   _path.SetText(Value);
   return CModalDialog::OnInit();
 }
 
-bool CCopyDialog::OnButtonClicked(int aButtonID, HWND buttonHWND)
+bool CCopyDialog::OnButtonClicked(int buttonID, HWND buttonHWND)
 {
-  switch(aButtonID)
+  switch(buttonID)
   {
     case IDC_COPY_SET_PATH:
       OnButtonSetPath();
       return true;
   }
-  return CModalDialog::OnButtonClicked(aButtonID, buttonHWND);
+  return CModalDialog::OnButtonClicked(buttonID, buttonHWND);
 }
 
 void CCopyDialog::OnButtonSetPath() 

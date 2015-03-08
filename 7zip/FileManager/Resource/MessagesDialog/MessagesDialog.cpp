@@ -2,9 +2,8 @@
  
 #include "StdAfx.h"
 #include "MessagesDialog.h"
+#include "Common/StringConvert.h"
 #include "Windows/ResourceString.h"
-
-// #include "../resource.h"
 
 #ifdef LANG        
 #include "../../LangUtils.h"
@@ -19,7 +18,7 @@ static CIDLangPair kIDLangPairs[] =
 };
 #endif
 
-void CMessagesDialog::AddMessage(LPCTSTR aMessage)
+void CMessagesDialog::AddMessageDirect(LPCTSTR message)
 {
   int itemIndex = _messageList.GetItemCount();
   LVITEM item;
@@ -36,9 +35,23 @@ void CMessagesDialog::AddMessage(LPCTSTR aMessage)
   _messageList.InsertItem(&item);
 
   item.mask = LVIF_TEXT;
-  item.pszText = (LPTSTR)aMessage;
+  item.pszText = (LPTSTR)message;
   item.iSubItem = 1;
   _messageList.SetItem(&item);
+}
+
+void CMessagesDialog::AddMessage(LPCWSTR message)
+{
+  UString s = message;
+  while (!s.IsEmpty())
+  {
+    int pos = s.Find(L'\n');
+    if (pos < 0)
+      break;
+    AddMessageDirect(GetSystemString(s.Left(pos)));
+    s.Delete(0, pos + 1);
+  }
+  AddMessageDirect(GetSystemString(s));
 }
 
 bool CMessagesDialog::OnInit() 
@@ -73,8 +86,8 @@ bool CMessagesDialog::OnInit()
 
   _messageList.InsertColumn(1, &columnInfo);
 
-  for(int i = 0; i < _messages->Size(); i++)
-    AddMessage((*_messages)[i]);
+  for(int i = 0; i < Messages->Size(); i++)
+    AddMessage((*Messages)[i]);
 
   /*
   if(_messageList.GetItemCount() > 0)

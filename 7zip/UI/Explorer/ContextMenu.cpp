@@ -13,7 +13,6 @@
 #include "Windows/FileFind.h"
 #include "Windows/FileDir.h"
 #include "Windows/FileName.h"
-#include "Windows/System.h"
 #include "Windows/Thread.h"
 #include "Windows/Window.h"
 
@@ -260,13 +259,27 @@ static UString GetSubFolderNameForExtract(const UString &archiveName)
 {
   int dotPos = archiveName.ReverseFind('.');
   if (dotPos >= 0)
-    return archiveName.Left(dotPos);
+  {
+    UString res = archiveName.Left(dotPos);
+    res.TrimRight();
+    return res;
+  }
   return archiveName + UString(L"~");
+}
+
+static UString GetReducedString(const UString &s)
+{
+  const int kMaxSize = 64;
+  if (s.Length() < kMaxSize)
+    return s;
+  const int kFirstPartSize = kMaxSize / 2;
+  return s.Left(kFirstPartSize) + UString(L" ... ") + s.Right(kMaxSize - kFirstPartSize);
 }
 
 STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
       UINT commandIDFirst, UINT commandIDLast, UINT flags)
 {
+  LoadLangOneTime();
   if(_fileNames.Size() == 0)
     return E_FAIL;
   UINT currentCommandID = commandIDFirst; 
@@ -311,7 +324,6 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
   if(_fileNames.Size() == 1 && currentCommandID + 6 <= commandIDLast)
   {
     const UString &fileName = _fileNames.Front();
-
     UString folderPrefix;
     NFile::NDirectory::GetOnlyDirPrefix(fileName, folderPrefix);
    
@@ -328,7 +340,28 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
         MyInsertMenu(popupMenu, subIndex++, currentCommandID++, GetSystemString(mainString)); 
         _commandMap.push_back(commandMapItem);
       }
-      
+    }
+  }
+
+  if(_fileNames.Size() > 0 && currentCommandID + 10 <= commandIDLast)
+  {
+    bool thereAreFolders = false;
+    for(int i = 0; i < _fileNames.Size(); i++)
+    {
+      NFile::NFind::CFileInfoW fileInfo;
+      if (!NFile::NFind::FindFile(_fileNames[i], fileInfo))
+        return E_FAIL;
+      if (fileInfo.IsDirectory())
+        thereAreFolders = true;
+    }
+    const UString &fileName = _fileNames.Front();
+    if (!thereAreFolders)
+    {
+      UString folderPrefix;
+      NFile::NDirectory::GetOnlyDirPrefix(fileName, folderPrefix);
+      NFile::NFind::CFileInfoW fileInfo;
+      if (!NFile::NFind::FindFile(fileName, fileInfo))
+        return E_FAIL;
       // Extract
       if ((contextMenuFlags & NContextMenuFlags::kExtract) != 0)
       {
@@ -357,14 +390,17 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
         CCommandMapItem commandMapItem;
         UString s;
         FillCommand2(kExtractTo, s, commandMapItem);
-        UString folder = GetSubFolderNameForExtract(fileInfo.Name) + 
-            UString(L'\\');
+        UString folder;
+        if (_fileNames.Size() == 1)
+          folder = GetSubFolderNameForExtract(fileInfo.Name);
+        else
+          folder = L'*'; 
+        folder += L'\\';
         commandMapItem.Folder = folderPrefix + folder;
-        s = MyFormatNew(s, folder);
+        s = MyFormatNew(s, GetReducedString(folder));
         MyInsertMenu(popupMenu, subIndex++, currentCommandID++, GetSystemString(s)); 
         _commandMap.push_back(commandMapItem);
       }
-      
       // Test
       if ((contextMenuFlags & NContextMenuFlags::kTest) != 0)
       {
@@ -374,11 +410,6 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
         _commandMap.push_back(commandMapItem);
       }
     }
-  }
-
-  if(_fileNames.Size() > 0 && currentCommandID + 6 <= commandIDLast)
-  {
-    const UString &fileName = _fileNames.Front();
     UString archiveName = CreateArchiveName(fileName, _fileNames.Size() > 1, false);
     UString archiveName7z = archiveName + L".7z";
     UString archivePathPrefix;
@@ -388,7 +419,8 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
     if ((contextMenuFlags & NContextMenuFlags::kCompress) != 0)
     {
       CCommandMapItem commandMapItem;
-      commandMapItem.Archive = archivePathPrefix + archiveName;
+      commandMapItem.Folder = archivePathPrefix;
+      commandMapItem.Archive = archiveName;
       FillCommand(kCompress, mainString, commandMapItem);
       MyInsertMenu(popupMenu, subIndex++, currentCommandID++, GetSystemString(mainString)); 
       _commandMap.push_back(commandMapItem);
@@ -401,8 +433,9 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
       CCommandMapItem commandMapItem;
       UString s;
       FillCommand2(kCompressTo, s, commandMapItem);
-      commandMapItem.Archive = archivePathPrefix + archiveName7z;
-      UString t = UString(L"\"") + archiveName7z + UString(L"\"");
+      commandMapItem.Folder = archivePathPrefix;
+      commandMapItem.Archive = archiveName7z;
+      UString t = UString(L"\"") + GetReducedString(archiveName7z) + UString(L"\"");
       s = MyFormatNew(s, t);
       MyInsertMenu(popupMenu, subIndex++, currentCommandID++, GetSystemString(s)); 
       _commandMap.push_back(commandMapItem);
@@ -425,7 +458,7 @@ STDMETHODIMP CZipContextMenu::QueryContextMenu(HMENU hMenu, UINT indexMenu,
       UString s;
       FillCommand2(kCompressToEmail, s, commandMapItem);
       commandMapItem.Archive = archiveName7z;
-      UString t = UString(L"\"") + archiveName7z + UString(L"\"");
+      UString t = UString(L"\"") + GetReducedString(archiveName7z) + UString(L"\"");
       s = MyFormatNew(s, t);
       MyInsertMenu(popupMenu, subIndex++, currentCommandID++, GetSystemString(s)); 
       _commandMap.push_back(commandMapItem);
@@ -609,20 +642,20 @@ STDMETHODIMP CZipContextMenu::InvokeCommand(LPCMINVOKECOMMANDINFO commandInfo)
         params += L" \"";
         params += _fileNames[0];
         params += L"\"";
-        MyCreateProcess(params);
+        MyCreateProcess(params, 0, false, 0);
         break;
       }
       case kExtract:
       case kExtractHere:
       case kExtractTo:
       {
-        ExtractArchive(_fileNames[0], commandMapItem.Folder,
+        ExtractArchives(_fileNames, commandMapItem.Folder,
             (commandInternalID == kExtract));
         break;
       }
       case kTest:
       {
-        TestArchive(_fileNames[0]);
+        TestArchives(_fileNames);
         break;
       }
       case kCompress:
@@ -634,7 +667,8 @@ STDMETHODIMP CZipContextMenu::InvokeCommand(LPCMINVOKECOMMANDINFO commandInfo)
           (commandInternalID == kCompressToEmail);
         bool showDialog = (commandInternalID == kCompress) || 
           (commandInternalID == kCompressEmail);
-        CompressFiles(commandMapItem.Archive, _fileNames, email, showDialog);
+        CompressFiles(commandMapItem.Folder, commandMapItem.Archive, 
+            _fileNames, email, showDialog, false);
         break;
       }
     }

@@ -8,7 +8,6 @@
 #include "Common/StringConvert.h"
 #include "Windows/Error.h"
 #include "Windows/PropVariant.h"
-#include "Windows/Shell.h"
 
 #include "../PropID.h"
 
@@ -29,10 +28,10 @@ static const UINT kTimerElapse = 1000;
 static LPCWSTR kSelectOneFile = L"Select one file";
 static LPCWSTR kSelectFiles = L"Select files";
 
+static DWORD kStyles[4] = { LVS_ICON, LVS_SMALLICON, LVS_LIST, LVS_REPORT };
+
 // static const int kCreateFolderID = 101;
-
 // static const UINT kFileChangeNotifyMessage = WM_APP;
-
 
 extern HINSTANCE g_hInstance;
 extern DWORD g_ComCtl32Version;
@@ -53,12 +52,13 @@ CPanel::~CPanel()
 static LPCTSTR kClassName = TEXT("7-Zip::Panel");
 
 
-LRESULT CPanel::Create(HWND mainWindow, HWND parentWindow, UINT id, int xPos, 
+LRESULT CPanel::Create(HWND mainWindow, HWND parentWindow, UINT id,
     const UString &currentFolderPrefix, CPanelCallback *panelCallback, CAppState *appState)
 {
   _mainWindow = mainWindow;
   _processTimer = true;
   _processNotify = true;
+
 
   _panelCallback = panelCallback;
   _appState = appState;
@@ -66,12 +66,17 @@ LRESULT CPanel::Create(HWND mainWindow, HWND parentWindow, UINT id, int xPos,
   _baseID = id;
   _comboBoxID = _baseID + 3;
   _statusBarID = _comboBoxID + 1;
-  _ListViewMode = 0;
-  
-  BindToPath(currentFolderPrefix);
+
+  UString cfp = currentFolderPrefix;
+
+  if (!currentFolderPrefix.IsEmpty())
+    if (currentFolderPrefix[0] == L'.')
+      if (!NFile::NDirectory::MyGetFullPathName(currentFolderPrefix, cfp))
+        cfp = currentFolderPrefix;
+  BindToPath(cfp);
 
   if (!CreateEx(0, kClassName, 0, WS_CHILD | WS_VISIBLE, 
-      xPos, 0, 116, 260, 
+      0, 0, _xSize, 260, 
       parentWindow, (HMENU)id, g_hInstance))
     return E_FAIL;
   return S_OK;
@@ -102,9 +107,11 @@ LRESULT CPanel::OnMessage(UINT message, UINT wParam, LPARAM lParam)
       if (OnContextMenu(HANDLE(wParam), GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)))
         return 0;
       break;
+    /*
     case WM_DROPFILES:
       CompressDropFiles(HDROP(wParam));
       return 0;
+    */
   }
   return CWindow2::OnMessage(message, wParam, lParam);
 }
@@ -287,9 +294,17 @@ bool CPanel::OnCreate(CREATESTRUCT *createStruct)
 
   style |= LVS_SHAREIMAGELISTS;
   // style  |= LVS_AUTOARRANGE;
-  style  |= WS_CLIPCHILDREN;
+  style |= WS_CLIPCHILDREN;
   style |= WS_CLIPSIBLINGS;
-  style |= WS_TABSTOP |  LVS_REPORT | LVS_EDITLABELS | LVS_SINGLESEL;
+
+  const UINT32 kNumListModes = sizeof(kStyles) / sizeof(kStyles[0]);
+  if (_ListViewMode >= kNumListModes)
+    _ListViewMode = kNumListModes - 1;
+
+  style |= kStyles[_ListViewMode] 
+    | WS_TABSTOP 
+    | LVS_EDITLABELS 
+    | LVS_SINGLESEL;
 
   /*
   if (_virtualMode)
@@ -302,7 +317,7 @@ bool CPanel::OnCreate(CREATESTRUCT *createStruct)
   if (!_listView.CreateEx(exStyle, style, 0, 0, 116, 260, 
       HWND(*this), (HMENU)_baseID + 1, g_hInstance, NULL))
     return false;
-  SetListViewMode(3);
+
 
   _listView.SetUserDataLongPtr(LONG_PTR(&_listView));
   _listView._panel = this;
@@ -329,15 +344,16 @@ bool CPanel::OnCreate(CREATESTRUCT *createStruct)
       );
   _listView.SetImageList(imageList, LVSIL_NORMAL);
 
-  DWORD extendedStyle = _listView.GetExtendedListViewStyle();
-  extendedStyle |= LVS_EX_HEADERDRAGDROP; // Version 4.70
-  _listView.SetExtendedListViewStyle(extendedStyle);
+  // _exStyle |= LVS_EX_HEADERDRAGDROP;
+  // DWORD extendedStyle = _listView.GetExtendedListViewStyle();
+  // extendedStyle |= _exStyle;
+  //  _listView.SetExtendedListViewStyle(extendedStyle);
+  SetExtendedStyle();
 
   _listView.Show(SW_SHOW);
   _listView.InvalidateRect(NULL, true);
   _listView.Update();
   
-
   // Ensure that the common control DLL is loaded. 
   INITCOMMONCONTROLSEX icex;
 
@@ -474,13 +490,12 @@ bool CPanel::OnCreate(CREATESTRUCT *createStruct)
   // InitListCtrl();
   RefreshListCtrl();
   RefreshStatusBar();
-  ::DragAcceptFiles(HWND(*this), TRUE);  
+  
   return true;
 }
 
 void CPanel::OnDestroy()
 {
-  ::DragAcceptFiles(HWND(*this), FALSE);  
   SaveListViewInfo();
   CWindow2::OnDestroy();
 }
@@ -637,7 +652,16 @@ bool CPanel::IsFSFolder() const
   return (GetFolderTypeID() == L"FSFolder");
 }
 
-static DWORD kStyles[4] = { LVS_ICON, LVS_SMALLICON, LVS_LIST, LVS_REPORT };
+bool CPanel::IsFSDrivesFolder() const
+{
+  return (GetFolderTypeID() == L"FSDrives");
+}
+
+bool CPanel::DoesItSupportOperations() const
+{
+  CMyComPtr<IFolderOperations> folderOperations;
+  return _folder.QueryInterface(IID_IFolderOperations, &folderOperations) == S_OK;
+}
 
 void CPanel::SetListViewMode(UINT32 index)
 {
@@ -654,37 +678,6 @@ void CPanel::SetListViewMode(UINT32 index)
 void CPanel::RefreshStatusBar()
 {
   PostMessage(kRefreshStatusBar);
-}
-
-void CPanel::CompressDropFiles(HDROP dr)
-{
-  NShell::CDrop drop(true);
-  drop.Attach(dr);
-  CSysStringVector fileNames;
-  drop.QueryFileNames(fileNames);
-  if (fileNames.Size() == 0)
-    return;
-  UStringVector fileNamesUnicode;
-  for (int i = 0; i < fileNames.Size(); i++)
-    fileNamesUnicode.Add(GetUnicodeString(fileNames[i]));
-  const UString archiveName = CreateArchiveName(
-    fileNamesUnicode.Front(), (fileNamesUnicode.Size() > 1), false);
-  UString currentDirectory;
-  if (IsFSFolder())
-  {
-    CompressFiles(_currentFolderPrefix + archiveName, fileNamesUnicode, 
-      false, // email
-      true // showDialog
-      );
-  }
-  else
-  {
-    _panelCallback->OnCopy(fileNamesUnicode, false, true);
-    /*
-    if (!NFile::NDirectory::GetOnlyDirPrefix(fileNames.Front(), currentDirectory))
-      return;
-    */
-  }
 }
 
 void CPanel::AddToArchive()
@@ -709,35 +702,40 @@ void CPanel::AddToArchive()
   }
   const UString archiveName = CreateArchiveName(
       names.Front(), (names.Size() > 1), false);
-  CompressFiles(_currentFolderPrefix + archiveName, names, false, true);
+  CompressFiles(_currentFolderPrefix, archiveName, 
+      names, false, true, false);
   KillSelection();
 }
 
-void CPanel::ExtractArchive()
+void CPanel::ExtractArchives()
 {
   if (_parentFolders.Size() > 0)
   {
-    _panelCallback->OnCopy(UStringVector(), false, false);
+    _panelCallback->OnCopy(false, false);
     return;
   }
   CRecordVector<UINT32> indices;
   GetOperatedItemIndices(indices);
-  if (indices.Size() != 1)
+  UStringVector paths;
+  if (indices.Size() == 0)
   {
     MessageBox(kSelectOneFile);
     return;
   }
-  int index = indices[0];
-  if (IsItemFolder(index))
+  for (int i = 0; i < indices.Size(); i++)
   {
-    MessageBox(kSelectOneFile);
-    return;
+    int index = indices[i];
+    if (IsItemFolder(index))
+    { 
+      MessageBox(kSelectOneFile);
+      return;
+    }
+    paths.Add(_currentFolderPrefix + GetItemName(index));
   }
-  UString fullPath = _currentFolderPrefix + GetItemName(index);
-  ::ExtractArchive(fullPath, _currentFolderPrefix, true);
+  ::ExtractArchives(paths, _currentFolderPrefix, true);
 }
 
-void CPanel::TestArchive()
+void CPanel::TestArchives()
 {
   CRecordVector<UINT32> indices;
   GetOperatedItemIndices(indices);
@@ -746,18 +744,22 @@ void CPanel::TestArchive()
     MessageBox(L"Test archive operation is not supported for that folder");
     return;
   }
-  if (indices.Size() != 1)
+  UStringVector paths;
+  if (indices.Size() == 0)
   {
     MessageBox(kSelectOneFile);
     return;
   }
-  int index = indices[0];
-  if (IsItemFolder(index))
+  for (int i = 0; i < indices.Size(); i++)
   {
-    MessageBox(kSelectOneFile);
-    return;
+    int index = indices[i];
+    if (IsItemFolder(index))
+    { 
+      MessageBox(kSelectOneFile);
+      return;
+    }
+    paths.Add(_currentFolderPrefix + GetItemName(index));
   }
-  UString fullPath = _currentFolderPrefix + GetItemName(index);
-  ::TestArchive(fullPath);
+  ::TestArchives(paths);
 }
 

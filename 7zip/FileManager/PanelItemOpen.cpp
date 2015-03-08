@@ -12,7 +12,6 @@
 #include "Windows/FileFind.h"
 #include "Windows/Thread.h"
 #include "Windows/Synchronization.h"
-#include "Windows/System.h"
 #include "Windows/Error.h"
 #include "Windows/COM.h"
 
@@ -33,7 +32,14 @@ extern HWND g_HWND;
 static inline UINT GetCurrentFileCodePage()
   {  return AreFileApisANSI() ? CP_ACP : CP_OEMCP;}
 
-static LPCTSTR kTempDirPrefix = TEXT("7zO"); 
+static wchar_t *kTempDirPrefix = L"7zO"; 
+
+static const wchar_t *virusMessage = L"File looks like virus (file name has long spaces in name). 7-Zip will not open it";
+
+static bool IsNameVirus(const UString &name)
+{
+  return (name.Find(L"     ") >= 0);
+}
 
 struct CTmpProcessInfo: public CTempFileInfo
 {
@@ -57,8 +63,7 @@ public:
 };
 
 HRESULT CPanel::OpenItemAsArchive(const UString &name, 
-    const CSysString &folderPath,
-    const CSysString &filePath)
+    const UString &folderPath, const UString &filePath)
 {
   CFolderLink folderLink;
   if (!NFile::NFind::FindFile(filePath, folderLink.FileInfo))
@@ -93,8 +98,7 @@ HRESULT CPanel::OpenItemAsArchive(const UString &name,
 
 HRESULT CPanel::OpenItemAsArchive(const UString &name)
 {
-  return OpenItemAsArchive(name, GetSystemString(_currentFolderPrefix), 
-      GetSystemString(_currentFolderPrefix + name));
+  return OpenItemAsArchive(name, _currentFolderPrefix, _currentFolderPrefix + name);
 }
 
 HRESULT CPanel::OpenItemAsArchive(int index)
@@ -111,7 +115,7 @@ HRESULT CPanel::OpenParentArchiveFolder()
   if (_parentFolders.Size() < 2)
     return S_OK;
   CFolderLink &folderLink = _parentFolders.Back();
-  NFind::CFileInfo newFileInfo;
+  NFind::CFileInfoW newFileInfo;
   if (NFind::FindFile(folderLink.FilePath, newFileInfo))
   {
     if (newFileInfo.Size != folderLink.FileInfo.Size || 
@@ -144,7 +148,7 @@ static bool DoItemAlwaysStart(const UString &name)
   return  (ext == UString(L"exe") || ext == UString(L"bat") || ext == UString(L"com"));
 }
 
-static HANDLE StartEditApplication(CSysString &path, HWND window)
+static HANDLE StartEditApplication(const UString &path, HWND window)
 {
   CSysString command;
   ReadRegEditor(command);
@@ -157,7 +161,7 @@ static HANDLE StartEditApplication(CSysString &path, HWND window)
   }
   command = CSysString(TEXT("\"")) + command + CSysString(TEXT("\""));
   command += TEXT(" \"");
-  command += path;
+  command += GetSystemString(path);
   command += TEXT("\"");
 
   STARTUPINFO startupInfo;
@@ -182,14 +186,15 @@ static HANDLE StartEditApplication(CSysString &path, HWND window)
   return 0;
 }
 
-static HANDLE StartApplication(CSysString &path, HWND window)
+static HANDLE StartApplication(const UString &path, HWND window)
 {
   SHELLEXECUTEINFO execInfo;
   execInfo.cbSize = sizeof(execInfo);
-  execInfo.fMask = SEE_MASK_NOCLOSEPROCESS; // 
+  execInfo.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_DDEWAIT;
   execInfo.hwnd = NULL;
   execInfo.lpVerb = NULL;
-  execInfo.lpFile = path;
+  const CSysString sysPath = GetSystemString(path);
+  execInfo.lpFile = sysPath;
   execInfo.lpParameters = NULL;
   execInfo.lpDirectory = NULL;
   execInfo.nShow = SW_SHOWNORMAL;
@@ -217,18 +222,16 @@ void CPanel::EditItem(int index)
     OpenItemInArchive(index, false, true, true);
     return;
   }
-  CSysString fullPath = GetSystemString((_currentFolderPrefix + 
-      GetItemName(index)), GetCurrentFileCodePage());
-  HANDLE hProcess = StartEditApplication(fullPath, (HWND)*this);
+  HANDLE hProcess = StartEditApplication(_currentFolderPrefix + GetItemName(index), (HWND)*this);
   if (hProcess != 0)
     ::CloseHandle(hProcess);
 }
 
 void CPanel::OpenFolderExternal(int index)
 {
-  CSysString fullPath = GetSystemString((_currentFolderPrefix + 
-      GetItemName(index)), GetCurrentFileCodePage());
-  StartApplication(fullPath, (HWND)*this);
+  HANDLE hProcess = StartApplication(_currentFolderPrefix + GetItemName(index), (HWND)*this);
+  if (hProcess != 0)
+    ::CloseHandle(hProcess);
 }
 
 void CPanel::OpenItem(int index, bool tryInternal, bool tryExternal)
@@ -239,22 +242,27 @@ void CPanel::OpenItem(int index, bool tryInternal, bool tryExternal)
     OpenItemInArchive(index, tryInternal, tryExternal, false);
     return;
   }
-  CSysString fullPath = GetSystemString((_currentFolderPrefix + 
-      GetItemName(index)), GetCurrentFileCodePage());
+  UString name = GetItemName(index);
+  if (IsNameVirus(name))
+  {
+    MessageBoxMyError(virusMessage);
+    return;
+  }
+  UString fullPath = _currentFolderPrefix + name;
   if (tryInternal)
-    if (!tryExternal || !DoItemAlwaysStart(GetItemName(index)))
+    if (!tryExternal || !DoItemAlwaysStart(name))
       if (OpenItemAsArchive(index) == S_OK)
         return;
   if (tryExternal)
   {
-    ::SetCurrentDirectory(GetSystemString(_currentFolderPrefix));
+    NDirectory::MySetCurrentDirectory(_currentFolderPrefix);
     HANDLE hProcess = StartApplication(fullPath, (HWND)*this);
     if (hProcess != 0)
       ::CloseHandle(hProcess);
   }
 }
        
-HRESULT CPanel::OnOpenItemChanged(const CSysString &folderPath, const UString &itemName)
+HRESULT CPanel::OnOpenItemChanged(const UString &folderPath, const UString &itemName)
 {
   CMyComPtr<IFolderOperations> folderOperations;
   if (_folder.QueryInterface(IID_IFolderOperations, &folderOperations) != S_OK)
@@ -267,14 +275,9 @@ HRESULT CPanel::OnOpenItemChanged(const CSysString &folderPath, const UString &i
   fileNames.Add(itemName);
   fileNamePointers.Add(fileNames[0]);
 
-  // SetCurrentDirectory(tmpProcessInfo.FolderPath);
-  CSysString pathPrefix = folderPath;
+  UString pathPrefix = folderPath;
   NName::NormalizeDirPathPrefix(pathPrefix);
-  return folderOperations->CopyFrom(
-      GetUnicodeString(pathPrefix),
-      &fileNamePointers.Front(),
-      fileNamePointers.Size(),
-      NULL);
+  return folderOperations->CopyFrom(pathPrefix, &fileNamePointers.Front(),fileNamePointers.Size(), NULL);
 }
 
 LRESULT CPanel::OnOpenItemChanged(LPARAM lParam)
@@ -283,10 +286,14 @@ LRESULT CPanel::OnOpenItemChanged(LPARAM lParam)
   // LoadCurrentPath()
   if (tmpProcessInfo.FullPathFolderPrefix != _currentFolderPrefix)
     return 0;
+
+  CSelectedState state;
+  SaveSelectedState(state);
+
   HRESULT result = OnOpenItemChanged(tmpProcessInfo.FolderPath, tmpProcessInfo.ItemName);
   if (result != S_OK)
     return 0;
-  RefreshListCtrlSaveFocused();
+  RefreshListCtrl(state);
   return 1;
 }
 
@@ -319,7 +326,7 @@ static DWORD WINAPI MyThreadFunction(void *param)
   if (waitResult != WAIT_OBJECT_0 + 1)
     return 1;
   Sleep(200);
-  NFind::CFileInfo newFileInfo;
+  NFind::CFileInfoW newFileInfo;
   if (NFind::FindFile(tmpProcessInfo->FilePath, newFileInfo))
   {
     if (newFileInfo.Size != tmpProcessInfo->FileInfo.Size || 
@@ -343,38 +350,16 @@ static DWORD WINAPI MyThreadFunction(void *param)
   return 0;
 }
 
-static CCriticalSection g_CriticalSection;
-
-struct CThreadExtractInArchive
-{
-  CMyComPtr<IFolderOperations> FolderOperations;
-  CRecordVector<UINT32> Indices;
-  UString DestPath;
-  CExtractCallbackImp *ExtractCallbackSpec;
-  CMyComPtr<IFolderOperationsExtractCallback> ExtractCallback;
-  HRESULT Result;
-  
-  DWORD Extract()
-  {
-    NCOM::CComInitializer comInitializer;
-    ExtractCallbackSpec->ProgressDialog.WaitCreating();
-    Result = FolderOperations->CopyTo(
-        &Indices.Front(), Indices.Size(), 
-        DestPath, ExtractCallback);
-    // ExtractCallbackSpec->DestroyWindows();
-    ExtractCallbackSpec->ProgressDialog.MyClose();
-    return 0;
-  }
-  
-  static DWORD WINAPI MyThreadFunction(void *param)
-  {
-    return ((CThreadExtractInArchive *)param)->Extract();
-  }
-};
-
 void CPanel::OpenItemInArchive(int index, bool tryInternal, bool tryExternal,
     bool editMode)
 {
+  UString name = GetItemName(index);
+  if (IsNameVirus(name))
+  {
+    MessageBoxMyError(virusMessage);
+    return;
+  }
+
   CMyComPtr<IFolderOperations> folderOperations;
   if (_folder.QueryInterface(IID_IFolderOperations, &folderOperations) != S_OK)
   {
@@ -382,50 +367,35 @@ void CPanel::OpenItemInArchive(int index, bool tryInternal, bool tryExternal,
     return;
   }
 
-  CSysString tempDir;
-  if (!CreateTempDirectory(kTempDirPrefix, tempDir))
-    return;
+  NFile::NDirectory::CTempDirectoryW tempDirectory;
+  tempDirectory.Create(kTempDirPrefix);
+  UString tempDir = tempDirectory.GetPath();
+  UString tempDirNorm = tempDir;
+  NFile::NName::NormalizeDirPathPrefix(tempDirNorm);
 
-  CThreadExtractInArchive extracter;
+  CRecordVector<UInt32> indices;
+  indices.Add(index);
 
-  extracter.ExtractCallbackSpec = new CExtractCallbackImp;
-  extracter.ExtractCallback = extracter.ExtractCallbackSpec;
-  extracter.ExtractCallbackSpec->_parentWindow = GetParent();
-  
-  // extracter.ExtractCallbackSpec->_appTitle.Window = extracter.ExtractCallbackSpec->_parentWindow;
-  // extracter.ExtractCallbackSpec->_appTitle.Title = progressWindowTitle;
-  // extracter.ExtractCallbackSpec->_appTitle.AddTitle = title + CSysString(TEXT(" "));
+  HRESULT result = CopyTo(indices, tempDirNorm, false, true, 0);
 
-  extracter.ExtractCallbackSpec->Init(NExtractionMode::NOverwrite::kWithoutPrompt, false, L"");
-  extracter.Indices.Add(index);
-  extracter.DestPath = GetUnicodeString(tempDir + NFile::NName::kDirDelimiter);
-  extracter.FolderOperations = folderOperations;
-
-  CThread extractThread;
-  if (!extractThread.Create(CThreadExtractInArchive::MyThreadFunction, &extracter))
-    throw 271824;
-  extracter.ExtractCallbackSpec->StartProgressDialog(LangLoadStringW(IDS_OPENNING, 0x03020283));
-
-  if (extracter.Result != S_OK)
+  if ((result != S_OK && result != E_ABORT))
   {
-    // MessageBox(TEXT("Can not extract item"));
+    MessageBoxError(result, L"7-Zip");
     return;
   }
 
-  UString name = GetItemName(index);
-  CSysString tempFileName = tempDir + NFile::NName::kDirDelimiter + 
-      GetSystemString(name);
+  UString tempFilePath = tempDirNorm + name;
 
   std::auto_ptr<CTmpProcessInfo> tmpProcessInfo(new CTmpProcessInfo());
   tmpProcessInfo->FolderPath = tempDir;
-  tmpProcessInfo->FilePath = tempFileName;
-  if (!NFind::FindFile(tempFileName, tmpProcessInfo->FileInfo))
+  tmpProcessInfo->FilePath = tempFilePath;
+  if (!NFind::FindFile(tempFilePath, tmpProcessInfo->FileInfo))
     return;
 
   if (tryInternal)
   {
     if (!tryExternal || !DoItemAlwaysStart(name))
-      if (OpenItemAsArchive(name, tempDir, tempFileName) == S_OK)
+      if (OpenItemAsArchive(name, tempDir, tempFilePath) == S_OK)
       {
         RefreshListCtrl();
         return;
@@ -439,9 +409,9 @@ void CPanel::OpenItemInArchive(int index, bool tryInternal, bool tryExternal,
 
   HANDLE hProcess;
   if (editMode)
-    hProcess = StartEditApplication(tempFileName, (HWND)*this);
+    hProcess = StartEditApplication(tempFilePath, (HWND)*this);
   else
-    hProcess = StartApplication(tempFileName, (HWND)*this);
+    hProcess = StartApplication(tempFilePath, (HWND)*this);
 
   if (hProcess == 0)
     return;
@@ -450,10 +420,11 @@ void CPanel::OpenItemInArchive(int index, bool tryInternal, bool tryExternal,
   tmpProcessInfo->FullPathFolderPrefix = _currentFolderPrefix;
   tmpProcessInfo->ItemName = name;
   tmpProcessInfo->ProcessHandle = hProcess;
-  
+
   CThread thread;
   if (!thread.Create(MyThreadFunction, tmpProcessInfo.get()))
     throw 271824;
+  tempDirectory.DisableDeleting();
   tmpProcessInfo.release();
   tmpProcessInfoRelease._needDelete = false;
 }

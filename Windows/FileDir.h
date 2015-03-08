@@ -1,7 +1,5 @@
 // Windows/FileDir.h
 
-#pragma once
-
 #ifndef __WINDOWS_FILEDIR_H
 #define __WINDOWS_FILEDIR_H
 
@@ -160,6 +158,7 @@ public:
     _mustBeDeleted = !RemoveDirectoryWithSubItems(_tempDir);
     return (!_mustBeDeleted);
   }
+  void DisableDeleting() { _mustBeDeleted = false; }
 };
 
 #ifdef _UNICODE
@@ -181,6 +180,7 @@ public:
     _mustBeDeleted = !RemoveDirectoryWithSubItems(_tempDir);
     return (!_mustBeDeleted);
   }
+  void DisableDeleting() { _mustBeDeleted = false; }
 };
 #endif
 
