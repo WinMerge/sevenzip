@@ -3,14 +3,14 @@
 #ifndef __HANDLER_OUT_H
 #define __HANDLER_OUT_H
 
+#include "../../../Common/MyString.h"
 #include "../../Common/MethodProps.h"
-#include "../../Common/CreateCoder.h"
 
 namespace NArchive {
 
 struct COneMethodInfo
 {
-  CObjectVector<CProp> Properties;
+  CObjectVector<CProp> Props;
   UString MethodName;
 };
 
@@ -31,17 +31,18 @@ public:
   CObjectVector<COneMethodInfo> _methods;
   bool _removeSfxBlock;
   
-  UInt64 _numSolidFiles; 
+  UInt64 _numSolidFiles;
   UInt64 _numSolidBytes;
   bool _numSolidBytesDefined;
   bool _solidExtension;
 
   bool _compressHeaders;
+  bool _encryptHeadersSpecified;
   bool _encryptHeaders;
 
-  bool WriteModified;
-  bool WriteCreated;
-  bool WriteAccessed;
+  bool WriteCTime;
+  bool WriteATime;
+  bool WriteMTime;
 
   bool _autoFilter;
   UInt32 _level;
@@ -77,8 +78,6 @@ public:
   UInt32 numProcessors;
   UInt32 mainDicSize;
   UInt32 mainDicMethodIndex;
-
-  DECL_EXTERNAL_CODECS_VARS
 };
 
 }

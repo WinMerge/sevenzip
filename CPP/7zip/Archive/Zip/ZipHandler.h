@@ -19,7 +19,7 @@
 namespace NArchive {
 namespace NZip {
 
-class CHandler: 
+class CHandler:
   public IInArchive,
   public IOutArchive,
   public ISetProperties,
@@ -45,7 +45,6 @@ public:
 private:
   CObjectVector<CItemEx> m_Items;
   CInArchive m_Archive;
-  bool m_ArchiveIsOpen;
 
   int m_Level;
   int m_MainMethod;
@@ -56,8 +55,13 @@ private:
   UInt32 m_NumMatchFinderCycles;
   bool m_NumMatchFinderCyclesDefined;
 
+  bool m_ForceAesMode;
   bool m_IsAesMode;
   Byte m_AesKeyMode;
+
+  bool m_WriteNtfsTimeExtra;
+  bool m_ForseLocal;
+  bool m_ForseUtf8;
 
   #ifdef COMPRESS_MT
   UInt32 _numThreads;
@@ -69,14 +73,18 @@ private:
   {
     m_Level = -1;
     m_MainMethod = -1;
-    m_Algo = 
-    m_DicSize = 
-    m_NumPasses = 
-    m_NumFastBytes = 
+    m_Algo =
+    m_DicSize =
+    m_NumPasses =
+    m_NumFastBytes =
     m_NumMatchFinderCycles = 0xFFFFFFFF;
     m_NumMatchFinderCyclesDefined = false;
+    m_ForceAesMode = false;
     m_IsAesMode = false;
     m_AesKeyMode = 3; // aes-256
+    m_WriteNtfsTimeExtra = false;
+    m_ForseLocal = false;
+    m_ForseUtf8 = false;
     #ifdef COMPRESS_MT
     _numThreads = NWindows::NSystem::GetNumberOfProcessors();;
     #endif

@@ -2,8 +2,6 @@
 
 #include "StdAfx.h"
 
-#include "GZipUpdate.h"
-
 #include "Common/Defs.h"
 #include "Common/StringConvert.h"
 
@@ -11,22 +9,31 @@
 #include "Windows/PropVariant.h"
 
 #include "../../ICoder.h"
-#include "../../Common/ProgressUtils.h"
+
 #include "../../Common/CreateCoder.h"
-#include "../../Compress/Copy/CopyCoder.h"
+#include "../../Common/ProgressUtils.h"
+
+#include "../../Compress/CopyCoder.h"
 
 #include "../Common/InStreamWithCRC.h"
+
+#include "GZipUpdate.h"
 
 namespace NArchive {
 namespace NGZip {
 
 static const CMethodId kMethodId_Deflate = 0x040108;
 
-static const Byte kHostOS = NFileHeader::NHostOS::kFAT;
+static const Byte kHostOS =
+  #ifdef _WIN32
+  NFileHeader::NHostOS::kFAT;
+  #else
+  NFileHeader::NHostOS::kUnix;
+  #endif
 
 HRESULT UpdateArchive(
     DECL_EXTERNAL_CODECS_LOC_VARS
-    IInStream * /* inStream */, 
+    IInStream * /* inStream */,
     UInt64 unpackSize,
     ISequentialOutStream *outStream,
     const CItem &newItem,
@@ -73,17 +80,17 @@ HRESULT UpdateArchive(
     if (!deflateEncoder)
       return E_NOTIMPL;
 
-    NWindows::NCOM::CPropVariant properties[] = 
-    { 
-      compressionMethod.Algo, 
-      compressionMethod.NumPasses, 
+    NWindows::NCOM::CPropVariant properties[] =
+    {
+      compressionMethod.Algo,
+      compressionMethod.NumPasses,
       compressionMethod.NumFastBytes,
       compressionMethod.NumMatchFinderCycles
     };
-    PROPID propIDs[] = 
-    { 
+    PROPID propIDs[] =
+    {
       NCoderPropID::kAlgorithm,
-      NCoderPropID::kNumPasses, 
+      NCoderPropID::kNumPasses,
       NCoderPropID::kNumFastBytes,
       NCoderPropID::kMatchFinderCycles
     };

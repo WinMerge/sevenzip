@@ -22,12 +22,12 @@ using namespace NWindows;
 extern bool g_IsNT;
 #endif
 
-static wchar_t *kTempDirPrefix = L"7zE"; 
-static LPCTSTR kSvenZipSetFolderFormat = TEXT("7-Zip::SetTargetFolder"); 
+static wchar_t *kTempDirPrefix = L"7zE";
+static LPCTSTR kSvenZipSetFolderFormat = TEXT("7-Zip::SetTargetFolder");
 
 ////////////////////////////////////////////////////////
 
-class CDataObject: 
+class CDataObject:
   public IDataObject,
   public CMyUnknownImp
 {
@@ -61,7 +61,7 @@ public:
 
 CDataObject::CDataObject()
 {
-  m_SetFolderFormat = RegisterClipboardFormat(kSvenZipSetFolderFormat); 
+  m_SetFolderFormat = RegisterClipboardFormat(kSvenZipSetFolderFormat);
   m_Etc.cfFormat = CF_HDROP;
   m_Etc.ptd = NULL;
   m_Etc.dwAspect = DVASPECT_CONTENT;
@@ -70,13 +70,13 @@ CDataObject::CDataObject()
 }
 
 STDMETHODIMP CDataObject::SetData(LPFORMATETC etc, STGMEDIUM *medium, BOOL /* release */)
-{ 
-  if (etc->cfFormat == m_SetFolderFormat && etc->tymed == TYMED_HGLOBAL && 
+{
+  if (etc->cfFormat == m_SetFolderFormat && etc->tymed == TYMED_HGLOBAL &&
       etc->dwAspect == DVASPECT_CONTENT && medium->tymed == TYMED_HGLOBAL)
   {
     Path.Empty();
     if (medium->hGlobal == 0)
-      return S_OK; 
+      return S_OK;
     size_t size = GlobalSize(medium->hGlobal) / sizeof(wchar_t);
     const wchar_t *src = (const wchar_t *)GlobalLock(medium->hGlobal);
     if (src != 0)
@@ -89,10 +89,10 @@ STDMETHODIMP CDataObject::SetData(LPFORMATETC etc, STGMEDIUM *medium, BOOL /* re
         Path += c;
       }
       GlobalUnlock(medium->hGlobal);
-      return S_OK; 
+      return S_OK;
     }
   }
-  return E_NOTIMPL; 
+  return E_NOTIMPL;
 }
 
 static HGLOBAL DuplicateGlobalMem(HGLOBAL srcGlobal)
@@ -149,14 +149,14 @@ STDMETHODIMP CDataObject::QueryGetData(LPFORMATETC etc)
 
 STDMETHODIMP CDataObject::EnumFormatEtc(DWORD direction, LPENUMFORMATETC FAR* enumFormatEtc)
 {
-  if(direction != DATADIR_GET)
+  if (direction != DATADIR_GET)
     return E_NOTIMPL;
   return CreateEnumFormatEtc(1, &m_Etc, enumFormatEtc);
 }
 
 ////////////////////////////////////////////////////////
 
-class CDropSource: 
+class CDropSource:
   public IDropSource,
   public CMyUnknownImp
 {
@@ -183,9 +183,9 @@ public:
 
 STDMETHODIMP CDropSource::QueryContinueDrag(BOOL escapePressed, DWORD keyState)
 {
-  if(escapePressed == TRUE)
+  if (escapePressed == TRUE)
     return DRAGDROP_S_CANCEL;
-  if((keyState & MK_LBUTTON) == 0)
+  if ((keyState & MK_LBUTTON) == 0)
   {
     if (m_Effect == DROPEFFECT_NONE)
       return DRAGDROP_S_CANCEL;
@@ -199,8 +199,8 @@ STDMETHODIMP CDropSource::QueryContinueDrag(BOOL escapePressed, DWORD keyState)
     }
     if (needExtract)
     {
-      Result = Panel->CopyTo(Indices, Folder, 
-          false, // moveMode, 
+      Result = Panel->CopyTo(Indices, Folder,
+          false, // moveMode,
           false, // showMessages
           &Messages);
       if (Result != S_OK || !Messages.IsEmpty())
@@ -300,7 +300,7 @@ void CPanel::OnDrag(LPNMLISTVIEW /* nmListView */)
   // CSelectedState selState;
   // SaveSelectedState(selState);
 
-  UString dirPrefix; 
+  UString dirPrefix;
   NFile::NDirectory::CTempDirectoryW tempDirectory;
 
   bool isFSFolder = IsFSFolder();
@@ -358,8 +358,8 @@ void CPanel::OnDrag(LPNMLISTVIEW /* nmListView */)
       if (!dataObjectSpec->Path.IsEmpty())
       {
         NFile::NName::NormalizeDirPathPrefix(dataObjectSpec->Path);
-        res = CopyTo(indices, dataObjectSpec->Path, 
-          (effect == DROPEFFECT_MOVE),// dropSourceSpec->MoveMode, 
+        res = CopyTo(indices, dataObjectSpec->Path,
+          (effect == DROPEFFECT_MOVE),// dropSourceSpec->MoveMode,
           false, // showErrorMessages
           &dropSourceSpec->Messages);
       }
@@ -433,7 +433,7 @@ void CDropTarget::PositionCursor(POINTL ptl)
     for (int i = 0; i < kNumPanelsMax; i++)
       if (App->IsPanelVisible(i))
         if (App->Panels[i].IsEnabled())
-          if (ChildWindowFromPointEx(App->_window, pt2, 
+          if (ChildWindowFromPointEx(App->_window, pt2,
               CWP_SKIPINVISIBLE | CWP_SKIPDISABLED) == (HWND)App->Panels[i])
           {
             m_Panel = &App->Panels[i];
@@ -475,7 +475,7 @@ void CDropTarget::PositionCursor(POINTL ptl)
   if (realIndex == kParentIndex)
     return;
   if (!m_Panel->IsItemFolder(realIndex))
-    return; 
+    return;
   m_SubFolderIndex = realIndex;
   m_SubFolderName = m_Panel->GetItemName(m_SubFolderIndex);
   MySetDropHighlighted(m_Panel->_listView, index, true);
@@ -570,7 +570,7 @@ bool CDropTarget::IsItSameDrive() const
       return false;
   }
   else if (m_Panel->IsFSDrivesFolder() && m_SelectionIndex >= 0)
-    drive = m_SubFolderName + L'\\';
+    drive = m_SubFolderName + WCHAR_PATH_SEPARATOR;
   else
     return false;
 
@@ -591,10 +591,7 @@ DWORD CDropTarget::GetEffect(DWORD keyState, POINTL /* pt */, DWORD allowedEffec
   if (!m_DropIsAllowed || !m_PanelDropIsAllowed)
     return DROPEFFECT_NONE;
 
-  if (!IsFsFolderPath())
-    allowedEffect &= ~DROPEFFECT_MOVE;
-
-  if (!m_SetPathIsOK)
+  if (!IsFsFolderPath() || !m_SetPathIsOK)
     allowedEffect &= ~DROPEFFECT_MOVE;
 
   DWORD effect = 0;
@@ -602,17 +599,17 @@ DWORD CDropTarget::GetEffect(DWORD keyState, POINTL /* pt */, DWORD allowedEffec
     effect = allowedEffect & DROPEFFECT_COPY;
   else if (keyState & MK_SHIFT)
     effect = allowedEffect & DROPEFFECT_MOVE;
-  if(effect == 0)
+  if (effect == 0)
   {
-    if(allowedEffect & DROPEFFECT_COPY) 
+    if (allowedEffect & DROPEFFECT_COPY)
     effect = DROPEFFECT_COPY;
-    if(allowedEffect & DROPEFFECT_MOVE) 
+    if (allowedEffect & DROPEFFECT_MOVE)
     {
       if (IsItSameDrive())
         effect = DROPEFFECT_MOVE;
     }
   }
-  if(effect == 0)
+  if (effect == 0)
     return DROPEFFECT_NONE;
   return effect;
 }
@@ -627,14 +624,14 @@ UString CDropTarget::GetTargetPath() const
   if (m_SubFolderIndex >= 0 && !m_SubFolderName.IsEmpty())
   {
     path += m_SubFolderName;
-    path += L"\\";
+    path += WCHAR_PATH_SEPARATOR;
   }
   return path;
 }
 
 bool CDropTarget::SetPath(bool enablePath) const
 {
-  UINT setFolderFormat = RegisterClipboardFormat(kSvenZipSetFolderFormat); 
+  UINT setFolderFormat = RegisterClipboardFormat(kSvenZipSetFolderFormat);
   
   FORMATETC etc = { (CLIPFORMAT)setFolderFormat, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
   STGMEDIUM medium;
@@ -666,7 +663,7 @@ bool CDropTarget::SetPath()
   return m_SetPathIsOK;
 }
 
-STDMETHODIMP CDropTarget::DragEnter(IDataObject * dataObject, DWORD keyState, 
+STDMETHODIMP CDropTarget::DragEnter(IDataObject * dataObject, DWORD keyState,
       POINTL pt, DWORD *effect)
 {
   GetNamesFromDataObject(dataObject, m_SourcePaths);
@@ -696,18 +693,18 @@ STDMETHODIMP CDropTarget::DragLeave()
 // We suppose that there was ::DragOver for same POINTL_pt before ::Drop
 // So SetPath() is same as in Drop.
 
-STDMETHODIMP CDropTarget::Drop(IDataObject *dataObject, DWORD keyState, 
+STDMETHODIMP CDropTarget::Drop(IDataObject *dataObject, DWORD keyState,
       POINTL pt, DWORD * effect)
 {
   QueryGetData(dataObject);
   PositionCursor(pt);
   m_DataObject = dataObject;
   bool needDrop = true;
-  if(m_DropIsAllowed && m_PanelDropIsAllowed)
+  if (m_DropIsAllowed && m_PanelDropIsAllowed)
     if (IsFsFolderPath())
       needDrop = !SetPath();
   *effect = GetEffect(keyState, pt, *effect);
-  if(m_DropIsAllowed && m_PanelDropIsAllowed)
+  if (m_DropIsAllowed && m_PanelDropIsAllowed)
   {
     if (needDrop)
     {
@@ -770,7 +767,7 @@ void CPanel::CompressDropFiles(const UStringVector &fileNames, const UString &fo
 {
   if (fileNames.Size() == 0)
     return;
-  const UString archiveName = CreateArchiveName(fileNames.Front(), 
+  const UString archiveName = CreateArchiveName(fileNames.Front(),
       (fileNames.Size() > 1), false);
   bool createNewArchive = true;
   if (!IsFSFolder())
@@ -785,7 +782,7 @@ void CPanel::CompressDropFiles(const UStringVector &fileNames, const UString &fo
       if (IsFolderInTemp(folderPath2))
         folderPath2 = L"C:\\"; // fix it
     }
-    CompressFiles(folderPath2, archiveName, L"", fileNames, 
+    CompressFiles(folderPath2, archiveName, L"", fileNames,
       false, // email
       true, // showDialog
       AreThereNamesFromTemp(fileNames) // waitFinish

@@ -10,9 +10,9 @@
 
 #include "../../Common/StreamUtils.h"
 
-extern "C" 
-{ 
-  #include "../../../../C/7zCrc.h" 
+extern "C"
+{
+  #include "../../../../C/7zCrc.h"
 }
 
 namespace NArchive {
@@ -20,11 +20,8 @@ namespace NGZip {
  
 HRESULT CInArchive::ReadBytes(ISequentialInStream *inStream, void *data, UInt32 size)
 {
-  UInt32 realProcessedSize;
-  RINOK(ReadStream(inStream, data, size, &realProcessedSize));
-  m_Position += realProcessedSize;
-  if(realProcessedSize != size)
-    return S_FALSE;
+  RINOK(ReadStream_FALSE(inStream, data, size));
+  m_Position += size;
   return S_OK;
 }
 

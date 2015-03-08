@@ -26,7 +26,7 @@
 extern bool g_IsNT;
 #endif
 
-#ifdef LANG        
+#ifdef LANG
 #include "../FileManager/LangUtils.h"
 #endif
 
@@ -34,8 +34,8 @@ extern bool g_IsNT;
 
 #define MY_SIZE_OF_ARRAY(x) (sizeof(x) / sizeof(x[0]))
 
-#ifdef LANG        
-static CIDLangPair kIDLangPairs[] = 
+#ifdef LANG
+static CIDLangPair kIDLangPairs[] =
 {
   { IDC_STATIC_COMPRESS_ARCHIVE, 0x02000D01 },
   { IDC_STATIC_COMPRESS_FORMAT, 0x02000D03 },
@@ -73,7 +73,7 @@ using namespace NFile;
 using namespace NName;
 using namespace NDirectory;
 
-static const int kHistorySize = 8;
+static const int kHistorySize = 20;
 
 static LPCWSTR kExeExt = L".exe";
 static LPCWSTR k7zFormat = L"7z";
@@ -94,7 +94,7 @@ enum ELevel
   kUltra = 9
 };
 
-static const CLevelInfo g_Levels[] = 
+static const CLevelInfo g_Levels[] =
 {
   { IDS_METHOD_STORE, 0x02000D81 },
   { IDS_METHOD_FASTEST, 0x02000D85 },
@@ -118,7 +118,7 @@ enum EMethodID
   kDeflate64
 };
 
-static const LPCWSTR kMethodsNames[] = 
+static const LPCWSTR kMethodsNames[] =
 {
   L"Copy",
   L"LZMA",
@@ -128,33 +128,34 @@ static const LPCWSTR kMethodsNames[] =
   L"Deflate64"
 };
 
-static const EMethodID g_7zMethods[] = 
+static const EMethodID g_7zMethods[] =
 {
   kLZMA,
   kPPMd,
   kBZip2
 };
 
-static const EMethodID g_7zSfxMethods[] = 
+static const EMethodID g_7zSfxMethods[] =
 {
   kCopy,
   kLZMA,
   kPPMd
 };
 
-static EMethodID g_ZipMethods[] = 
+static EMethodID g_ZipMethods[] =
 {
   kDeflate,
   kDeflate64,
-  kBZip2
+  kBZip2,
+  kLZMA
 };
 
-static EMethodID g_GZipMethods[] = 
+static EMethodID g_GZipMethods[] =
 {
   kDeflate
 };
 
-static EMethodID g_BZip2Methods[] = 
+static EMethodID g_BZip2Methods[] =
 {
   kBZip2
 };
@@ -173,42 +174,43 @@ struct CFormatInfo
   bool EncryptFileNames;
 };
 
-static const CFormatInfo g_Formats[] = 
+#define METHODS_PAIR(x) x, MY_SIZE_OF_ARRAY(x)
+
+static const CFormatInfo g_Formats[] =
 {
-  { 
-    L"", 
-    (1 << 0) | (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9), 
+  {
+    L"",
+    (1 << 0) | (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9),
     0, 0,
     false, false, false, false, false, false
   },
-  { 
-    k7zFormat, 
-    (1 << 0) | (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9), 
-    g_7zMethods, MY_SIZE_OF_ARRAY(g_7zMethods),
+  {
+    k7zFormat,
+    (1 << 0) | (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9),
+    METHODS_PAIR(g_7zMethods),
     true, true, true, true, true, true
   },
-  { 
-    L"Zip", 
-    (1 << 0) | (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9), 
-    g_ZipMethods, MY_SIZE_OF_ARRAY(g_ZipMethods) ,
+  {
+    L"Zip",
+    (1 << 0) | (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9),
+    METHODS_PAIR(g_ZipMethods),
     false, false, true, false, true, false
   },
-  { 
-    L"GZip", 
-    (1 << 1) | (1 << 5) | (1 << 7) | (1 << 9), 
-    g_GZipMethods, MY_SIZE_OF_ARRAY(g_GZipMethods),
+  {
+    L"GZip",
+    (1 << 1) | (1 << 5) | (1 << 7) | (1 << 9),
+    METHODS_PAIR(g_GZipMethods),
     false, false, false, false, false, false
   },
-  { 
-    L"BZip2", 
+  {
+    L"BZip2",
     (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9),
-    g_BZip2Methods, 
-    MY_SIZE_OF_ARRAY(g_BZip2Methods),
+    METHODS_PAIR(g_BZip2Methods),
     false, false, true, false, false
   },
-  { 
-    L"Tar", 
-    (1 << 0), 
+  {
+    L"Tar",
+    (1 << 0),
     0, 0,
     false, false, false, false, false, false
   }
@@ -236,9 +238,9 @@ static UInt64 GetMaxRamSizeForProgram()
   return physSize;
 }
 
-bool CCompressDialog::OnInit() 
+bool CCompressDialog::OnInit()
 {
-  #ifdef LANG        
+  #ifdef LANG
   LangSetWindowText(HWND(*this), 0x02000D00);
   LangSetDlgItemsText(HWND(*this), kIDLangPairs, MY_SIZE_OF_ARRAY(kIDLangPairs) );
   #endif
@@ -409,6 +411,8 @@ void CCompressDialog::CheckControlsEnable()
   EnableItem(IDC_STATIC_COMPRESS_ENCRYPTION_METHOD, fi.Encrypt);
   EnableItem(IDC_COMPRESS_COMBO_ENCRYPTION_METHOD, fi.Encrypt);
   EnableItem(IDC_COMPRESS_CHECK_ENCRYPT_FILE_NAMES, fi.EncryptFileNames);
+
+  ShowItem(IDC_COMPRESS_CHECK_ENCRYPT_FILE_NAMES, fi.EncryptFileNames ? SW_SHOW : SW_HIDE);
 }
 
 bool CCompressDialog::IsSFX()
@@ -424,7 +428,7 @@ void CCompressDialog::OnButtonSFX()
   UString fileName;
   m_ArchivePath.GetText(fileName);
   int dotPos = fileName.ReverseFind(L'.');
-  int slashPos = fileName.ReverseFind(L'\\');
+  int slashPos = fileName.ReverseFind(WCHAR_PATH_SEPARATOR);
   if (dotPos < 0 || dotPos <= slashPos)
     dotPos = -1;
   bool isSFX = IsSFX();
@@ -452,7 +456,7 @@ void CCompressDialog::OnButtonSFX()
   CheckVolumeEnable();
 }
 
-void CCompressDialog::OnButtonSetArchive() 
+void CCompressDialog::OnButtonSetArchive()
 {
   UString fileName;
   m_ArchivePath.GetText(fileName);
@@ -487,14 +491,14 @@ static bool IsAsciiString(const UString &s)
   return true;
 }
 
-void CCompressDialog::OnOK() 
+void CCompressDialog::OnOK()
 {
   _password1Control.GetText(Info.Password);
   if (IsZipFormat())
   {
     if (!IsAsciiString(Info.Password))
     {
-      MyMessageBoxResource(*this, IDS_PASSWORD_USE_ASCII, 0x02000B11);
+      ShowErrorMessageHwndRes(*this, IDS_PASSWORD_USE_ASCII, 0x02000B11);
       return;
     }
     UString method = GetEncryptionMethodSpec();
@@ -503,7 +507,7 @@ void CCompressDialog::OnOK()
     {
       if (Info.Password.Length() > 99)
       {
-        MyMessageBoxResource(*this, IDS_PASSWORD_IS_TOO_LONG, 0x02000B12);
+        ShowErrorMessageHwndRes(*this, IDS_PASSWORD_IS_TOO_LONG, 0x02000B12);
         return;
       }
     }
@@ -514,7 +518,7 @@ void CCompressDialog::OnOK()
     _password2Control.GetText(password2);
     if (password2 != Info.Password)
     {
-      MyMessageBoxResource(*this, IDS_PASSWORD_PASSWORDS_DO_NOT_MATCH, 0x02000B10);
+      ShowErrorMessageHwndRes(*this, IDS_PASSWORD_PASSWORDS_DO_NOT_MATCH, 0x02000B10);
       return;
     }
   }
@@ -556,7 +560,7 @@ void CCompressDialog::OnOK()
   {
     if (!ParseVolumeSizes(volumeString, Info.VolumeSizes))
     {
-      MyMessageBoxResource(*this, IDS_COMPRESS_INCORRECT_VOLUME_SIZE, 0x02000D41);
+      ShowErrorMessageHwndRes(*this, IDS_COMPRESS_INCORRECT_VOLUME_SIZE, 0x02000D41);
       return;
     }
     if (!Info.VolumeSizes.IsEmpty())
@@ -566,7 +570,7 @@ void CCompressDialog::OnOK()
       {
         wchar_t s[32];
         ConvertUInt64ToString(volumeSize, s);
-        if (::MessageBoxW(*this, MyFormatNew(IDS_COMPRESS_SPLIT_CONFIRM_MESSAGE, 0x02000D42, s), 
+        if (::MessageBoxW(*this, MyFormatNew(IDS_COMPRESS_SPLIT_CONFIRM_MESSAGE, 0x02000D42, s),
             L"7-Zip", MB_YESNOCANCEL | MB_ICONQUESTION | MB_TASKMODAL) != IDYES)
           return;
       }
@@ -593,7 +597,7 @@ void CCompressDialog::OnOK()
 
 static LPCWSTR kHelpTopic = L"fm/plugins/7-zip/add.htm";
 
-void CCompressDialog::OnHelp() 
+void CCompressDialog::OnHelp()
 {
   ShowHelpWindow(NULL, kHelpTopic);
 }
@@ -658,7 +662,7 @@ bool CCompressDialog::OnCommand(int code, int itemID, LPARAM lParam)
   return CModalDialog::OnCommand(code, itemID, lParam);
 }
 
-void CCompressDialog::CheckSFXNameChange() 
+void CCompressDialog::CheckSFXNameChange()
 {
   bool isSFX = IsSFX();
   CheckSFXControlsEnable();
@@ -666,7 +670,7 @@ void CCompressDialog::CheckSFXNameChange()
     SetArchiveName2(isSFX);
 }
 
-void CCompressDialog::SetArchiveName2(bool prevWasSFX) 
+void CCompressDialog::SetArchiveName2(bool prevWasSFX)
 {
   UString fileName;
   m_ArchivePath.GetText(fileName);
@@ -705,7 +709,7 @@ void CCompressDialog::SetArchiveName(const UString &name)
     if (!Info.KeepName)
     {
       int dotPos = fileName.ReverseFind('.');
-      int slashPos = MyMax(fileName.ReverseFind('\\'), fileName.ReverseFind('/'));
+      int slashPos = MyMax(fileName.ReverseFind(WCHAR_PATH_SEPARATOR), fileName.ReverseFind('/'));
       if (dotPos >= 0 && dotPos > slashPos + 1)
         fileName = fileName.Left(dotPos);
     }
@@ -795,7 +799,7 @@ void CCompressDialog::SetLevel()
   SetMethod();
 }
 
-void CCompressDialog::SetMethod() 
+void CCompressDialog::SetMethod()
 {
   m_Method.ResetContent();
   UInt32 level = GetLevel();
@@ -812,7 +816,7 @@ void CCompressDialog::SetMethod()
   if (index >= 0)
   {
     const NCompression::CFormatOptions &fo = m_RegistryInfo.FormatOptionsVector[index];
-    defaultMethod = fo.Method; 
+    defaultMethod = fo.Method;
   }
   bool isSfx = IsSFX();
   for(int m = 0; m < fi.NumMethods; m++)
@@ -836,7 +840,7 @@ bool CCompressDialog::IsZipFormat()
   return (ai.Name.CompareNoCase(L"zip") == 0);
 }
 
-void CCompressDialog::SetEncryptionMethod() 
+void CCompressDialog::SetEncryptionMethod()
 {
   _encryptionMethod.ResetContent();
   const CArcInfoEx &ai = m_ArchiverInfoList[m_Format.GetCurSel()];
@@ -852,7 +856,7 @@ void CCompressDialog::SetEncryptionMethod()
     if (index >= 0)
     {
       const NCompression::CFormatOptions &fo = m_RegistryInfo.FormatOptionsVector[index];
-      encryptionMethod = fo.EncryptionMethod; 
+      encryptionMethod = fo.EncryptionMethod;
     }
     _encryptionMethod.AddString(TEXT("ZipCrypto"));
     _encryptionMethod.AddString(TEXT("AES-256"));
@@ -1022,13 +1026,16 @@ void CCompressDialog::SetDictionary()
     }
     case kBZip2:
     {
-      UInt32 defaultDictionary;
-      if (level >= 5)
-        defaultDictionary = (900 << 10);
-      else if (level >= 3)
-        defaultDictionary = (500 << 10);
-      else
-        defaultDictionary = (100 << 10);
+      // UInt32 defaultDictionary;
+      if (defaultDictionary == UInt32(-1))
+      {
+        if (level >= 5)
+          defaultDictionary = (900 << 10);
+        else if (level >= 3)
+          defaultDictionary = (500 << 10);
+        else
+          defaultDictionary = (100 << 10);
+      }
       for (int i = 1; i <= 9; i++)
       {
         UInt32 dictionary = (i * 100) << 10;
@@ -1284,8 +1291,12 @@ UInt64 CCompressDialog::GetMemoryUsage(UInt32 dictionary, UInt64 &decompressMemo
   UInt32 numThreads = GetNumThreads2();
   if (IsZipFormat())
   {
-    if (numThreads > 1)
-      size += (UInt64)numThreads << 25;
+    UInt32 numSubThreads = 1;
+    if (GetMethodID() == kLZMA && numThreads > 1 && level >= 5)
+      numSubThreads = 2;
+    UInt32 numMainThreads = numThreads / numSubThreads;
+    if (numMainThreads > 1)
+      size += (UInt64)numMainThreads << 25;
   }
   switch (GetMethodID())
   {
@@ -1301,13 +1312,19 @@ UInt64 CCompressDialog::GetMemoryUsage(UInt32 dictionary, UInt64 &decompressMemo
       if (hs > (1 << 24))
         hs >>= 1;
       hs++;
-      size += hs * 4;
-      size += (UInt64)dictionary * 11 / 2;
+      UInt64 size1 = (UInt64)hs * 4;
+      size1 += (UInt64)dictionary * 11 / 2;
       if (level >= 5)
-        size += dictionary * 4;
-      size += (2 << 20);
+        size1 += (UInt64)dictionary * 4;
+      size1 += (2 << 20);
+
+      UInt32 numThreads1 = 1;
       if (numThreads > 1 && level >= 5)
-        size += (2 << 20) + (4 << 20);
+      {
+        size1 += (2 << 20) + (4 << 20);
+        numThreads1 = 2;
+      }
+      size += size1 * numThreads / numThreads1;
 
       decompressMemory = dictionary + (2 << 20);
       return size;
@@ -1360,7 +1377,7 @@ void CCompressDialog::PrintMemUsage(UINT res, UInt64 value)
     
 void CCompressDialog::SetMemoryUsage()
 {
-  UInt64 decompressMem; 
+  UInt64 decompressMem;
   UInt64 memUsage = GetMemoryUsage(decompressMem);
   PrintMemUsage(IDC_STATIC_COMPRESS_MEMORY_VALUE, memUsage);
   PrintMemUsage(IDC_STATIC_COMPRESS_MEMORY_DE_VALUE, decompressMem);

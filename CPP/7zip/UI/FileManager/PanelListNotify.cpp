@@ -9,7 +9,6 @@
 
 #include "Windows/PropVariant.h"
 #include "Windows/PropVariantConversions.h"
-// #include "Windows/COM.h"
 
 #include "../Common/PropIDUtils.h"
 #include "../../PropID.h"
@@ -19,26 +18,56 @@
 
 using namespace NWindows;
 
-static UString ConvertSizeToString(UINT64 value)
+static UString ConvertSizeToStringShort(UInt64 value)
 {
-  wchar_t s[64];
-  if (value < (UINT64(10000) <<  0) /*&& ((value & 0x3FF) != 0 || value == 0)*/)
+  wchar_t s[32];
+  wchar_t c, c2 = L'B';
+  if (value < (UInt64)10000)
   {
-    ConvertUInt64ToString(value, s);
-    return UString(s) + L" B";
+    c = L'B';
+    c2 = L'\0';
   }
-  if (value < (UINT64(10000) <<  10))
+  else if (value < ((UInt64)10000 << 10))
   {
-    ConvertUInt64ToString((value >> 10), s);
-    return UString(s) + L" K";
+    value >>= 10;
+    c = L'K';
   }
-  if (value < (UINT64(10000) <<  20))
+  else if (value < ((UInt64)10000 << 20))
   {
-    ConvertUInt64ToString((value >> 20), s);
-    return UString(s) + L" M";
+    value >>= 20;
+    c = L'M';
   }
-  ConvertUInt64ToString((value >> 30), s);
-  return UString(s) + L" G";
+  else
+  {
+    value >>= 30;
+    c = L'G';
+  }
+  ConvertUInt64ToString(value, s);
+  int p = MyStringLen(s);
+  s[p++] = L' ';
+  s[p++] = c;
+  s[p++] = c2;
+  s[p++] = L'\0';
+  return s;
+}
+
+UString ConvertSizeToString(UInt64 value)
+{
+  wchar_t s[32];
+  ConvertUInt64ToString(value, s);
+  int i = MyStringLen(s);
+  int pos = sizeof(s) / sizeof(s[0]);
+  s[--pos] = L'\0';
+  while (i > 3)
+  {
+    s[--pos] = s[--i];
+    s[--pos] = s[--i];
+    s[--pos] = s[--i];
+    s[--pos] = L' ';
+  }
+  while (i > 0)
+    s[--pos] = s[--i];
+  return s + pos;
 }
 
 LRESULT CPanel::SetItemText(LVITEMW &item)
@@ -60,23 +89,17 @@ LRESULT CPanel::SetItemText(LVITEMW &item)
     }
     if (!defined)
     {
-      NCOM::CPropVariant propVariant;
-      _folder->GetProperty(index, kpidAttributes, &propVariant);
-      UINT32 attributes = 0;
-      if (propVariant.vt == VT_UI4)
-        attributes = propVariant.ulVal;
-      else
-      {
-        if (IsItemFolder(index))
-          attributes |= FILE_ATTRIBUTE_DIRECTORY;
-      }
+      NCOM::CPropVariant prop;
+      _folder->GetProperty(index, kpidAttrib, &prop);
+      UINT32 attrib = 0;
+      if (prop.vt == VT_UI4)
+        attrib = prop.ulVal;
+      else if (IsItemFolder(index))
+        attrib |= FILE_ATTRIBUTE_DIRECTORY;
       if (_currentFolderPrefix.IsEmpty())
-      {
         throw 1;
-      }
       else
-        item.iImage = _extToIconMap.GetIconIndex(attributes, 
-            GetSystemString(GetItemName(index)));
+        item.iImage = _extToIconMap.GetIconIndex(attrib, GetSystemString(GetItemName(index)));
     }
     // item.iImage = 1;
   }
@@ -109,7 +132,7 @@ LRESULT CPanel::SetItemText(LVITEMW &item)
   */
   // const NFind::CFileInfo &aFileInfo = m_Files[index];
 
-  NCOM::CPropVariant propVariant;
+  NCOM::CPropVariant prop;
   /*
   bool needRead = true;
   if (propID == kpidSize)
@@ -117,28 +140,28 @@ LRESULT CPanel::SetItemText(LVITEMW &item)
     CComPtr<IFolderGetItemFullSize> getItemFullSize;
     if (_folder.QueryInterface(&getItemFullSize) == S_OK)
     {
-      if (getItemFullSize->GetItemFullSize(index, &propVariant) == S_OK)
+      if (getItemFullSize->GetItemFullSize(index, &prop) == S_OK)
         needRead = false;
     }
   }
   if (needRead)
   */
 
-  if (_folder->GetProperty(realIndex, propID, &propVariant) != S_OK)
+  if (_folder->GetProperty(realIndex, propID, &prop) != S_OK)
       throw 2723407;
 
-  if ((propID == kpidSize || propID == kpidPackedSize || 
-      propID == kpidTotalSize || propID == kpidFreeSpace ||
-      propID == kpidClusterSize)
-      &&
-      (propVariant.vt == VT_UI8 || propVariant.vt == VT_UI4))
-    s = ConvertSizeToString(ConvertPropVariantToUInt64(propVariant));
+  if ((propID == kpidSize || propID == kpidPackSize || propID == kpidClusterSize ||
+      propID == kpidNumSubDirs || propID == kpidNumSubFiles) &&
+      (prop.vt == VT_UI8 || prop.vt == VT_UI4))
+    s = ConvertSizeToString(ConvertPropVariantToUInt64(prop));
+  else if ((propID == kpidTotalSize || propID == kpidFreeSpace) &&
+      (prop.vt == VT_UI8 || prop.vt == VT_UI4))
+    s = ConvertSizeToStringShort(ConvertPropVariantToUInt64(prop));
   else
-    s = ConvertPropertyToString(propVariant, propID, false);
-
   {
-    s.Replace(wchar_t(0xA), L' '); 
-    s.Replace(wchar_t(0xD), L' '); 
+    s = ConvertPropertyToString(prop, propID, false);
+    s.Replace(wchar_t(0xA), L' ');
+    s.Replace(wchar_t(0xD), L' ');
   }
   int size = item.cchTextMax;
   if(size > 0)
@@ -195,7 +218,7 @@ bool CPanel::OnNotifyList(LPNMHDR header, LRESULT &result)
 
       //is the sub-item information being requested?
 
-      if((dispInfo->item.mask & LVIF_TEXT) != 0 || 
+      if((dispInfo->item.mask & LVIF_TEXT) != 0 ||
         (dispInfo->item.mask & LVIF_IMAGE) != 0)
         SetItemText(dispInfo->item);
       return false;
@@ -298,7 +321,7 @@ bool CPanel::OnNotifyList(LPNMHDR header, LRESULT &result)
 
 bool CPanel::OnCustomDraw(LPNMLVCUSTOMDRAW lplvcd, LRESULT &result)
 {
-  switch(lplvcd->nmcd.dwDrawStage) 
+  switch(lplvcd->nmcd.dwDrawStage)
   {
   case CDDS_PREPAINT :
     result = CDRF_NOTIFYITEMDRAW;
@@ -364,7 +387,7 @@ void CPanel::OnRefreshStatusBar()
 
   if (indices.Size() > 0)
   {
-    UINT64 totalSize = 0;
+    UInt64 totalSize = 0;
     for (int i = 0; i < indices.Size(); i++)
       totalSize += GetItemSize(indices[i]);
     selectSizeString = ConvertSizeToString(totalSize);
@@ -380,9 +403,9 @@ void CPanel::OnRefreshStatusBar()
     if (realIndex != kParentIndex)
     {
       sizeString = ConvertSizeToString(GetItemSize(realIndex));
-      NCOM::CPropVariant propVariant;
-      if (_folder->GetProperty(realIndex, kpidLastWriteTime, &propVariant) == S_OK)
-        dateString = ConvertPropertyToString(propVariant, kpidLastWriteTime, false);
+      NCOM::CPropVariant prop;
+      if (_folder->GetProperty(realIndex, kpidMTime, &prop) == S_OK)
+        dateString = ConvertPropertyToString(prop, kpidMTime, false);
     }
   }
   _statusBar.SetText(2, sizeString);

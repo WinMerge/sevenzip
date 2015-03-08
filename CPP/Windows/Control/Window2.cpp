@@ -20,7 +20,7 @@ ATOM MyRegisterClass(CONST WNDCLASSW *wndClass);
 
 namespace NControl {
 
-static LRESULT CALLBACK WindowProcedure(HWND aHWND, UINT message, 
+static LRESULT CALLBACK WindowProcedure(HWND aHWND, UINT message,
     WPARAM wParam, LPARAM lParam)
 {
   CWindow tempWindow(aHWND);
@@ -42,14 +42,14 @@ static LRESULT CALLBACK WindowProcedure(HWND aHWND, UINT message,
   return window->OnMessage(message, wParam, lParam);
 }
 
-bool CWindow2::CreateEx(DWORD exStyle, LPCTSTR className, 
+bool CWindow2::CreateEx(DWORD exStyle, LPCTSTR className,
       LPCTSTR windowName, DWORD style,
       int x, int y, int width, int height,
-      HWND parentWindow, HMENU idOrHMenu, 
+      HWND parentWindow, HMENU idOrHMenu,
       HINSTANCE instance)
 {
   WNDCLASS windowClass;
-  if(!::GetClassInfo(instance, className, &windowClass))
+  if (!::GetClassInfo(instance, className, &windowClass))
   {
     // windowClass.style          = CS_HREDRAW | CS_VREDRAW;
     windowClass.style          = 0;
@@ -67,20 +67,20 @@ bool CWindow2::CreateEx(DWORD exStyle, LPCTSTR className,
       return false;
   }
   return CWindow::CreateEx(exStyle, className, windowName,
-      style, x, y, width, height, parentWindow, 
+      style, x, y, width, height, parentWindow,
       idOrHMenu, instance, this);
 }
 
 #ifndef _UNICODE
 
-bool CWindow2::CreateEx(DWORD exStyle, LPCWSTR className, 
+bool CWindow2::CreateEx(DWORD exStyle, LPCWSTR className,
       LPCWSTR windowName, DWORD style,
       int x, int y, int width, int height,
-      HWND parentWindow, HMENU idOrHMenu, 
+      HWND parentWindow, HMENU idOrHMenu,
       HINSTANCE instance)
 {
   bool needRegister;
-  if(g_IsNT)
+  if (g_IsNT)
   {
     WNDCLASSW windowClass;
     needRegister = ::GetClassInfoW(instance, className, &windowClass) == 0;
@@ -117,7 +117,7 @@ bool CWindow2::CreateEx(DWORD exStyle, LPCWSTR className,
       return false;
   }
   return CWindow::CreateEx(exStyle, className, windowName,
-      style, x, y, width, height, parentWindow, 
+      style, x, y, width, height, parentWindow,
       idOrHMenu, instance, this);
 
 }
@@ -163,8 +163,8 @@ LRESULT CWindow2::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
   return DefProc(message, wParam, lParam);
 }
 
-bool CWindow2::OnCommand(WPARAM wParam, LPARAM lParam, LRESULT &result) 
-{ 
+bool CWindow2::OnCommand(WPARAM wParam, LPARAM lParam, LRESULT &result)
+{
   return OnCommand(HIWORD(wParam), LOWORD(wParam), lParam, result);
 }
 
@@ -179,8 +179,8 @@ bool CWindow2::OnCommand(int /* code */, int /* itemID */, LPARAM /* lParam */, 
 }
 
 /*
-bool CDialog::OnButtonClicked(int buttonID, HWND buttonHWND) 
-{ 
+bool CDialog::OnButtonClicked(int buttonID, HWND buttonHWND)
+{
   switch(aButtonID)
   {
     case IDOK:

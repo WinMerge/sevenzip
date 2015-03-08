@@ -2,15 +2,12 @@
 
 #include "StdAfx.h"
 
-#include "7zDecode.h"
-
-#include "../../IPassword.h"
-#include "../../Common/LockedStream.h"
-#include "../../Common/StreamObjects.h"
-#include "../../Common/ProgressUtils.h"
 #include "../../Common/LimitedStreams.h"
-#include "../../Common/CreateCoder.h"
-#include "../../Common/FilterCoder.h"
+#include "../../Common/LockedStream.h"
+#include "../../Common/ProgressUtils.h"
+#include "../../Common/StreamObjects.h"
+
+#include "7zDecode.h"
 
 namespace NArchive {
 namespace N7z {
@@ -44,7 +41,7 @@ static void ConvertFolderItemInfoToBindInfo(const CFolder &folder,
     bindInfo.InStreams.Add((UInt32)folder.PackStreams[i]);
 }
 
-static bool AreCodersEqual(const NCoderMixer::CCoderStreamsInfo &a1, 
+static bool AreCodersEqual(const NCoderMixer::CCoderStreamsInfo &a1,
     const NCoderMixer::CCoderStreamsInfo &a2)
 {
   return (a1.NumInStreams == a2.NumInStreams) &&
@@ -94,17 +91,22 @@ HRESULT CDecoder::Decode(
     IInStream *inStream,
     UInt64 startPos,
     const UInt64 *packSizes,
-    const CFolder &folderInfo, 
+    const CFolder &folderInfo,
     ISequentialOutStream *outStream,
     ICompressProgressInfo *compressProgress
     #ifndef _NO_CRYPTO
-    , ICryptoGetTextPassword *getTextPassword
+    , ICryptoGetTextPassword *getTextPassword, bool &passwordIsDefined
     #endif
     #ifdef COMPRESS_MT
     , bool mtMode, UInt32 numThreads
     #endif
     )
 {
+  if (!folderInfo.CheckStructure())
+    return E_NOTIMPL;
+  #ifndef _NO_CRYPTO
+  passwordIsDefined = false;
+  #endif
   CObjectVector< CMyComPtr<ISequentialInStream> > inStreams;
   
   CLockedInStream lockedInStream;
@@ -112,13 +114,13 @@ HRESULT CDecoder::Decode(
   
   for (int j = 0; j < folderInfo.PackStreams.Size(); j++)
   {
-    CLockedSequentialInStreamImp *lockedStreamImpSpec = new 
+    CLockedSequentialInStreamImp *lockedStreamImpSpec = new
         CLockedSequentialInStreamImp;
     CMyComPtr<ISequentialInStream> lockedStreamImp = lockedStreamImpSpec;
     lockedStreamImpSpec->Init(&lockedInStream, startPos);
     startPos += packSizes[j];
     
-    CLimitedSequentialInStream *streamSpec = new 
+    CLimitedSequentialInStream *streamSpec = new
         CLimitedSequentialInStream;
     CMyComPtr<ISequentialInStream> inStream = streamSpec;
     streamSpec->SetStream(lockedStreamImp);
@@ -212,7 +214,7 @@ HRESULT CDecoder::Decode(
   int i;
   _mixerCoderCommon->ReInit();
   
-  UInt32 packStreamIndex = 0, unPackStreamIndex = 0;
+  UInt32 packStreamIndex = 0, unpackStreamIndex = 0;
   UInt32 coderIndex = 0;
   // UInt32 coder2Index = 0;
   
@@ -226,13 +228,13 @@ HRESULT CDecoder::Decode(
       decoder.QueryInterface(IID_ICompressSetDecoderProperties2, &setDecoderProperties);
       if (setDecoderProperties)
       {
-        const CByteBuffer &properties = coderInfo.Properties;
-        size_t size = properties.GetCapacity();
+        const CByteBuffer &props = coderInfo.Props;
+        size_t size = props.GetCapacity();
         if (size > 0xFFFFFFFF)
           return E_NOTIMPL;
         if (size > 0)
         {
-          RINOK(setDecoderProperties->SetDecoderProperties2((const Byte *)properties, (UInt32)size));
+          RINOK(setDecoderProperties->SetDecoderProperties2((const Byte *)props, (UInt32)size));
         }
       }
     }
@@ -257,20 +259,20 @@ HRESULT CDecoder::Decode(
       {
         if (getTextPassword == 0)
           return E_FAIL;
-        CMyComBSTR password;
-        RINOK(getTextPassword->CryptoGetTextPassword(&password));
+        CMyComBSTR passwordBSTR;
+        RINOK(getTextPassword->CryptoGetTextPassword(&passwordBSTR));
         CByteBuffer buffer;
-        UString unicodePassword(password);
-        const UInt32 sizeInBytes = unicodePassword.Length() * 2;
+        passwordIsDefined = true;
+        const UString password(passwordBSTR);
+        const UInt32 sizeInBytes = password.Length() * 2;
         buffer.SetCapacity(sizeInBytes);
-        for (int i = 0; i < unicodePassword.Length(); i++)
+        for (int i = 0; i < password.Length(); i++)
         {
-          wchar_t c = unicodePassword[i];
+          wchar_t c = password[i];
           ((Byte *)buffer)[i * 2] = (Byte)c;
           ((Byte *)buffer)[i * 2 + 1] = (Byte)(c >> 8);
         }
-        RINOK(cryptoSetPassword->CryptoSetPassword(
-          (const Byte *)buffer, sizeInBytes));
+        RINOK(cryptoSetPassword->CryptoSetPassword((const Byte *)buffer, sizeInBytes));
       }
     }
     #endif
@@ -280,19 +282,19 @@ HRESULT CDecoder::Decode(
     UInt32 numInStreams = (UInt32)coderInfo.NumInStreams;
     UInt32 numOutStreams = (UInt32)coderInfo.NumOutStreams;
     CRecordVector<const UInt64 *> packSizesPointers;
-    CRecordVector<const UInt64 *> unPackSizesPointers;
+    CRecordVector<const UInt64 *> unpackSizesPointers;
     packSizesPointers.Reserve(numInStreams);
-    unPackSizesPointers.Reserve(numOutStreams);
+    unpackSizesPointers.Reserve(numOutStreams);
     UInt32 j;
-    for (j = 0; j < numOutStreams; j++, unPackStreamIndex++)
-      unPackSizesPointers.Add(&folderInfo.UnPackSizes[unPackStreamIndex]);
+    for (j = 0; j < numOutStreams; j++, unpackStreamIndex++)
+      unpackSizesPointers.Add(&folderInfo.UnpackSizes[unpackStreamIndex]);
     
     for (j = 0; j < numInStreams; j++, packStreamIndex++)
     {
       int bindPairIndex = folderInfo.FindBindPairForInStream(packStreamIndex);
       if (bindPairIndex >= 0)
         packSizesPointers.Add(
-        &folderInfo.UnPackSizes[(UInt32)folderInfo.BindPairs[bindPairIndex].OutIndex]);
+        &folderInfo.UnpackSizes[(UInt32)folderInfo.BindPairs[bindPairIndex].OutIndex]);
       else
       {
         int index = folderInfo.FindPackStreamArrayIndex(packStreamIndex);
@@ -302,9 +304,9 @@ HRESULT CDecoder::Decode(
       }
     }
     
-    _mixerCoderCommon->SetCoderInfo(i, 
-        &packSizesPointers.Front(), 
-        &unPackSizesPointers.Front());
+    _mixerCoderCommon->SetCoderInfo(i,
+        &packSizesPointers.Front(),
+        &unpackSizesPointers.Front());
   }
   UInt32 mainCoder, temp;
   bindInfo.FindOutStream(bindInfo.OutStreams[0], mainCoder, temp);
@@ -323,7 +325,7 @@ HRESULT CDecoder::Decode(
   for (i = 0; i < inStreams.Size(); i++)
     inStreamPointers.Add(inStreams[i]);
   ISequentialOutStream *outStreamPointer = outStream;
-  return _mixerCoder->Code(&inStreamPointers.Front(), NULL, 
+  return _mixerCoder->Code(&inStreamPointers.Front(), NULL,
     inStreams.Size(), &outStreamPointer, NULL, 1, compressProgress);
 }
 

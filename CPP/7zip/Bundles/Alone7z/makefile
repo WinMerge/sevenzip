@@ -49,6 +49,7 @@ WIN_OBJS = \
   $O\PropVariantConversions.obj \
   $O\Synchronization.obj \
   $O\System.obj \
+  $O\Time.obj \
 
 7ZIP_COMMON_OBJS = \
   $O\CreateCoder.obj \
@@ -120,57 +121,48 @@ AR_COMMON_OBJS = \
   $O\7zSpecStream.obj \
   $O\7zUpdate.obj \
 
+LZM_OBJS = \
+  $O\LzmaArcRegister.obj \
+  $O\LzmaFiltersDecode.obj \
+  $O\LzmaHandler.obj \
+  $O\LzmaIn.obj \
 
-BRANCH_OPT_OBJS = \
+SPLIT_OBJS = \
+  $O\SplitHandler.obj \
+  $O\SplitHandlerOut.obj \
+  $O\SplitRegister.obj \
+
+COMPRESS_OBJS = \
+  $O\Bcj2Coder.obj \
+  $O\Bcj2Register.obj \
+  $O\BcjCoder.obj \
+  $O\BcjRegister.obj \
   $O\BranchCoder.obj \
-  $O\x86.obj \
-  $O\x86_2.obj \
-  $O\ARM.obj \
-  $O\ARMThumb.obj \
-  $O\IA64.obj \
-  $O\PPC.obj \
-  $O\SPARC.obj \
+  $O\BranchMisc.obj \
   $O\BranchRegister.obj \
-  $O\BCJRegister.obj \
-  $O\BCJ2Register.obj \
-
-SWAP_OPT_OBJS = \
   $O\ByteSwap.obj \
   $O\ByteSwapRegister.obj \
-
-COPY_OBJS = \
   $O\CopyCoder.obj \
   $O\CopyRegister.obj \
-
-LZ_OBJS = \
-  $O\LZOutWindow.obj \
-
-LZMA_OPT_OBJS = \
-  $O\LZMADecoder.obj \
-  $O\LZMAEncoder.obj \
-  $O\LZMARegister.obj \
+  $O\LzmaDecoder.obj \
+  $O\LzmaEncoder.obj \
+  $O\LzmaRegister.obj \
 
 LZMA_BENCH_OBJS = \
   $O\LzmaBench.obj \
   $O\LzmaBenchCon.obj \
 
 C_OBJS = \
-  $O\Alloc.obj \
   $O\7zCrc.obj \
-  $O\Sort.obj \
+  $O\Bra.obj \
+  $O\Bra86.obj \
+  $O\BraIA64.obj \
+  $O\Alloc.obj \
+  $O\LzmaDec.obj \
+  $O\LzmaEnc.obj \
+  $O\LzFind.obj \
+  $O\LzFindMt.obj \
   $O\Threads.obj \
-
-C_LZ_OBJS = \
-  $O\MatchFinder.obj \
-  $O\MatchFinderMt.obj \
-
-C_BRANCH_OBJS = \
-  $O\BranchARM.obj \
-  $O\BranchARMThumb.obj \
-  $O\BranchIA64.obj \
-  $O\BranchPPC.obj \
-  $O\BranchSPARC.obj \
-  $O\BranchX86.obj \
 
 OBJS = \
   $O\StdAfx.obj \
@@ -181,16 +173,11 @@ OBJS = \
   $(UI_COMMON_OBJS) \
   $(AR_COMMON_OBJS) \
   $(7Z_OBJS) \
-  $(BRANCH_OPT_OBJS) \
-  $(SWAP_OPT_OBJS) \
-  $(COPY_OBJS) \
-  $(LZ_OBJS) \
-  $(LZMA_OPT_OBJS) \
+  $(LZM_OBJS) \
+  $(SPLIT_OBJS) \
+  $(COMPRESS_OBJS) \
   $(LZMA_BENCH_OBJS) \
   $(C_OBJS) \
-  $(C_LZ_OBJS) \
-  $(C_BRANCH_OBJS) \
-  $O\RangeCoderBit.obj \
   $(CRC_OBJS) \
   $O\resource.res
 
@@ -213,24 +200,13 @@ $(AR_COMMON_OBJS): ../../Archive/Common/$(*B).cpp
 
 $(7Z_OBJS): ../../Archive/7z/$(*B).cpp
 	$(COMPL)
-$(BRANCH_OPT_OBJS): ../../Compress/Branch/$(*B).cpp
-	$(COMPL_O2)
-$(SWAP_OPT_OBJS): ../../Compress/ByteSwap/$(*B).cpp
-	$(COMPL_O2)
-$(COPY_OBJS): ../../Compress/Copy/$(*B).cpp
+$(LZM_OBJS): ../../Archive/Lzma/$(*B).cpp
 	$(COMPL)
-$(LZ_OBJS): ../../Compress/LZ/$(*B).cpp
+$(SPLIT_OBJS): ../../Archive/Split/$(*B).cpp
 	$(COMPL)
-$(LZMA_OPT_OBJS): ../../Compress/LZMA/$(*B).cpp
+$(COMPRESS_OBJS): ../../Compress/$(*B).cpp
 	$(COMPL_O2)
 $(LZMA_BENCH_OBJS): ../../Compress/LZMA_Alone/$(*B).cpp
 	$(COMPL)
-$O\RangeCoderBit.obj: ../../Compress/RangeCoder/$(*B).cpp
-	$(COMPL)
-
 $(C_OBJS): ../../../../C/$(*B).c
-	$(COMPL_O2)
-$(C_LZ_OBJS): ../../../../C/Compress/Lz/$(*B).c
-	$(COMPL_O2)
-$(C_BRANCH_OBJS): ../../../../C/Compress/Branch/$(*B).c
 	$(COMPL_O2)

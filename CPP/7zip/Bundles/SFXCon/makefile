@@ -29,6 +29,7 @@ COMMON_OBJS = \
   $O\Wildcard.obj \
 
 WIN_OBJS = \
+  $O\DLL.obj \
   $O\Error.obj \
   $O\FileDir.obj \
   $O\FileFind.obj \
@@ -80,47 +81,31 @@ AR_COMMON_OBJS = \
   $O\7zIn.obj \
   $O\7zRegister.obj \
 
-BRANCH_OPT_OBJS = \
+COMPRESS_OBJS = \
   $O\BranchCoder.obj \
-  $O\x86.obj \
-  $O\x86_2.obj \
-  $O\BCJRegister.obj \
-  $O\BCJ2Register.obj \
-
-COPY_OBJS = \
+  $O\Bcj2Coder.obj \
+  $O\Bcj2Register.obj \
+  $O\BcjCoder.obj \
+  $O\BcjRegister.obj \
   $O\CopyCoder.obj \
   $O\CopyRegister.obj \
+  $O\LzmaDecoder.obj \
+  $O\LzmaRegister.obj \
+  $O\PpmdDecoder.obj \
+  $O\PpmdRegister.obj \
 
-LZ_OBJS = \
-  $O\LZOutWindow.obj \
-
-LZMA_OPT_OBJS = \
-  $O\LZMADecoder.obj \
-  $O\LZMARegister.obj \
-
-PPMD_OPT_OBJS = \
-  $O\PPMDDecoder.obj \
-  $O\PPMDRegister.obj \
-
-7ZAES_OPT_OBJS = \
-  $O\7zAES.obj \
-  $O\7zAESRegister.obj \
-
-AES_OPT_OBJS = \
-  $O\MyAES.obj \
-
-CRYPTO_HASH_OBJS = \
-  $O\Sha256.obj \
+CRYPTO_OBJS = \
+  $O\7zAes.obj \
+  $O\7zAesRegister.obj \
+  $O\MyAes.obj \
 
 C_OBJS = \
   $O\Alloc.obj \
+  $O\Bra86.obj \
+  $O\LzmaDec.obj \
   $O\Threads.obj \
-
-C_BRANCH_OBJS = \
-  $O\BranchX86.obj \
-
-C_CRYPTO = \
   $O\Aes.obj \
+  $O\Sha256.obj \
 
 !include "../../Crc2.mak"
 
@@ -134,17 +119,9 @@ OBJS = \
   $(UI_COMMON_OBJS) \
   $(AR_COMMON_OBJS) \
   $(7Z_OBJS) \
-  $(BRANCH_OPT_OBJS) \
-  $(COPY_OBJS) \
-  $(LZ_OBJS) \
-  $(LZMA_OPT_OBJS) \
-  $(PPMD_OPT_OBJS) \
-  $(7ZAES_OPT_OBJS) \
-  $(AES_OPT_OBJS) \
-  $(CRYPTO_HASH_OBJS) \
+  $(COMPRESS_OBJS) \
+  $(CRYPTO_OBJS) \
   $(C_OBJS) \
-  $(C_BRANCH_OBJS) \
-  $(C_CRYPTO) \
   $(CRC_OBJS) \
   $O\resource.res
 
@@ -169,28 +146,11 @@ $(AR_COMMON_OBJS): ../../Archive/Common/$(*B).cpp
 
 $(7Z_OBJS): ../../Archive/7z/$(*B).cpp
 	$(COMPL)
-$(BRANCH_OPT_OBJS): ../../Compress/Branch/$(*B).cpp
+$(COMPRESS_OBJS): ../../Compress/$(*B).cpp
 	$(COMPL)
-$(COPY_OBJS): ../../Compress/Copy/$(*B).cpp
-	$(COMPL)
-$(LZ_OBJS): ../../Compress/LZ/$(*B).cpp
-	$(COMPL)
-$(LZMA_OPT_OBJS): ../../Compress/LZMA/$(*B).cpp
-	$(COMPL)
-$(PPMD_OPT_OBJS): ../../Compress/PPMD/$(*B).cpp
-	$(COMPL)
-
-$(AES_OPT_OBJS): ../../Crypto/AES/$(*B).cpp
-	$(COMPL)
-$(7ZAES_OPT_OBJS): ../../Crypto/7zAES/$(*B).cpp
-	$(COMPL)
-$(CRYPTO_HASH_OBJS): ../../Crypto/Hash/$(*B).cpp
+$(CRYPTO_OBJS): ../../Crypto/$(*B).cpp
 	$(COMPL)
 $(C_OBJS): ../../../../C/$(*B).c
-	$(COMPL_O1)
-$(C_BRANCH_OBJS): ../../../../C/Compress/Branch/$(*B).c
-	$(COMPL_O1)
-$(C_CRYPTO): ../../../../C/Crypto/$(*B).c
-	$(COMPL_O1)
+	$(COMPL_O2)
 
 !include "../../Crc.mak"

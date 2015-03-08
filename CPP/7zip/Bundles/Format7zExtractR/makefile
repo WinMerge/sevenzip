@@ -68,47 +68,28 @@ AR_COMMON_OBJS = \
 
 COMPRESS_OBJS = \
   $O\CodecExports.obj \
-
-SWAP_OPT_OBJS = \
+  $O\Bcj2Coder.obj \
+  $O\Bcj2Register.obj \
+  $O\BcjCoder.obj \
+  $O\BcjRegister.obj \
+  $O\BranchCoder.obj \
+  $O\BranchMisc.obj \
+  $O\BranchRegister.obj \
   $O\ByteSwap.obj \
   $O\ByteSwapRegister.obj \
-
-BRANCH_OPT_OBJS = \
-  $O\BranchCoder.obj \
-  $O\x86.obj \
-  $O\x86_2.obj \
-  $O\ARM.obj \
-  $O\ARMThumb.obj \
-  $O\IA64.obj \
-  $O\PPC.obj \
-  $O\SPARC.obj \
-  $O\BranchRegister.obj \
-  $O\BCJRegister.obj \
-  $O\BCJ2Register.obj \
-
-COPY_OBJS = \
   $O\CopyCoder.obj \
   $O\CopyRegister.obj \
-
-LZ_OBJS = \
-  $O\LZOutWindow.obj \
-
-LZMA_OPT_OBJS = \
-  $O\LZMADecoder.obj \
-  $O\LZMARegister.obj \
+  $O\LzmaDecoder.obj \
+  $O\LzmaRegister.obj \
 
 C_OBJS = \
-  $O\Alloc.obj \
   $O\7zCrc.obj \
+  $O\Alloc.obj \
+  $O\Bra.obj \
+  $O\Bra86.obj \
+  $O\BraIA64.obj \
+  $O\LzmaDec.obj \
   $O\Threads.obj \
-
-C_BRANCH_OBJS = \
-  $O\BranchARM.obj \
-  $O\BranchARMThumb.obj \
-  $O\BranchIA64.obj \
-  $O\BranchPPC.obj \
-  $O\BranchSPARC.obj \
-  $O\BranchX86.obj \
 
 OBJS = \
   $O\StdAfx.obj \
@@ -120,13 +101,7 @@ OBJS = \
   $(AR_COMMON_OBJS) \
   $(7Z_OBJS) \
   $(COMPRESS_OBJS) \
-  $(BRANCH_OPT_OBJS) \
-  $(SWAP_OPT_OBJS) \
-  $(COPY_OBJS) \
-  $(LZ_OBJS) \
-  $(LZMA_OPT_OBJS) \
   $(C_OBJS) \
-  $(C_BRANCH_OBJS) \
   $O\resource.res
 
 
@@ -147,19 +122,7 @@ $(7Z_OBJS): ../../Archive/7z/$(*B).cpp
 	$(COMPL)
 
 $(COMPRESS_OBJS): ../../Compress/$(*B).cpp
-	$(COMPL)
-$(BRANCH_OPT_OBJS): ../../Compress/Branch/$(*B).cpp
-	$(COMPL_O2)
-$(SWAP_OPT_OBJS): ../../Compress/ByteSwap/$(*B).cpp
-	$(COMPL_O2)
-$(COPY_OBJS): ../../Compress/Copy/$(*B).cpp
-	$(COMPL)
-$(LZ_OBJS): ../../Compress/LZ/$(*B).cpp
-	$(COMPL)
-$(LZMA_OPT_OBJS): ../../Compress/LZMA/$(*B).cpp
 	$(COMPL_O2)
 
 $(C_OBJS): ../../../../C/$(*B).c
-	$(COMPL_O2)
-$(C_BRANCH_OBJS): ../../../../C/Compress/Branch/$(*B).c
 	$(COMPL_O2)

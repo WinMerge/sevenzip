@@ -636,9 +636,5 @@ SOURCE=..\..\..\..\C\Threads.c
 SOURCE=..\..\..\..\C\Threads.h
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\7z.ico
-# End Source File
 # End Target
 # End Project

@@ -5,10 +5,14 @@
 
 #include "Common/DynamicBuffer.h"
 #include "Common/MyCom.h"
-#include "../../IStream.h"
+
 #include "../../ICoder.h"
+#include "../../IStream.h"
+
 #include "../../Common/StreamObjects.h"
-#include "../../Crypto/RarAES/RarAES.h"
+
+#include "../../Crypto/RarAes.h"
+
 #include "RarHeader.h"
 #include "RarItem.h"
 
@@ -24,7 +28,7 @@ public:
     kArchiveHeaderCRCError,
     kFileHeaderCRCError,
     kIncorrectArchive
-  } 
+  }
   Cause;
   CInArchiveException(CCauseType cause) :   Cause(cause) {}
 };
@@ -64,7 +68,9 @@ class CInArchive
   bool ReadBytesAndTestSize(void *data, UInt32 size);
   void ReadBytesAndTestResult(void *data, UInt32 size);
   
-  bool FindAndReadMarker(const UInt64 *searchHeaderSizeLimit);
+  HRESULT FindAndReadMarker(IInStream *stream, const UInt64 *searchHeaderSizeLimit);
+  HRESULT Open2(IInStream *stream, const UInt64 *searchHeaderSizeLimit);
+
   void ThrowExceptionWithCode(CInArchiveException::CCauseType cause);
   void ThrowUnexpectedEndOfArchiveException();
   
@@ -102,17 +108,14 @@ protected:
       }
   }
 
-  bool ReadMarkerAndArchiveHeader(const UInt64 *searchHeaderSizeLimit);
 public:
-  bool Open(IInStream *inStream, const UInt64 *searchHeaderSizeLimit);
+  HRESULT Open(IInStream *inStream, const UInt64 *searchHeaderSizeLimit);
   void Close();
   HRESULT GetNextItem(CItemEx &item, ICryptoGetTextPassword *getTextPassword);
   
   void SkipArchiveComment();
   
   void GetArchiveInfo(CInArchiveInfo &archiveInfo) const;
-  
-  void DirectGetBytes(void *data, UInt32 size);
   
   bool SeekInArchive(UInt64 position);
   ISequentialInStream *CreateLimitedStream(UInt64 position, UInt64 size);

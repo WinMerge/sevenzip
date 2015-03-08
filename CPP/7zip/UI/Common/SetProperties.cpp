@@ -22,7 +22,7 @@ static void ParseNumberString(const UString &s, NCOM::CPropVariant &prop)
     prop = s;
   else if (result <= 0xFFFFFFFF)
     prop = (UInt32)result;
-  else 
+  else
     prop = result;
 }
 
@@ -44,9 +44,23 @@ HRESULT SetProperties(IUnknown *unknown, const CObjectVector<CProperty> &propert
     {
       const CProperty &property = properties[i];
       NCOM::CPropVariant propVariant;
-      if (!property.Value.IsEmpty())
+      UString name = property.Name;
+      if (property.Value.IsEmpty())
+      {
+        if (!name.IsEmpty())
+        {
+          wchar_t c = name[name.Length() - 1];
+          if (c == L'-')
+            propVariant = false;
+          else if (c == L'+')
+            propVariant = true;
+          if (propVariant.vt != VT_EMPTY)
+            name = name.Left(name.Length() - 1);
+        }
+      }
+      else
         ParseNumberString(property.Value, propVariant);
-      realNames.Add(property.Name);
+      realNames.Add(name);
       values[i] = propVariant;
     }
     CRecordVector<const wchar_t *> names;

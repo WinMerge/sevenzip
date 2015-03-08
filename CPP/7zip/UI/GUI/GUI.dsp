@@ -561,14 +561,6 @@ SOURCE=.\GUI.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\OpenCallbackGUI.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\OpenCallbackGUI.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\UpdateCallbackGUI.cpp
 # End Source File
 # Begin Source File
@@ -637,11 +629,11 @@ SOURCE=..\..\Compress\LZMA_Alone\LzmaBench.h
 # End Group
 # Begin Source File
 
-SOURCE=..\..\Compress\Copy\CopyCoder.cpp
+SOURCE=..\..\Compress\CopyCoder.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Copy\CopyCoder.h
+SOURCE=..\..\Compress\CopyCoder.h
 # End Source File
 # End Group
 # Begin Group "C"
@@ -956,6 +948,10 @@ SOURCE=..\..\..\Windows\System.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Windows\System.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Windows\Time.cpp
 # End Source File
 # Begin Source File
 

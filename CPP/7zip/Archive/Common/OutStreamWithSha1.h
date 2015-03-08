@@ -1,17 +1,17 @@
 // OutStreamWithSha1.h
 
-#ifndef __OUTSTREAMWITHSHA1_H
-#define __OUTSTREAMWITHSHA1_H
+#ifndef __OUT_STREAM_WITH_SHA1_H
+#define __OUT_STREAM_WITH_SHA1_H
 
 #include "../../../Common/MyCom.h"
 #include "../../IStream.h"
 
 
 
-#include "../../Crypto/Hash/Sha1.h"
+#include "../../Crypto/Sha1.h"
 
 
-class COutStreamWithSha1: 
+class COutStreamWithSha1:
   public ISequentialOutStream,
   public CMyUnknownImp
 {

@@ -5,6 +5,7 @@
 #include "ZipHeader.h"
 #include "ZipItem.h"
 #include "../Common/ItemNameUtils.h"
+#include "../../../../C/CpuArch.h"
 
 namespace NArchive {
 namespace NZip {
@@ -17,29 +18,46 @@ bool operator==(const CVersion &v1, const CVersion &v2)
 bool operator!=(const CVersion &v1, const CVersion &v2)
 {
   return !(v1 == v2);
-} 
-
-bool CLocalItem::IsImplodeBigDictionary() const
-{ 
-  if (CompressionMethod != NFileHeader::NCompressionMethod::kImploded)
-    throw 12312212;
-  return (Flags & NFileHeader::NFlags::kImplodeDictionarySizeMask) != 0; 
 }
 
-bool CLocalItem::IsImplodeLiteralsOn() const
+bool CExtraSubBlock::ExtractNtfsTime(int index, FILETIME &ft) const
 {
-  if (CompressionMethod != NFileHeader::NCompressionMethod::kImploded)
-    throw 12312213;
-  return (Flags & NFileHeader::NFlags::kImplodeLiteralsOnMask) != 0; 
+  ft.dwHighDateTime = ft.dwLowDateTime = 0;
+  UInt32 size = (UInt32)Data.GetCapacity();
+  if (ID != NFileHeader::NExtraID::kNTFS || size < 32)
+    return false;
+  const Byte *p = (const Byte *)Data;
+  p += 4; // for reserved
+  size -= 4;
+  while (size > 4)
+  {
+    UInt16 tag = GetUi16(p);
+    UInt32 attrSize = GetUi16(p + 2);
+    p += 4;
+    size -= 4;
+    if (attrSize > size)
+      attrSize = size;
+    
+    if (tag == NFileHeader::NNtfsExtra::kTagTime && attrSize >= 24)
+    {
+      p += 8 * index;
+      ft.dwLowDateTime = GetUi32(p);
+      ft.dwHighDateTime = GetUi32(p + 4);
+      return true;
+    }
+    p += attrSize;
+    size -= attrSize;
+  }
+  return false;
 }
 
-bool CLocalItem::IsDirectory() const
-{ 
+bool CLocalItem::IsDir() const
+{
   return NItemName::HasTailSlash(Name, GetCodePage());
 }
 
-bool CItem::IsDirectory() const
-{ 
+bool CItem::IsDir() const
+{
   if (NItemName::HasTailSlash(Name, GetCodePage()))
     return true;
   if (!FromCentral)
@@ -48,14 +66,11 @@ bool CItem::IsDirectory() const
   switch(MadeByVersion.HostOS)
   {
     case NFileHeader::NHostOS::kAMIGA:
-      switch (highAttributes & NFileHeader::NAmigaAttribute::kIFMT) 
+      switch (highAttributes & NFileHeader::NAmigaAttribute::kIFMT)
       {
-        case NFileHeader::NAmigaAttribute::kIFDIR:
-          return true;
-        case NFileHeader::NAmigaAttribute::kIFREG:  
-          return false;
-        default:
-          return false; // change it throw kUnknownAttributes;
+        case NFileHeader::NAmigaAttribute::kIFDIR: return true;
+        case NFileHeader::NAmigaAttribute::kIFREG: return false;
+        default: return false; // change it throw kUnknownAttributes;
       }
     case NFileHeader::NHostOS::kFAT:
     case NFileHeader::NHostOS::kNTFS:
@@ -71,7 +86,7 @@ bool CItem::IsDirectory() const
       return false; // change it throw kUnknownAttributes;
     default:
       /*
-      switch (highAttributes & NFileHeader::NUnixAttribute::kIFMT) 
+      switch (highAttributes & NFileHeader::NUnixAttribute::kIFMT)
       {
         case NFileHeader::NUnixAttribute::kIFDIR:
           return true;
@@ -86,7 +101,7 @@ bool CItem::IsDirectory() const
 UInt32 CLocalItem::GetWinAttributes() const
 {
   DWORD winAttributes = 0;
-  if (IsDirectory())
+  if (IsDir())
     winAttributes |= FILE_ATTRIBUTE_DIRECTORY;
   return winAttributes;
 }
@@ -99,26 +114,26 @@ UInt32 CItem::GetWinAttributes() const
     case NFileHeader::NHostOS::kFAT:
     case NFileHeader::NHostOS::kNTFS:
       if (FromCentral)
-        winAttributes = ExternalAttributes; 
+        winAttributes = ExternalAttributes;
       break;
     default:
       winAttributes = 0; // must be converted from unix value;
   }
-  if (IsDirectory())       // test it;
+  if (IsDir())       // test it;
     winAttributes |= FILE_ATTRIBUTE_DIRECTORY;
   return winAttributes;
 }
 
 void CLocalItem::SetFlagBits(int startBitNumber, int numBits, int value)
-{  
+{
   UInt16 mask = (UInt16)(((1 << numBits) - 1) << startBitNumber);
   Flags &= ~mask;
   Flags |= value << startBitNumber;
 }
 
 void CLocalItem::SetBitMask(int bitMask, bool enable)
-{  
-  if(enable) 
+{
+  if(enable)
     Flags |= bitMask;
   else
     Flags &= ~bitMask;
@@ -126,5 +141,7 @@ void CLocalItem::SetBitMask(int bitMask, bool enable)
 
 void CLocalItem::SetEncrypted(bool encrypted)
   { SetBitMask(NFileHeader::NFlags::kEncrypted, encrypted); }
+void CLocalItem::SetUtf8(bool isUtf8)
+  { SetBitMask(NFileHeader::NFlags::kUtf8, isUtf8); }
 
 }}

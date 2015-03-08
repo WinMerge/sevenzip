@@ -243,74 +243,42 @@ SOURCE=..\..\Archive\Common\OutStreamWithCRC.h
 # Begin Group "Compress"
 
 # PROP Default_Filter ""
-# Begin Group "LZMA"
-
-# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\Compress\LZMA\LZMADecoder.cpp
+SOURCE=..\..\Compress\Bcj2Coder.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\LZMA\LZMARegister.cpp
-# End Source File
-# End Group
-# Begin Group "Branch"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\..\Compress\Branch\BCJ2Register.cpp
+SOURCE=..\..\Compress\Bcj2Register.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Branch\BCJRegister.cpp
+SOURCE=..\..\Compress\BcjCoder.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Branch\BranchCoder.cpp
+SOURCE=..\..\Compress\BcjRegister.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Branch\BranchCoder.h
+SOURCE=..\..\Compress\BranchCoder.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Branch\x86.cpp
+SOURCE=..\..\Compress\CopyCoder.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Branch\x86_2.cpp
-# End Source File
-# End Group
-# Begin Group "Copy"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\..\Compress\Copy\CopyCoder.cpp
+SOURCE=..\..\Compress\CopyRegister.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Copy\CopyCoder.h
+SOURCE=..\..\Compress\LzmaDecoder.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Copy\CopyRegister.cpp
+SOURCE=..\..\Compress\LzmaRegister.cpp
 # End Source File
-# End Group
-# Begin Group "LZ"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\..\Compress\LZ\LZOutWindow.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Compress\LZ\LZOutWindow.h
-# End Source File
-# End Group
 # End Group
 # Begin Group "Common"
 
@@ -647,18 +615,6 @@ SOURCE=..\..\UI\Common\OpenArchive.cpp
 SOURCE=..\..\UI\Common\OpenArchive.h
 # End Source File
 # End Group
-# Begin Group "GUI"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\..\UI\GUI\OpenCallbackGUI.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\UI\GUI\OpenCallbackGUI.h
-# End Source File
-# End Group
 # End Group
 # Begin Group "File Manager"
 
@@ -687,19 +643,6 @@ SOURCE=..\..\UI\FileManager\FormatUtils.h
 # Begin Group "C"
 
 # PROP Default_Filter ""
-# Begin Group "C Branch"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\..\..\..\C\Compress\Branch\BranchX86.c
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\C\Compress\Branch\BranchX86.h
-# End Source File
-# End Group
 # Begin Source File
 
 SOURCE=..\..\..\..\C\7zCrc.c
@@ -717,6 +660,24 @@ SOURCE=..\..\..\..\C\Alloc.c
 # Begin Source File
 
 SOURCE=..\..\..\..\C\Alloc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Bra.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Bra86.c
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\LzmaDec.c
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\LzmaDec.h
 # End Source File
 # Begin Source File
 

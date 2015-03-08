@@ -2,4 +2,10 @@
 
 MY_VERSION_INFO_DLL("7z Plugin", "7z")
 
-101  ICON  "7z.ico"
+0 ICON  "../Icons/7z.ico"
+
+STRINGTABLE
+BEGIN
+  100 "7z:0"
+END
+

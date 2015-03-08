@@ -1,95 +1,84 @@
-/* 7zItem.h */
+/* 7zItem.h -- 7z Items
+2008-10-04 : Igor Pavlov : Public domain */
 
 #ifndef __7Z_ITEM_H
 #define __7Z_ITEM_H
 
-#include "7zMethodID.h"
-#include "7zHeader.h"
-#include "7zBuffer.h"
+#include "../../7zBuf.h"
 
-typedef struct _CCoderInfo
+typedef struct
 {
   UInt32 NumInStreams;
   UInt32 NumOutStreams;
-  CMethodID MethodID;
-  CSzByteBuffer Properties;
-}CCoderInfo;
+  UInt64 MethodID;
+  CBuf Props;
+} CSzCoderInfo;
 
-void SzCoderInfoInit(CCoderInfo *coder);
-void SzCoderInfoFree(CCoderInfo *coder, void (*freeFunc)(void *p));
+void SzCoderInfo_Init(CSzCoderInfo *p);
+void SzCoderInfo_Free(CSzCoderInfo *p, ISzAlloc *alloc);
 
-typedef struct _CBindPair
+typedef struct
 {
   UInt32 InIndex;
   UInt32 OutIndex;
-}CBindPair;
+} CBindPair;
 
-typedef struct _CFolder
+typedef struct
 {
-  UInt32 NumCoders;
-  CCoderInfo *Coders;
-  UInt32 NumBindPairs;
+  CSzCoderInfo *Coders;
   CBindPair *BindPairs;
-  UInt32 NumPackStreams; 
   UInt32 *PackStreams;
-  CFileSize *UnPackSizes;
-  int UnPackCRCDefined;
-  UInt32 UnPackCRC;
+  UInt64 *UnpackSizes;
+  UInt32 NumCoders;
+  UInt32 NumBindPairs;
+  UInt32 NumPackStreams;
+  int UnpackCRCDefined;
+  UInt32 UnpackCRC;
 
-  UInt32 NumUnPackStreams;
-}CFolder;
+  UInt32 NumUnpackStreams;
+} CSzFolder;
 
-void SzFolderInit(CFolder *folder);
-CFileSize SzFolderGetUnPackSize(CFolder *folder);
-int SzFolderFindBindPairForInStream(CFolder *folder, UInt32 inStreamIndex);
-UInt32 SzFolderGetNumOutStreams(CFolder *folder);
-CFileSize SzFolderGetUnPackSize(CFolder *folder);
+void SzFolder_Init(CSzFolder *p);
+UInt64 SzFolder_GetUnpackSize(CSzFolder *p);
+int SzFolder_FindBindPairForInStream(CSzFolder *p, UInt32 inStreamIndex);
+UInt32 SzFolder_GetNumOutStreams(CSzFolder *p);
+UInt64 SzFolder_GetUnpackSize(CSzFolder *p);
 
-typedef struct _CArchiveFileTime
+typedef struct
 {
   UInt32 Low;
   UInt32 High;
-} CArchiveFileTime;
+} CNtfsFileTime;
 
-typedef struct _CFileItem
+typedef struct
 {
-  CArchiveFileTime LastWriteTime;
-  /*
-  CFileSize StartPos;
-  UInt32 Attributes; 
-  */
-  CFileSize Size;
-  UInt32 FileCRC;
+  CNtfsFileTime MTime;
+  UInt64 Size;
   char *Name;
+  UInt32 FileCRC;
 
-  Byte IsFileCRCDefined;
   Byte HasStream;
-  Byte IsDirectory;
+  Byte IsDir;
   Byte IsAnti;
-  Byte IsLastWriteTimeDefined;
-  /*
-  int AreAttributesDefined;
-  int IsLastWriteTimeDefined;
-  int IsStartPosDefined;
-  */
-}CFileItem;
+  Byte FileCRCDefined;
+  Byte MTimeDefined;
+} CSzFileItem;
 
-void SzFileInit(CFileItem *fileItem);
+void SzFile_Init(CSzFileItem *p);
 
-typedef struct _CArchiveDatabase
+typedef struct
 {
-  UInt32 NumPackStreams;
-  CFileSize *PackSizes;
+  UInt64 *PackSizes;
   Byte *PackCRCsDefined;
   UInt32 *PackCRCs;
+  CSzFolder *Folders;
+  CSzFileItem *Files;
+  UInt32 NumPackStreams;
   UInt32 NumFolders;
-  CFolder *Folders;
   UInt32 NumFiles;
-  CFileItem *Files;
-}CArchiveDatabase;
+} CSzAr;
 
-void SzArchiveDatabaseInit(CArchiveDatabase *db);
-void SzArchiveDatabaseFree(CArchiveDatabase *db, void (*freeFunc)(void *));
-
+void SzAr_Init(CSzAr *p);
+void SzAr_Free(CSzAr *p, ISzAlloc *alloc);
 
 #endif

@@ -3,13 +3,13 @@
 #include "StdAfx.h"
 
 #include "Common/ComTry.h"
-#include "Common/Defs.h"
-#include "Windows/PropVariant.h"
-#include "Windows/Defs.h"
 
+#include "Windows/PropVariant.h"
+
+#include "../../Common/CreateCoder.h"
 #include "../../Common/ProgressUtils.h"
 #include "../../Common/StreamUtils.h"
-#include "../../Common/CreateCoder.h"
+
 #include "../Common/DummyOutStream.h"
 
 #include "BZip2Handler.h"
@@ -21,9 +21,9 @@ namespace NBZip2 {
 
 static const CMethodId kMethodId_BZip2 = 0x040202;
 
-STATPROPSTG kProps[] = 
+STATPROPSTG kProps[] =
 {
-  { NULL, kpidPackedSize, VT_UI8}
+  { NULL, kpidPackSize, VT_UI8}
 };
 
 IMP_IInArchive_Props
@@ -40,13 +40,13 @@ STDMETHODIMP CHandler::GetProperty(UInt32 /* index */, PROPID propID,  PROPVARIA
   NWindows::NCOM::CPropVariant prop;
   switch(propID)
   {
-    case kpidPackedSize: prop = _item.PackSize; break;
+    case kpidPackSize: prop = _item.PackSize; break;
   }
   prop.Detach(value);
   return S_OK;
 }
 
-STDMETHODIMP CHandler::Open(IInStream *stream, 
+STDMETHODIMP CHandler::Open(IInStream *stream,
     const UInt64 * /* maxCheckStartPosition */,
     IArchiveOpenCallback * /* openArchiveCallback */)
 {
@@ -56,10 +56,7 @@ STDMETHODIMP CHandler::Open(IInStream *stream,
     RINOK(stream->Seek(0, STREAM_SEEK_CUR, &_streamStartPosition));
     const int kSignatureSize = 3;
     Byte buffer[kSignatureSize];
-    UInt32 processedSize;
-    RINOK(ReadStream(stream, buffer, kSignatureSize, &processedSize));
-    if (processedSize != kSignatureSize)
-      return S_FALSE;
+    RINOK(ReadStream_FALSE(stream, buffer, kSignatureSize));
     if (buffer[0] != 'B' || buffer[1] != 'Z' || buffer[2] != 'h')
       return S_FALSE;
 
@@ -166,9 +163,9 @@ STDMETHODIMP CHandler::Extract(const UInt32* indices, UInt32 numItems,
 
     const int kSignatureSize = 3;
     Byte buffer[kSignatureSize];
-    UInt32 processedSize;
-    RINOK(ReadStream(_stream, buffer, kSignatureSize, &processedSize));
-    if (processedSize < kSignatureSize)
+    size_t processedSize = kSignatureSize;
+    RINOK(ReadStream(_stream, buffer, &processedSize));
+    if (processedSize != kSignatureSize)
     {
       if (firstItem)
         return E_FAIL;

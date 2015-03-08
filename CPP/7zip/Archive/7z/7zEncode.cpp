@@ -164,7 +164,7 @@ HRESULT CEncoder::Encode(
   }
   for (i = 1; i < _bindInfo.OutStreams.Size(); i++)
   {
-    CSequentialOutTempBufferImp *tempBufferSpec = 
+    CSequentialOutTempBufferImp *tempBufferSpec =
         new CSequentialOutTempBufferImp;
     CMyComPtr<ISequentialOutStream> tempBuffer = tempBufferSpec;
     tempBufferSpec->Init(&inOutTempBuffers[i - 1]);
@@ -195,10 +195,10 @@ HRESULT CEncoder::Encode(
   // UInt64 outStreamStartPos;
   // RINOK(stream->Seek(0, STREAM_SEEK_CUR, &outStreamStartPos));
   
-  CSequentialInStreamSizeCount2 *inStreamSizeCountSpec = 
+  CSequentialInStreamSizeCount2 *inStreamSizeCountSpec =
       new CSequentialInStreamSizeCount2;
   CMyComPtr<ISequentialInStream> inStreamSizeCount = inStreamSizeCountSpec;
-  CSequentialOutStreamSizeCount *outStreamSizeCountSpec = 
+  CSequentialOutStreamSizeCount *outStreamSizeCountSpec =
       new CSequentialOutStreamSizeCount;
   CMyComPtr<ISequentialOutStream> outStreamSizeCount = outStreamSizeCountSpec;
 
@@ -233,8 +233,8 @@ HRESULT CEncoder::Encode(
       outStreamSpec->Init();
       writeCoderProperties->WriteCoderProperties(outStream);
       size_t size = outStreamSpec->GetSize();
-      encodingInfo.Properties.SetCapacity(size);
-      memmove(encodingInfo.Properties, outStreamSpec->GetBuffer(), size);
+      encodingInfo.Props.SetCapacity(size);
+      memmove(encodingInfo.Props, outStreamSpec->GetBuffer(), size);
     }
   }
 
@@ -275,10 +275,10 @@ HRESULT CEncoder::Encode(
       streamSize = inStreamSizeCountSpec->GetSize();
     else
       streamSize = _mixerCoderSpec->GetWriteProcessedSize(binder);
-    folderItem.UnPackSizes.Add(streamSize);
+    folderItem.UnpackSizes.Add(streamSize);
   }
   for (i = numMethods - 1; i >= 0; i--)
-    folderItem.Coders[numMethods - 1 - i].Properties = _codersInfo[i].Properties;
+    folderItem.Coders[numMethods - 1 - i].Props = _codersInfo[i].Props;
   return S_OK;
 }
 

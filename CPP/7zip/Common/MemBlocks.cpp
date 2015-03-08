@@ -13,7 +13,7 @@ bool CMemBlockManager::AllocateSpace(size_t numBlocks)
   if (_blockSize < sizeof(void *) || numBlocks < 1)
     return false;
   size_t totalSize = numBlocks * _blockSize;
-  if (totalSize / _blockSize != numBlocks) 
+  if (totalSize / _blockSize != numBlocks)
     return false;
   _data = ::MidAlloc(totalSize);
   if (_data == 0)
@@ -36,7 +36,7 @@ void CMemBlockManager::FreeSpace()
 void *CMemBlockManager::AllocateBlock()
 {
   if (_headFree == 0)
-    return 0; 
+    return 0;
   void *p = _headFree;
   _headFree = *(void **)_headFree;
   return p;
@@ -114,7 +114,7 @@ void CMemBlocks::Free(CMemBlockManagerMt *manager)
 void CMemBlocks::FreeOpt(CMemBlockManagerMt *manager)
 {
   Free(manager);
-  Blocks.Free(); // to reduce memory usage
+  Blocks.ClearAndFree();
 }
 
 HRESULT CMemBlocks::WriteToStream(size_t blockSize, ISequentialOutStream *outStream) const
@@ -125,13 +125,10 @@ HRESULT CMemBlocks::WriteToStream(size_t blockSize, ISequentialOutStream *outStr
     UInt32 curSize = (UInt32)blockSize;
     if (totalSize < curSize)
       curSize = (UInt32)totalSize;
-    UInt32 processedSize;
     if (blockIndex >= Blocks.Size())
       return E_FAIL;
-    RINOK(WriteStream(outStream, Blocks[blockIndex], curSize, &processedSize));
-    if (processedSize != curSize)
-      return E_FAIL;
-    totalSize -= processedSize;
+    RINOK(WriteStream(outStream, Blocks[blockIndex], curSize));
+    totalSize -= curSize;
   }
   return S_OK;
 }
@@ -153,8 +150,8 @@ void CMemLockBlocks::Free(CMemBlockManagerMt *memManager)
   TotalSize = 0;
 }
 
-HRes CMemLockBlocks::SwitchToNoLockMode(CMemBlockManagerMt *memManager) 
-{ 
+HRes CMemLockBlocks::SwitchToNoLockMode(CMemBlockManagerMt *memManager)
+{
   if (LockMode)
   {
     if (Blocks.Size() > 0)

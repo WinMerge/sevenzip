@@ -28,7 +28,7 @@ static const TCHAR *kPluginsTypeValue = TEXT("Type");
 
 static CSysString GetFileFolderPluginsKeyName()
 {
-  return CSysString(kLMBasePath) + CSysString(TEXT('\\')) + 
+  return CSysString(kLMBasePath) + CSysString(TEXT('\\')) +
       CSysString(kPluginsKeyName);
 }
 
@@ -110,12 +110,12 @@ void ReadPluginInfoList(CObjectVector<CPluginInfo> &plugins)
     if (::ReadPluginInfo(pluginInfo))
       plugins.Add(pluginInfo);
   }
-  UString folderPath = baseFolderPrefix + L"Plugins\\";
+  UString folderPath = baseFolderPrefix + L"Plugins" WSTRING_PATH_SEPARATOR;
   NFind::CEnumeratorW enumerator(folderPath + L"*");
   NFind::CFileInfoW fileInfo;
   while (enumerator.Next(fileInfo))
   {
-    if (fileInfo.IsDirectory())
+    if (fileInfo.IsDir())
       continue;
     CPluginInfo pluginInfo;
     pluginInfo.FilePath = folderPath + fileInfo.Name;

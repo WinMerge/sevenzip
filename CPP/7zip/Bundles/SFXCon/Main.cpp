@@ -5,27 +5,30 @@
 #include "Common/MyInitGuid.h"
 
 #include "Common/CommandLineParser.h"
-#include "Common/StdOutStream.h"
-#include "Common/Wildcard.h"
-#include "Common/StringConvert.h"
 #include "Common/MyCom.h"
 #include "Common/MyException.h"
+#include "Common/StdOutStream.h"
+#include "Common/StringConvert.h"
+#include "Common/Wildcard.h"
 
-#include "Windows/FileDir.h"
-#include "Windows/FileName.h"
 #include "Windows/Defs.h"
+#include "Windows/FileName.h"
+#ifdef _WIN32
+#include "Windows/DLL.h"
+#include "Windows/FileDir.h"
+#endif
 
 #include "../../IPassword.h"
 #include "../../ICoder.h"
 
-#include "../../UI/Common/OpenArchive.h"
 #include "../../UI/Common/DefaultName.h"
 #include "../../UI/Common/ExitCode.h"
 #include "../../UI/Common/Extract.h"
+#include "../../UI/Common/OpenArchive.h"
 
+#include "../../UI/Console/ExtractCallbackConsole.h"
 #include "../../UI/Console/List.h"
 #include "../../UI/Console/OpenCallbackConsole.h"
-#include "../../UI/Console/ExtractCallbackConsole.h"
 
 #include "../../MyVersion.h"
 
@@ -35,15 +38,10 @@ using namespace NCommandLineParser;
 
 extern CStdOutStream *g_StdStream;
 
-static const char *kCopyrightString = 
+static const char *kCopyrightString =
 "\n7-Zip SFX " MY_VERSION_COPYRIGHT_DATE "\n";
 
 static const int kNumSwitches = 6;
-
-#ifdef _WIN32
-static const wchar_t *kDefaultExt = L".exe";
-static const int kDefaultExtLength = 4;
-#endif
 
 namespace NKey {
 enum Enum
@@ -63,17 +61,17 @@ enum EEnum
 {
   kRecursed,
   kWildCardOnlyRecursed,
-  kNonRecursed,
+  kNonRecursed
 };
 }
-/* 
+/*
 static const char kRecursedIDChar = 'R';
 static const wchar_t *kRecursedPostCharSet = L"0-";
 
 namespace NRecursedPostCharIndex {
-  enum EEnum 
+  enum EEnum
   {
-    kWildCardRecursionOnly = 0, 
+    kWildCardRecursionOnly = 0,
     kNoRecursion = 1
   };
 }
@@ -84,7 +82,7 @@ static const char kImmediateNameID = '!';
 static const char kSomeCludePostStringMinSize = 2; // at least <@|!><N>ame must be
 static const char kSomeCludeAfterRecursedPostStringMinSize = 2; // at least <@|!><N>ame must be
 */
-static const CSwitchForm kSwitchForms[kNumSwitches] = 
+static const CSwitchForm kSwitchForms[kNumSwitches] =
   {
     { L"?",  NSwitchType::kSimple, false },
     { L"H",  NSwitchType::kSimple, false },
@@ -107,7 +105,7 @@ enum EEnum
 
 }
 
-static const CCommandForm commandForms[kNumCommandForms] = 
+static const CCommandForm commandForms[kNumCommandForms] =
 {
   { L"T", false },
   // { "E", false },
@@ -115,7 +113,7 @@ static const CCommandForm commandForms[kNumCommandForms] =
   { L"L", false }
 };
 
-static const NRecursedType::EEnum kCommandRecursedDefault[kNumCommandForms] = 
+static const NRecursedType::EEnum kCommandRecursedDefault[kNumCommandForms] =
 {
   NRecursedType::kRecursed
 };
@@ -126,7 +124,7 @@ static const NRecursedType::EEnum kCommandRecursedDefault[kNumCommandForms] =
 static const wchar_t *kUniversalWildcard = L"*";
 static const int kCommandIndex = 0;
 
-static const char *kHelpString = 
+static const char *kHelpString =
     "\nUsage: 7zSFX [<command>] [<switches>...]\n"
     "\n"
     "<Commands>\n"
@@ -188,7 +186,7 @@ bool ParseArchiveCommand(const UString &commandString, CArchiveCommand &command)
   UString commandStringUpper = commandString;
   commandStringUpper.MakeUpper();
   UString postString;
-  int commandIndex = ParseCommand(kNumCommandForms, commandForms, commandStringUpper, 
+  int commandIndex = ParseCommand(kNumCommandForms, commandForms, commandStringUpper,
       postString) ;
   if (commandIndex < 0)
     return false;
@@ -199,7 +197,7 @@ bool ParseArchiveCommand(const UString &commandString, CArchiveCommand &command)
 // ------------------------------------------------------------------
 // filenames functions
 
-static bool AddNameToCensor(NWildcard::CCensor &wildcardCensor, 
+static bool AddNameToCensor(NWildcard::CCensor &wildcardCensor,
     const UString &name, bool include, NRecursedType::EEnum type)
 {
   /*
@@ -225,15 +223,15 @@ static bool AddNameToCensor(NWildcard::CCensor &wildcardCensor,
   return true;
 }
 
-void AddCommandLineWildCardToCensor(NWildcard::CCensor &wildcardCensor, 
+void AddCommandLineWildCardToCensor(NWildcard::CCensor &wildcardCensor,
     const UString &name, bool include, NRecursedType::EEnum type)
 {
   if (!AddNameToCensor(wildcardCensor, name, include, type))
     ShowMessageAndThrowException(kIncorrectWildCardInCommandLine, NExitCode::kUserError);
 }
 
-void AddToCensorFromNonSwitchesStrings(NWildcard::CCensor &wildcardCensor, 
-    const UStringVector & /* nonSwitchStrings */, NRecursedType::EEnum type, 
+void AddToCensorFromNonSwitchesStrings(NWildcard::CCensor &wildcardCensor,
+    const UStringVector & /* nonSwitchStrings */, NRecursedType::EEnum type,
     bool /* thereAreSwitchIncludeWildCards */)
 {
   AddCommandLineWildCardToCensor(wildcardCensor, kUniversalWildcard, true, type);
@@ -253,25 +251,43 @@ static void GetArguments(int numArguments, const char *arguments[], UStringVecto
 #endif
 
 int Main2(
-  #ifndef _WIN32  
+  #ifndef _WIN32
   int numArguments, const char *arguments[]
   #endif
 )
 {
-  #ifdef _WIN32  
+  #ifdef _WIN32
   SetFileApisToOEM();
   #endif
   
   g_StdOut << kCopyrightString;
 
   UStringVector commandStrings;
-  #ifdef _WIN32  
+  #ifdef _WIN32
   NCommandLineParser::SplitCommandLine(GetCommandLineW(), commandStrings);
   #else
   GetArguments(numArguments, arguments, commandStrings);
   #endif
 
-  UString archiveName = commandStrings.Front();
+  #ifdef _WIN32
+  
+  UString arcPath;
+  {
+    UString path;
+    NDLL::MyGetModuleFileName(NULL, path);
+    int fileNamePartStartIndex;
+    if (!NDirectory::MyGetFullPathName(path, arcPath, fileNamePartStartIndex))
+    {
+      g_StdOut << "GetFullPathName Error";
+      return NExitCode::kFatalError;
+    }
+  }
+
+  #else
+
+  UString arcPath = commandStrings.Front();
+
+  #endif
 
   commandStrings.Delete(0);
 
@@ -280,7 +296,7 @@ int Main2(
   {
     parser.ParseStrings(kSwitchForms, commandStrings);
   }
-  catch(...) 
+  catch(...)
   {
     PrintHelpAndExit();
   }
@@ -297,7 +313,7 @@ int Main2(
   CArchiveCommand command;
   if (numNonSwitchStrings == 0)
     command.CommandType = NCommandType::kFullExtract;
-  else 
+  else
   {
     if (numNonSwitchStrings > 1)
       PrintHelpAndExit();
@@ -318,11 +334,6 @@ int Main2(
 
   bool yesToAll = parser[NKey::kYes].ThereIs;
 
-  #ifdef _WIN32
-  if (archiveName.Right(kDefaultExtLength).CompareNoCase(kDefaultExt) != 0)
-    archiveName += kDefaultExt;
-  #endif
-
   // NExtractMode::EEnum extractMode;
   // bool isExtractGroupCommand = command.IsFromExtractGroup(extractMode);
 
@@ -333,13 +344,13 @@ int Main2(
     password = parser[NKey::kPassword].PostStrings[0];
 
   NFind::CFileInfoW archiveFileInfo;
-  if (!NFind::FindFile(archiveName, archiveFileInfo))
+  if (!NFind::FindFile(arcPath, archiveFileInfo))
     throw kCantFindSFX;
-  if (archiveFileInfo.IsDirectory())
+  if (archiveFileInfo.IsDir())
     throw kCantFindSFX;
   
   UString outputDir;
-  if(parser[NKey::kOutputDir].ThereIs)
+  if (parser[NKey::kOutputDir].ThereIs)
   {
     outputDir = parser[NKey::kOutputDir].PostStrings[0];
     NName::NormalizeDirPathPrefix(outputDir);
@@ -347,9 +358,9 @@ int Main2(
 
   {
     UStringVector v1, v2;
-    v1.Add(archiveName);
-    v2.Add(archiveName);
-    const NWildcard::CCensorNode &wildcardCensorHead = 
+    v1.Add(arcPath);
+    v2.Add(arcPath);
+    const NWildcard::CCensorNode &wildcardCensorHead =
       wildcardCensor.Pairs.Front().Head;
 
     CCodecs *codecs = new CCodecs;
@@ -382,8 +393,8 @@ int Main2(
       eo.StdOutMode = false;
       eo.PathMode = NExtract::NPathMode::kFullPathnames;
       eo.TestMode = command.CommandType == NCommandType::kTest;
-      eo.OverwriteMode = yesToAll ? 
-          NExtract::NOverwriteMode::kWithoutPrompt : 
+      eo.OverwriteMode = yesToAll ?
+          NExtract::NOverwriteMode::kWithoutPrompt :
           NExtract::NOverwriteMode::kAskBefore;
       eo.OutputDir = outputDir;
       eo.YesToAll = yesToAll;
@@ -391,9 +402,9 @@ int Main2(
       UString errorMessage;
       CDecompressStat stat;
       HRESULT result = DecompressArchives(
-          codecs,
+          codecs, CIntVector(),
           v1, v2,
-          wildcardCensorHead, 
+          wildcardCensorHead,
           eo, &openCallback, ecs, errorMessage, stat);
       if (!errorMessage.IsEmpty())
       {
@@ -417,11 +428,11 @@ int Main2(
     {
       UInt64 numErrors = 0;
       HRESULT result = ListArchives(
-          codecs,
+          codecs, CIntVector(),
           v1, v2,
-          wildcardCensorHead, 
-          true, false, 
-          passwordEnabled, 
+          wildcardCensorHead,
+          true, false,
+          passwordEnabled,
           password, numErrors);
       if (numErrors > 0)
       {

@@ -2,10 +2,12 @@
 
 #include "StdAfx.h"
 
-extern "C" 
-{ 
+extern "C"
+{
 #include "../../../../C/Alloc.h"
 }
+
+#include "../../../../C/CpuArch.h"
 
 #include "Common/MyCom.h"
 #include "../../Common/StreamUtils.h"
@@ -18,22 +20,6 @@ namespace NCom{
 
 static const UInt32 kSignatureSize = 8;
 static const Byte kSignature[kSignatureSize] = { 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1 };
-
-static HRESULT ReadBytes(ISequentialInStream *inStream, void *data, UInt32 size)
-{
-  UInt32 realProcessedSize;
-  RINOK(ReadStream(inStream, data, size, &realProcessedSize));
-  return (realProcessedSize == size) ? S_OK : S_FALSE;
-}
-
-#ifdef LITTLE_ENDIAN_UNALIGN
-#define GetUi16(p) (*(const UInt16 *)(p))
-#define GetUi32(p) (*(const UInt32 *)(p))
-#else
-#define GetUi16(p) ((p)[0] | ((UInt16)(p)[1] << 8))
-#define GetUi32(p) ((p)[0] | ((UInt32)(p)[1] << 8) | ((UInt32)(p)[2] << 16) | ((UInt32)(p)[3] << 24))
-#endif
-
 
 void CUInt32Buf::Free()
 {
@@ -56,7 +42,7 @@ bool CUInt32Buf::Allocate(UInt32 numItems)
 static HRESULT ReadSector(IInStream *inStream, Byte *buf, int sectorSizeBits, UInt32 sid)
 {
   RINOK(inStream->Seek((((UInt64)sid + 1) << sectorSizeBits), STREAM_SEEK_SET, NULL));
-  return ReadBytes(inStream, buf, (UInt32)1 << sectorSizeBits);
+  return ReadStream_FALSE(inStream, buf, (UInt32)1 << sectorSizeBits);
 }
 
 static HRESULT ReadIDs(IInStream *inStream, Byte *buf, int sectorSizeBits, UInt32 sid, UInt32 *dest)
@@ -83,8 +69,8 @@ static void ReadItem(Byte *p, CItem &item, bool mode64bit)
   item.RightDid = GetUi32(p + 72);
   item.SonDid = GetUi32(p + 76);
   // item.Flags = GetUi32(p + 96);
-  GetFileTimeFromMem(p + 100, &item.CreationTime);
-  GetFileTimeFromMem(p + 108, &item.LastWriteTime);
+  GetFileTimeFromMem(p + 100, &item.CTime);
+  GetFileTimeFromMem(p + 108, &item.MTime);
   item.Sid = GetUi32(p + 116);
   item.Size = GetUi32(p + 120);
   if (mode64bit)
@@ -141,7 +127,7 @@ static UString CompoundNameToFileName(const UString &s)
     }
     else
       res += c;
-  } 
+  }
   return res;
 }
 
@@ -219,7 +205,7 @@ HRESULT OpenArchive(IInStream *inStream, CDatabase &db)
 {
   static const UInt32 kHeaderSize = 512;
   Byte p[kHeaderSize];
-  RINOK(ReadBytes(inStream, p, kHeaderSize));
+  RINOK(ReadStream_FALSE(inStream, p, kHeaderSize));
   if (memcmp(p, kSignature, kSignatureSize) != 0)
     return S_FALSE;
   UInt16 majorVer = GetUi16(p + 0x1A);
@@ -233,7 +219,7 @@ HRESULT OpenArchive(IInStream *inStream, CDatabase &db)
   db.SectorSizeBits = sectorSizeBits;
   db.MiniSectorSizeBits = miniSectorSizeBits;
 
-  if (sectorSizeBits > 28 || miniSectorSizeBits > 28 || 
+  if (sectorSizeBits > 28 || miniSectorSizeBits > 28 ||
       sectorSizeBits < 7 || miniSectorSizeBits < 2 || miniSectorSizeBits > sectorSizeBits)
     return S_FALSE;
   UInt32 numSectorsForFAT = GetUi32(p + 0x2C);

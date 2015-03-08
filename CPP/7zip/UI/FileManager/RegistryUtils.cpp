@@ -3,14 +3,17 @@
 #include "StdAfx.h"
 
 #include "RegistryUtils.h"
+#include "Common/IntToString.h"
 #include "Windows/Registry.h"
 
 using namespace NWindows;
 using namespace NRegistry;
 
-static const TCHAR *kCUBasePath = TEXT("Software\\7-ZIP");
-static const TCHAR *kCU_FMPath = TEXT("Software\\7-ZIP\\FM");
-// static const TCHAR *kLM_Path = TEXT("Software\\7-ZIP\\FM");
+#define REG_PATH_7Z TEXT("Software") TEXT(STRING_PATH_SEPARATOR) TEXT("7-ZIP")
+
+static const TCHAR *kCUBasePath = REG_PATH_7Z;
+static const TCHAR *kCU_FMPath = REG_PATH_7Z TEXT(STRING_PATH_SEPARATOR) TEXT("FM");
+// static const TCHAR *kLM_Path = REG_PATH_7Z TEXT(STRING_PATH_SEPARATOR) TEXT("FM");
 
 static const WCHAR *kLangValueName = L"Lang";
 static const WCHAR *kEditor = L"Editor";
@@ -25,6 +28,8 @@ static const TCHAR *kAlternativeSelection = TEXT("AlternativeSelection");
 static const TCHAR *kLargePagesEnable = TEXT("LargePages");
 // static const TCHAR *kSingleClick = TEXT("SingleClick");
 // static const TCHAR *kUnderline = TEXT("Underline");
+
+static const TCHAR *kFlatViewName = TEXT("FlatViewArc");
 
 void SaveRegLang(const UString &langFile)
 {
@@ -147,4 +152,12 @@ bool ReadUnderline(){ return ReadOption(kUnderline, false); }
 void SaveLockMemoryEnable(bool enable) { Save7ZipOption(kLargePagesEnable, enable); }
 bool ReadLockMemoryEnable() { return Read7ZipOption(kLargePagesEnable, false); }
 
+static CSysString GetFlatViewName(UInt32 panelIndex)
+{
+  TCHAR panelString[32];
+  ConvertUInt64ToString(panelIndex, panelString);
+  return (CSysString)kFlatViewName + panelString;
+}
 
+void SaveFlatView(UInt32 panelIndex, bool enable) { SaveOption(GetFlatViewName(panelIndex), enable); }
+bool ReadFlatView(UInt32 panelIndex) { return ReadOption(GetFlatViewName(panelIndex), false); }

@@ -16,7 +16,7 @@ namespace NZip {
 
 struct CUpdateRange
 {
-  UInt64 Position; 
+  UInt64 Position;
   UInt64 Size;
   CUpdateRange() {};
   CUpdateRange(UInt64 position, UInt64 size): Position(position), Size(size) {};
@@ -26,7 +26,9 @@ struct CUpdateItem
 {
   bool NewData;
   bool NewProperties;
-  bool IsDirectory;
+  bool IsDir;
+  bool NtfsTimeIsDefined;
+  bool IsUtf8;
   int IndexInArchive;
   int IndexInClient;
   UInt32 Attributes;
@@ -35,7 +37,11 @@ struct CUpdateItem
   AString Name;
   // bool Commented;
   // CUpdateRange CommentRange;
-  CUpdateItem(): Size(0) {}
+  FILETIME NtfsMTime;
+  FILETIME NtfsATime;
+  FILETIME NtfsCTime;
+
+  CUpdateItem(): NtfsTimeIsDefined(false), IsUtf8(false), Size(0) {}
 };
 
 HRESULT Update(

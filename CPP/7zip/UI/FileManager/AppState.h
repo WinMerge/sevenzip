@@ -5,7 +5,7 @@
 
 #include "Windows/Synchronization.h"
 
-void inline AddUniqueStringToHead(UStringVector &list, 
+void inline AddUniqueStringToHead(UStringVector &list,
     const UString &string)
 {
   for(int i = 0; i < list.Size();)
@@ -51,20 +51,19 @@ class CFolderHistory
 {
   NWindows::NSynchronization::CCriticalSection _criticalSection;
   UStringVector Strings;
+  void Normalize()
+  {
+    const int kMaxSize = 100;
+    if (Strings.Size() > kMaxSize)
+      Strings.Delete(kMaxSize, Strings.Size() - kMaxSize);
+  }
+  
 public:
   
   void GetList(UStringVector &foldersHistory)
   {
     NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
     foldersHistory = Strings;
-  }
-  
-  void Normalize()
-  {
-    NWindows::NSynchronization::CCriticalSectionLock lock(_criticalSection);
-    const int kMaxSize = 100;
-    if (Strings.Size() > kMaxSize)
-      Strings.Delete(kMaxSize, Strings.Size() - kMaxSize);
   }
   
   void AddString(const UString &string)

@@ -316,6 +316,10 @@ SOURCE=..\..\..\Windows\System.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Windows\Time.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Windows\Time.h
 # End Source File
 # End Group
@@ -692,11 +696,11 @@ SOURCE=..\..\Compress\LZMA_Alone\LzmaBenchCon.h
 # End Group
 # Begin Source File
 
-SOURCE=..\..\Compress\Copy\CopyCoder.cpp
+SOURCE=..\..\Compress\CopyCoder.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Copy\CopyCoder.h
+SOURCE=..\..\Compress\CopyCoder.h
 # End Source File
 # End Group
 # Begin Group "C"

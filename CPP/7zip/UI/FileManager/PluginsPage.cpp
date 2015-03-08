@@ -19,7 +19,7 @@
 
 #include "PluginInterface.h"
 
-static CIDLangPair kIDLangPairs[] = 
+static CIDLangPair kIDLangPairs[] =
 {
   { IDC_PLUGINS_STATIC_PLUGINS, 0x03010101},
   { IDC_PLUGINS_BUTTON_OPTIONS, 0x03010110}
@@ -36,14 +36,7 @@ bool CPluginsPage::OnInit()
   UINT32 newFlags = /*LVS_EX_CHECKBOXES | */ LVS_EX_FULLROWSELECT;
   _listView.SetExtendedListViewStyle(newFlags, newFlags);
 
-  UString title = L"Plugins";
-  LVCOLUMNW column;
-  column.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_FMT | LVCF_SUBITEM;
-  column.cx = 160;
-  column.fmt = LVCFMT_LEFT;
-  column.pszText = (LPWSTR)(LPCWSTR)title;
-  column.iSubItem = 0;
-  _listView.InsertColumn(0, &column);
+  _listView.InsertColumn(0, L"Plugins", 160);
   
   ReadFileFolderPluginInfoList(_plugins);
 
@@ -104,7 +97,7 @@ bool CPluginsPage::OnButtonClicked(int buttonID, HWND buttonHWND)
   return true;
 }
 
-class CPluginOptionsCallback: 
+class CPluginOptionsCallback:
   public IPluginOptionsCallback,
   public CMyUnknownImp
 {
@@ -112,9 +105,9 @@ class CPluginOptionsCallback:
 public:
   MY_UNKNOWN_IMP
 
-  STDMETHOD(GetProgramFolderPath)(BSTR *value);  
-  STDMETHOD(GetProgramPath)(BSTR *Value);  
-  STDMETHOD(GetRegistryCUPath)(BSTR *Value);  
+  STDMETHOD(GetProgramFolderPath)(BSTR *value);
+  STDMETHOD(GetProgramPath)(BSTR *Value);
+  STDMETHOD(GetRegistryCUPath)(BSTR *Value);
   void Init(const UString &pluginName)
     { _pluginName = pluginName; }
 };
@@ -125,9 +118,7 @@ STDMETHODIMP CPluginOptionsCallback::GetProgramFolderPath(BSTR *value)
   UString folder;
   if (!::GetProgramFolderPath(folder))
     return E_FAIL;
-  CMyComBSTR valueTemp = folder;
-  *value = valueTemp.Detach();
-  return S_OK;
+  return StringToBstr(folder, value);
 }
 
 static UString GetDefaultProgramName()
@@ -141,16 +132,16 @@ STDMETHODIMP CPluginOptionsCallback::GetProgramPath(BSTR *value)
   UString folder;
   if (!::GetProgramFolderPath(folder))
     return E_FAIL;
-  CMyComBSTR valueTemp = folder + GetDefaultProgramName();
-  *value = valueTemp.Detach();
-  return S_OK;
+  return StringToBstr(folder + GetDefaultProgramName(), value);
 }
 
 STDMETHODIMP CPluginOptionsCallback::GetRegistryCUPath(BSTR *value)
 {
-  CMyComBSTR valueTemp = UString(L"Software\\7-Zip\\FM\\Plugins\\") + _pluginName;
-  *value = valueTemp.Detach();
-  return S_OK;
+  return StringToBstr(UString(L"Software"
+    WSTRING_PATH_SEPARATOR L"7-Zip"
+    WSTRING_PATH_SEPARATOR L"FM"
+    WSTRING_PATH_SEPARATOR L"Plugins"
+    WSTRING_PATH_SEPARATOR) + _pluginName, value);
 }
 
 void CPluginsPage::OnButtonOptions()
@@ -192,8 +183,8 @@ void CPluginsPage::OnButtonOptions()
   pluginOptions->PluginOptions(HWND(*this), callback);
 }
 
-bool CPluginsPage::OnNotify(UINT controlID, LPNMHDR lParam) 
-{ 
+bool CPluginsPage::OnNotify(UINT controlID, LPNMHDR lParam)
+{
   if (lParam->hwndFrom == HWND(_listView) && lParam->code == LVN_ITEMCHANGED)
   {
     const NMLISTVIEW *aNMListView = (const NMLISTVIEW *)lParam;
@@ -206,7 +197,7 @@ bool CPluginsPage::OnNotify(UINT controlID, LPNMHDR lParam)
     }
     return true;
   }
-  return CPropertyPage::OnNotify(controlID, lParam); 
+  return CPropertyPage::OnNotify(controlID, lParam);
 }
 
 /*

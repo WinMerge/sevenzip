@@ -336,6 +336,10 @@ SOURCE=..\..\..\Windows\Synchronization.cpp
 
 SOURCE=..\..\..\Windows\Synchronization.h
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Windows\Time.cpp
+# End Source File
 # End Group
 # Begin Group "UI Common"
 
@@ -514,11 +518,11 @@ SOURCE=..\Agent\UpdateCallbackAgent.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\Compress\Copy\CopyCoder.cpp
+SOURCE=..\..\Compress\CopyCoder.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Copy\CopyCoder.h
+SOURCE=..\..\Compress\CopyCoder.h
 # End Source File
 # End Group
 # Begin Group "7-zip Common"

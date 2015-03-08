@@ -63,9 +63,9 @@ HRESULT CUpdateCallbackAgent::OpenFileError(const wchar_t *name, DWORD systemErr
     if (Callback)
     {
       RINOK(Callback->UpdateErrorMessage(
-        UString(L"WARNING: ") + 
-        NError::MyFormatMessageW(systemError) + 
-        UString(L": ") + 
+        UString(L"WARNING: ") +
+        NError::MyFormatMessageW(systemError) +
+        UString(L": ") +
         UString(name)));
       return S_FALSE;
     }
@@ -102,3 +102,10 @@ HRESULT CUpdateCallbackAgent::CryptoGetTextPassword2(Int32 *passwordIsDefined, B
   }
   return _cryptoGetTextPassword->CryptoGetTextPassword2(passwordIsDefined, password);
 }
+
+/*
+HRESULT CUpdateCallbackAgent::ShowDeleteFile(const wchar_t *name)
+{
+  return Callback->DeleteOperation(name);
+}
+*/

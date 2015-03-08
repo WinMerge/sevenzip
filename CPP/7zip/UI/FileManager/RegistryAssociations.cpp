@@ -23,22 +23,22 @@ namespace NRegistryAssociations {
   
 static NSynchronization::CCriticalSection g_CriticalSection;
 
-static const TCHAR *kCUKeyPath = TEXT("Software\\7-ZIP\\FM");
-static const TCHAR *kAssociations = TEXT("Associations");
+#define REG_PATH_FM TEXT("Software") TEXT(STRING_PATH_SEPARATOR) TEXT("7-ZIP") TEXT(STRING_PATH_SEPARATOR) TEXT("FM")
+
+static const TCHAR *kCUKeyPath = REG_PATH_FM;
 static const WCHAR *kExtPlugins = L"Plugins";
 static const TCHAR *kExtEnabled = TEXT("Enabled");
 
-static CSysString GetAssociationsPath()
-{
-  return CSysString(kCUKeyPath) + CSysString('\\') + CSysString(kAssociations);
-}
+#define kAssociations TEXT("Associations")
+#define kAssociationsPath REG_PATH_FM TEXT(STRING_PATH_SEPARATOR) kAssociations
 
 bool ReadInternalAssociation(const wchar_t *ext, CExtInfo &extInfo)
 {
   NSynchronization::CCriticalSectionLock lock(g_CriticalSection);
   CKey key;
-  if(key.Open(HKEY_CURRENT_USER, GetAssociationsPath() + CSysString('\\') + 
-      CSysString(GetSystemString(ext)), KEY_READ) != ERROR_SUCCESS)
+  if (key.Open(HKEY_CURRENT_USER,
+      CSysString(kAssociationsPath TEXT(STRING_PATH_SEPARATOR)) +
+      GetSystemString(ext), KEY_READ) != ERROR_SUCCESS)
     return false;
   UString pluginsString;
   key.QueryValue(kExtPlugins, pluginsString);
@@ -51,7 +51,7 @@ void ReadInternalAssociations(CObjectVector<CExtInfo> &items)
   items.Clear();
   NSynchronization::CCriticalSectionLock lock(g_CriticalSection);
   CKey associationsKey;
-  if(associationsKey.Open(HKEY_CURRENT_USER, GetAssociationsPath(), KEY_READ) != ERROR_SUCCESS)
+  if (associationsKey.Open(HKEY_CURRENT_USER, kAssociationsPath, KEY_READ) != ERROR_SUCCESS)
     return;
   CSysStringVector extNames;
   associationsKey.EnumKeys(extNames);
@@ -62,7 +62,7 @@ void ReadInternalAssociations(CObjectVector<CExtInfo> &items)
     // extInfo.Enabled = false;
     extInfo.Ext = GetUnicodeString(extName);
     CKey key;
-    if(key.Open(associationsKey, extName, KEY_READ) != ERROR_SUCCESS)
+    if (key.Open(associationsKey, extName, KEY_READ) != ERROR_SUCCESS)
       return;
     UString pluginsString;
     key.QueryValue(kExtPlugins, pluginsString);
@@ -94,7 +94,7 @@ void WriteInternalAssociations(const CObjectVector<CExtInfo> &items)
 }
 
 ///////////////////////////////////
-// External 
+// External
 
 static const TCHAR *kShellNewKeyName = TEXT("ShellNew");
 static const TCHAR *kShellNewDataValueName = TEXT("Data");
@@ -126,10 +126,11 @@ static bool CheckShellExtensionInfo2(const CSysString &extension, UString &iconP
   if (extKey.QueryValue(NULL, programNameValue) != ERROR_SUCCESS)
     return false;
   CSysString extProgramKeyName = GetExtProgramKeyName(extension);
-  if (programNameValue.CompareNoCase(extProgramKeyName) != 0)
+  UString programNameValueU = GetUnicodeString(programNameValue);
+  if (programNameValueU.CompareNoCase(GetUnicodeString(extProgramKeyName)) != 0)
     return false;
   CKey iconKey;
-  if (extKey.Open(HKEY_CLASSES_ROOT, extProgramKeyName + CSysString(TEXT('\\')) + kDefaultIconKeyName, KEY_READ) != ERROR_SUCCESS)
+  if (extKey.Open(HKEY_CLASSES_ROOT, extProgramKeyName + CSysString(TEXT(CHAR_PATH_SEPARATOR)) + kDefaultIconKeyName, KEY_READ) != ERROR_SUCCESS)
     return false;
   UString value;
   if (extKey.QueryValue(NULL, value) == ERROR_SUCCESS)
@@ -187,8 +188,8 @@ void DeleteShellExtensionInfo(const CSysString &extension)
 }
 
 void AddShellExtensionInfo(const CSysString &extension,
-    const UString &programTitle, 
-    const UString &programOpenCommand, 
+    const UString &programTitle,
+    const UString &programOpenCommand,
     const UString &iconPath, int iconIndex,
     const void *shellNewData, int shellNewDataSize)
 {
@@ -243,7 +244,7 @@ void AddShellExtensionInfo(const CSysString &extension,
 /*
 
 static const TCHAR *kContextMenuKeyName = TEXT("\\shellex\\ContextMenuHandlers\\7-ZIP");
-static const TCHAR *kContextMenuHandlerCLASSIDValue = 
+static const TCHAR *kContextMenuHandlerCLASSIDValue =
     TEXT("{23170F69-40C1-278A-1000-000100020000}");
 static const TCHAR *kRootKeyNameForFile = TEXT("*");
 static const TCHAR *kRootKeyNameForFolder = TEXT("Folder");
@@ -265,7 +266,7 @@ static bool CheckContextMenuHandlerCommon(const CSysString &aKeyName)
 }
 
 bool CheckContextMenuHandler()
-{ 
+{
   return CheckContextMenuHandlerCommon(kRootKeyNameForFile) &&
     CheckContextMenuHandlerCommon(kRootKeyNameForFolder);
 }
@@ -279,8 +280,8 @@ static void DeleteContextMenuHandlerCommon(const CSysString &aKeyName)
 }
 
 void DeleteContextMenuHandler()
-{ 
-  DeleteContextMenuHandlerCommon(kRootKeyNameForFile); 
+{
+  DeleteContextMenuHandlerCommon(kRootKeyNameForFile);
   DeleteContextMenuHandlerCommon(kRootKeyNameForFolder);
 }
 
@@ -294,8 +295,8 @@ static void AddContextMenuHandlerCommon(const CSysString &aKeyName)
 }
 
 void AddContextMenuHandler()
-{ 
-  AddContextMenuHandlerCommon(kRootKeyNameForFile); 
+{
+  AddContextMenuHandlerCommon(kRootKeyNameForFile);
   AddContextMenuHandlerCommon(kRootKeyNameForFolder);
 }
 */

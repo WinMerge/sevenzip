@@ -3,15 +3,16 @@
 #ifndef __ARCHIVE_NSIS_IN_H
 #define __ARCHIVE_NSIS_IN_H
 
-#include "Common/MyCom.h"
-#include "Common/IntToString.h"
 #include "Common/Buffer.h"
+#include "Common/IntToString.h"
+#include "Common/MyCom.h"
+#include "Common/StringConvert.h"
+
+#include "../../Common/CreateCoder.h"
 
 #include "../../IStream.h"
 
 #include "NsisDecode.h"
-
-#include "../../Common/CreateCoder.h"
 
 // #define NSIS_SCRIPT
 
@@ -37,7 +38,7 @@ struct CFirstHeader
  
   UInt32 ArchiveSize;
 
-  bool ThereIsCrc() const 
+  bool ThereIsCrc() const
   {
     if ((Flags & NFlags::kForceCrc ) != 0)
       return true;
@@ -56,42 +57,50 @@ struct CBlockHeader
 
 struct CItem
 {
-  AString Prefix;
-  AString Name;
-  UInt32 Pos;
+  AString PrefixA;
+  UString PrefixU;
+  AString NameA;
+  UString NameU;
+  FILETIME MTime;
+  bool IsUnicode;
+  bool UseFilter;
+  bool IsCompressed;
   bool SizeIsDefined;
   bool CompressedSizeIsDefined;
   bool EstimatedSizeIsDefined;
+  UInt32 Pos;
   UInt32 Size;
   UInt32 CompressedSize;
   UInt32 EstimatedSize;
-  FILETIME DateTime;
   UInt32 DictionarySize;
-  bool IsCompressed;
-  bool UseFilter;
-  CItem(): UseFilter(false), SizeIsDefined(false), EstimatedSizeIsDefined(false), 
-    IsCompressed(true), CompressedSizeIsDefined(false), Size(0) {}
+  
+  CItem(): IsUnicode(false), UseFilter(false), IsCompressed(true), SizeIsDefined(false),
+      CompressedSizeIsDefined(false), EstimatedSizeIsDefined(false), Size(0) {}
 
   bool IsINSTDIR() const
   {
-   if (Prefix.Length() < 3)
-     return false;
-   return true;
+    return (PrefixA.Length() >= 3 || PrefixU.Length() >= 3);
   }
 
-  AString GetReducedName() const 
+  UString GetReducedName(bool unicode) const
   {
-    AString prefix = Prefix;
-    if (prefix.Length() > 0)
-      if (prefix[prefix.Length() - 1] != '\\')
-        prefix += '\\';
-    AString s2 = prefix + Name;
+    UString s;
+    if (unicode)
+      s = PrefixU;
+    else
+      s = MultiByteToUnicodeString(PrefixA);
+    if (s.Length() > 0)
+      if (s[s.Length() - 1] != L'\\')
+        s += L'\\';
+    if (unicode)
+      s += NameU;
+    else
+      s += MultiByteToUnicodeString(NameA);
     const int len = 9;
-    if (s2.Left(len).CompareNoCase("$INSTDIR\\") == 0)
-      s2 = s2.Mid(len);
-    return s2;
+    if (s.Left(len).CompareNoCase(L"$INSTDIR\\") == 0)
+      s = s.Mid(len);
+    return s;
   }
-
 };
 
 class CInArchive
@@ -105,8 +114,12 @@ class CInArchive
       DECL_EXTERNAL_CODECS_LOC_VARS2
       );
   void ReadBlockHeader(CBlockHeader &bh);
-  AString ReadString(UInt32 pos);
-  AString ReadString2(UInt32 pos);
+  AString ReadStringA(UInt32 pos) const;
+  UString ReadStringU(UInt32 pos) const;
+  AString ReadString2A(UInt32 pos) const;
+  UString ReadString2U(UInt32 pos) const;
+  AString ReadString2(UInt32 pos) const;
+  AString ReadString2Qw(UInt32 pos) const;
   HRESULT ReadEntries(const CBlockHeader &bh);
   HRESULT Parse();
 
@@ -129,12 +142,13 @@ public:
   UInt64 StreamOffset;
   CDecoder Decoder;
   CObjectVector<CItem> Items;
-  bool IsSolid;
   CFirstHeader FirstHeader;
   NMethodType::EEnum Method;
-  bool UseFilter;
   UInt32 DictionarySize;
+  bool IsSolid;
+  bool UseFilter;
   bool FilterFlag;
+  bool IsUnicode;
 
   #ifdef NSIS_SCRIPT
   AString Script;
@@ -146,14 +160,14 @@ public:
     return GetOffset() + FirstHeader.HeaderLength + item.Pos;
   }
 
-  UInt64 GetPosOfSolidItem(int index) const 
-  { 
+  UInt64 GetPosOfSolidItem(int index) const
+  {
     const CItem &item = Items[index];
     return 4 + FirstHeader.HeaderLength + item.Pos;
   }
   
-  UInt64 GetPosOfNonSolidItem(int index) const 
-  { 
+  UInt64 GetPosOfNonSolidItem(int index) const
+  {
     const CItem &item = Items[index];
     return StreamOffset + _nonSolidStartOffset + 4  + item.Pos;
   }
@@ -165,8 +179,6 @@ public:
 
 };
 
-UInt32 GetUInt32FromMemLE(const Byte *p);
-  
 }}
   
 #endif

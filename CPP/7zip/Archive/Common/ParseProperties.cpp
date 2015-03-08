@@ -99,12 +99,12 @@ HRESULT ParsePropDictionaryValue(const UString &name, const PROPVARIANT &prop, U
 
 bool StringToBool(const UString &s, bool &res)
 {
-  if (s.IsEmpty() || s.CompareNoCase(L"ON") == 0)
+  if (s.IsEmpty() || s.CompareNoCase(L"ON") == 0 || s.Compare(L"+") == 0)
   {
     res = true;
     return true;
   }
-  if (s.CompareNoCase(L"OFF") == 0)
+  if (s.CompareNoCase(L"OFF") == 0 || s.Compare(L"-") == 0)
   {
     res = false;
     return true;
@@ -118,6 +118,9 @@ HRESULT SetBoolProperty(bool &dest, const PROPVARIANT &value)
   {
     case VT_EMPTY:
       dest = true;
+      return S_OK;
+    case VT_BOOL:
+      dest = (value.boolVal != VARIANT_FALSE);
       return S_OK;
     /*
     case VT_UI4:
@@ -135,7 +138,7 @@ int ParseStringToUInt32(const UString &srcString, UInt32 &number)
   const wchar_t *start = srcString;
   const wchar_t *end;
   UInt64 number64 = ConvertStringToUInt64(start, &end);
-  if (number64 > 0xFFFFFFFF) 
+  if (number64 > 0xFFFFFFFF)
   {
     number = 0;
     return 0;
@@ -155,7 +158,7 @@ HRESULT ParseMtProp(const UString &name, const PROPVARIANT &prop, UInt32 default
         break;
       default:
       {
-        bool val; 
+        bool val;
         RINOK(SetBoolProperty(val, prop));
         numThreads = (val ? defaultNumThreads : 1);
         break;

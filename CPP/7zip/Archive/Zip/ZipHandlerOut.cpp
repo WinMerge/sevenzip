@@ -1,22 +1,25 @@
-// Zip/HandlerOut.cpp
+// ZipHandlerOut.cpp
 
 #include "StdAfx.h"
 
-#include "ZipHandler.h"
-#include "ZipUpdate.h"
-
-#include "Common/StringConvert.h"
 #include "Common/ComTry.h"
+#include "Common/StringConvert.h"
 #include "Common/StringToInt.h"
 
 #include "Windows/PropVariant.h"
 #include "Windows/Time.h"
 
 #include "../../IPassword.h"
+
+#include "../../Common/OutBuffer.h"
+
+#include "../../Crypto/WzAes.h"
+
 #include "../Common/ItemNameUtils.h"
 #include "../Common/ParseProperties.h"
-#include "../../Crypto/WzAES/WzAES.h"
-#include "../../Common/OutBuffer.h"
+
+#include "ZipHandler.h"
+#include "ZipUpdate.h"
 
 using namespace NWindows;
 using namespace NCOM;
@@ -25,16 +28,28 @@ using namespace NTime;
 namespace NArchive {
 namespace NZip {
 
-static const UInt32 kDeflateAlgoX1 = 0;
-static const UInt32 kDeflateAlgoX5 = 1;
+static const UInt32 kLzAlgoX1 = 0;
+static const UInt32 kLzAlgoX5 = 1;
 
 static const UInt32 kDeflateNumPassesX1  = 1;
 static const UInt32 kDeflateNumPassesX7  = 3;
 static const UInt32 kDeflateNumPassesX9  = 10;
 
-static const UInt32 kNumFastBytesX1 = 32;
-static const UInt32 kNumFastBytesX7 = 64;
-static const UInt32 kNumFastBytesX9 = 128;
+static const UInt32 kDeflateNumFastBytesX1 = 32;
+static const UInt32 kDeflateNumFastBytesX7 = 64;
+static const UInt32 kDeflateNumFastBytesX9 = 128;
+
+static const wchar_t *kLzmaMatchFinderX1 = L"HC4";
+static const wchar_t *kLzmaMatchFinderX5 = L"BT4";
+
+static const UInt32 kLzmaNumFastBytesX1 = 32;
+static const UInt32 kLzmaNumFastBytesX7 = 64;
+
+static const UInt32 kLzmaDicSizeX1 = 1 << 16;
+static const UInt32 kLzmaDicSizeX3 = 1 << 20;
+static const UInt32 kLzmaDicSizeX5 = 1 << 24;
+static const UInt32 kLzmaDicSizeX7 = 1 << 25;
+static const UInt32 kLzmaDicSizeX9 = 1 << 26;
 
 static const UInt32 kBZip2NumPassesX1 = 1;
 static const UInt32 kBZip2NumPassesX7 = 2;
@@ -66,138 +81,169 @@ static bool IsAsciiString(const UString &s)
 catch(const CSystemException &e) { return e.ErrorCode; } \
 catch(...) { return E_OUTOFMEMORY; }
 
+static HRESULT GetTime(IArchiveUpdateCallback *callback, int index, PROPID propID, FILETIME &filetime)
+{
+  filetime.dwHighDateTime = filetime.dwLowDateTime = 0;
+  NCOM::CPropVariant prop;
+  RINOK(callback->GetProperty(index, propID, &prop));
+  if (prop.vt == VT_FILETIME)
+    filetime = prop.filetime;
+  else if (prop.vt != VT_EMPTY)
+    return E_INVALIDARG;
+  return S_OK;
+}
+
 STDMETHODIMP CHandler::UpdateItems(ISequentialOutStream *outStream, UInt32 numItems,
-    IArchiveUpdateCallback *updateCallback)
+    IArchiveUpdateCallback *callback)
 {
   COM_TRY_BEGIN2
   CObjectVector<CUpdateItem> updateItems;
-  for(UInt32 i = 0; i < numItems; i++)
+  bool thereAreAesUpdates = false;
+  for (UInt32 i = 0; i < numItems; i++)
   {
-    CUpdateItem updateItem;
+    CUpdateItem ui;
     Int32 newData;
     Int32 newProperties;
     UInt32 indexInArchive;
-    if (!updateCallback)
+    if (!callback)
       return E_FAIL;
-    RINOK(updateCallback->GetUpdateItemInfo(i,
-        &newData, // 1 - compress 0 - copy
-        &newProperties,
-        &indexInArchive));
-    updateItem.NewProperties = IntToBool(newProperties);
-    updateItem.NewData = IntToBool(newData);
-    updateItem.IndexInArchive = indexInArchive;
-    updateItem.IndexInClient = i;
-    // bool existInArchive = (indexInArchive != UInt32(-1));
+    RINOK(callback->GetUpdateItemInfo(i, &newData, &newProperties, &indexInArchive));
+    ui.NewProperties = IntToBool(newProperties);
+    ui.NewData = IntToBool(newData);
+    ui.IndexInArchive = indexInArchive;
+    ui.IndexInClient = i;
+    bool existInArchive = (indexInArchive != UInt32(-1));
+    if (existInArchive && newData)
+      if (m_Items[indexInArchive].IsAesEncrypted())
+        thereAreAesUpdates = true;
+
     if (IntToBool(newProperties))
     {
-      FILETIME utcFileTime;
       UString name;
-      bool isDirectoryStatusDefined;
       {
-        NCOM::CPropVariant propVariant;
-        RINOK(updateCallback->GetProperty(i, kpidAttributes, &propVariant));
-        if (propVariant.vt == VT_EMPTY)
-          updateItem.Attributes = 0;
-        else if (propVariant.vt != VT_UI4)
+        NCOM::CPropVariant prop;
+        RINOK(callback->GetProperty(i, kpidAttrib, &prop));
+        if (prop.vt == VT_EMPTY)
+          ui.Attributes = 0;
+        else if (prop.vt != VT_UI4)
           return E_INVALIDARG;
         else
-          updateItem.Attributes = propVariant.ulVal;
-      }
-      {
-        NCOM::CPropVariant propVariant;
-        RINOK(updateCallback->GetProperty(i, kpidLastWriteTime, &propVariant));
-        if (propVariant.vt != VT_FILETIME)
-          return E_INVALIDARG;
-        utcFileTime = propVariant.filetime;
-      }
-      {
-        NCOM::CPropVariant propVariant;
-        RINOK(updateCallback->GetProperty(i, kpidPath, &propVariant));
-        if (propVariant.vt == VT_EMPTY)
-          name.Empty();
-        else if (propVariant.vt != VT_BSTR)
-          return E_INVALIDARG;
-        else
-          name = propVariant.bstrVal;
-      }
-      {
-        NCOM::CPropVariant propVariant;
-        RINOK(updateCallback->GetProperty(i, kpidIsFolder, &propVariant));
-        if (propVariant.vt == VT_EMPTY)
-          isDirectoryStatusDefined = false;
-        else if (propVariant.vt != VT_BOOL)
-          return E_INVALIDARG;
-        else
-        {
-          updateItem.IsDirectory = (propVariant.boolVal != VARIANT_FALSE);
-          isDirectoryStatusDefined = true;
-        }
-      }
-      FILETIME localFileTime;
-      if(!FileTimeToLocalFileTime(&utcFileTime, &localFileTime))
-        return E_INVALIDARG;
-      if(!FileTimeToDosTime(localFileTime, updateItem.Time))
-      {
-        // return E_INVALIDARG;
+          ui.Attributes = prop.ulVal;
       }
 
-      if (!isDirectoryStatusDefined)
-        updateItem.IsDirectory = ((updateItem.Attributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
+      {
+        NCOM::CPropVariant prop;
+        RINOK(callback->GetProperty(i, kpidPath, &prop));
+        if (prop.vt == VT_EMPTY)
+          name.Empty();
+        else if (prop.vt != VT_BSTR)
+          return E_INVALIDARG;
+        else
+          name = prop.bstrVal;
+      }
+      {
+        NCOM::CPropVariant prop;
+        RINOK(callback->GetProperty(i, kpidIsDir, &prop));
+        if (prop.vt == VT_EMPTY)
+          ui.IsDir = false;
+        else if (prop.vt != VT_BOOL)
+          return E_INVALIDARG;
+        else
+          ui.IsDir = (prop.boolVal != VARIANT_FALSE);
+      }
+
+      {
+        CPropVariant prop;
+        RINOK(callback->GetProperty(i, kpidTimeType, &prop));
+        if (prop.vt == VT_UI4)
+          ui.NtfsTimeIsDefined = (prop.ulVal == NFileTimeType::kWindows);
+        else
+          ui.NtfsTimeIsDefined = m_WriteNtfsTimeExtra;
+      }
+      RINOK(GetTime(callback, i, kpidMTime, ui.NtfsMTime));
+      RINOK(GetTime(callback, i, kpidATime, ui.NtfsATime));
+      RINOK(GetTime(callback, i, kpidCTime, ui.NtfsCTime));
+
+      {
+        FILETIME localFileTime = { 0, 0 };
+        if (ui.NtfsMTime.dwHighDateTime != 0 ||
+            ui.NtfsMTime.dwLowDateTime != 0)
+          if (!FileTimeToLocalFileTime(&ui.NtfsMTime, &localFileTime))
+            return E_INVALIDARG;
+        FileTimeToDosTime(localFileTime, ui.Time);
+      }
 
       name = NItemName::MakeLegalName(name);
-      bool needSlash = updateItem.IsDirectory;
+      bool needSlash = ui.IsDir;
       const wchar_t kSlash = L'/';
       if (!name.IsEmpty())
       {
         if (name[name.Length() - 1] == kSlash)
         {
-          if (!updateItem.IsDirectory)
+          if (!ui.IsDir)
             return E_INVALIDARG;
           needSlash = false;
         }
       }
       if (needSlash)
         name += kSlash;
-      updateItem.Name = UnicodeStringToMultiByte(name, CP_OEMCP);
-      if (updateItem.Name.Length() > 0xFFFF)
+
+      bool tryUtf8 = true;
+      if (m_ForseLocal || !m_ForseUtf8)
+      {
+        bool defaultCharWasUsed;
+        ui.Name = UnicodeStringToMultiByte(name, CP_OEMCP, '_', defaultCharWasUsed);
+        tryUtf8 = (!m_ForseLocal && (defaultCharWasUsed ||
+          MultiByteToUnicodeString(ui.Name, CP_OEMCP) != name));
+      }
+
+      if (tryUtf8)
+      {
+        int i;
+        for (i = 0; i < name.Length() && (unsigned)name[i] < 0x80; i++);
+        ui.IsUtf8 = (i != name.Length());
+        if (!ConvertUnicodeToUTF8(name, ui.Name))
+          return E_INVALIDARG;
+      }
+
+      if (ui.Name.Length() >= (1 << 16))
         return E_INVALIDARG;
 
-      updateItem.IndexInClient = i;
+      ui.IndexInClient = i;
       /*
-      if(existInArchive)
+      if (existInArchive)
       {
         const CItemEx &itemInfo = m_Items[indexInArchive];
-        // updateItem.Commented = itemInfo.IsCommented();
-        updateItem.Commented = false;
-        if(updateItem.Commented)
+        // ui.Commented = itemInfo.IsCommented();
+        ui.Commented = false;
+        if (ui.Commented)
         {
-          updateItem.CommentRange.Position = itemInfo.GetCommentPosition();
-          updateItem.CommentRange.Size  = itemInfo.CommentSize;
+          ui.CommentRange.Position = itemInfo.GetCommentPosition();
+          ui.CommentRange.Size  = itemInfo.CommentSize;
         }
       }
       else
-        updateItem.Commented = false;
+        ui.Commented = false;
       */
     }
     if (IntToBool(newData))
     {
       UInt64 size;
       {
-        NCOM::CPropVariant propVariant;
-        RINOK(updateCallback->GetProperty(i, kpidSize, &propVariant));
-        if (propVariant.vt != VT_UI8)
+        NCOM::CPropVariant prop;
+        RINOK(callback->GetProperty(i, kpidSize, &prop));
+        if (prop.vt != VT_UI8)
           return E_INVALIDARG;
-        size = propVariant.uhVal.QuadPart;
+        size = prop.uhVal.QuadPart;
       }
-      updateItem.Size = size;
+      ui.Size = size;
     }
-    updateItems.Add(updateItem);
+    updateItems.Add(ui);
   }
 
   CMyComPtr<ICryptoGetTextPassword2> getTextPassword;
-  if (!getTextPassword)
   {
-    CMyComPtr<IArchiveUpdateCallback> udateCallBack2(updateCallback);
+    CMyComPtr<IArchiveUpdateCallback> udateCallBack2(callback);
     udateCallBack2.QueryInterface(IID_ICryptoGetTextPassword2, &getTextPassword);
   }
   CCompressionMethodMode options;
@@ -210,16 +256,17 @@ STDMETHODIMP CHandler::UpdateItems(ISequentialOutStream *outStream, UInt32 numIt
     options.PasswordIsDefined = IntToBool(passwordIsDefined);
     if (options.PasswordIsDefined)
     {
+      options.IsAesMode = (m_ForceAesMode ? m_IsAesMode : thereAreAesUpdates);
+      options.AesKeyMode = m_AesKeyMode;
+
       if (!IsAsciiString((const wchar_t *)password))
         return E_INVALIDARG;
-      if (m_IsAesMode)
+      if (options.IsAesMode)
       {
-        if (options.Password.Length() > NCrypto::NWzAES::kPasswordSizeMax)
+        if (options.Password.Length() > NCrypto::NWzAes::kPasswordSizeMax)
           return E_INVALIDARG;
       }
       options.Password = UnicodeStringToMultiByte((const wchar_t *)password, CP_OEMCP);
-      options.IsAesMode = m_IsAesMode;
-      options.AesKeyMode = m_AesKeyMode;
     }
   }
   else
@@ -239,8 +286,10 @@ STDMETHODIMP CHandler::UpdateItems(ISequentialOutStream *outStream, UInt32 numIt
   options.MethodSequence.Add(mainMethod);
   if (mainMethod != NFileHeader::NCompressionMethod::kStored)
     options.MethodSequence.Add(NFileHeader::NCompressionMethod::kStored);
-  bool isDeflate = (mainMethod == NFileHeader::NCompressionMethod::kDeflated) || 
+  bool isDeflate = (mainMethod == NFileHeader::NCompressionMethod::kDeflated) ||
       (mainMethod == NFileHeader::NCompressionMethod::kDeflated64);
+  bool isLZMA = (mainMethod == NFileHeader::NCompressionMethod::kLZMA);
+  bool isLz = (isLZMA || isDeflate);
   bool isBZip2 = (mainMethod == NFileHeader::NCompressionMethod::kBZip2);
   options.NumPasses = m_NumPasses;
   options.DicSize = m_DicSize;
@@ -251,37 +300,58 @@ STDMETHODIMP CHandler::UpdateItems(ISequentialOutStream *outStream, UInt32 numIt
   #ifdef COMPRESS_MT
   options.NumThreads = _numThreads;
   #endif
-  if (isDeflate)
+  if (isLz)
   {
-    if (options.NumPasses == 0xFFFFFFFF)
-      options.NumPasses = (level >= 9 ? kDeflateNumPassesX9 :  
-                          (level >= 7 ? kDeflateNumPassesX7 : 
-                                        kDeflateNumPassesX1));
-    if (options.NumFastBytes == 0xFFFFFFFF)
-      options.NumFastBytes = (level >= 9 ? kNumFastBytesX9 : 
-                             (level >= 7 ? kNumFastBytesX7 : 
-                                           kNumFastBytesX1));
+    if (isDeflate)
+    {
+      if (options.NumPasses == 0xFFFFFFFF)
+        options.NumPasses = (level >= 9 ? kDeflateNumPassesX9 :
+                            (level >= 7 ? kDeflateNumPassesX7 :
+                                          kDeflateNumPassesX1));
+      if (options.NumFastBytes == 0xFFFFFFFF)
+        options.NumFastBytes = (level >= 9 ? kDeflateNumFastBytesX9 :
+                               (level >= 7 ? kDeflateNumFastBytesX7 :
+                                             kDeflateNumFastBytesX1));
+    }
+    else if (isLZMA)
+    {
+      if (options.DicSize == 0xFFFFFFFF)
+        options.DicSize =
+          (level >= 9 ? kLzmaDicSizeX9 :
+          (level >= 7 ? kLzmaDicSizeX7 :
+          (level >= 5 ? kLzmaDicSizeX5 :
+          (level >= 3 ? kLzmaDicSizeX3 :
+                        kLzmaDicSizeX1))));
+
+      if (options.NumFastBytes == 0xFFFFFFFF)
+        options.NumFastBytes = (level >= 7 ? kLzmaNumFastBytesX7 :
+                                             kLzmaNumFastBytesX1);
+
+      options.MatchFinder =
+        (level >= 5 ? kLzmaMatchFinderX5 :
+                      kLzmaMatchFinderX1);
+    }
+
     if (options.Algo == 0xFFFFFFFF)
-        options.Algo = 
-                    (level >= 5 ? kDeflateAlgoX5 : 
-                                  kDeflateAlgoX1); 
+        options.Algo = (level >= 5 ? kLzAlgoX5 :
+                                     kLzAlgoX1);
   }
   if (isBZip2)
   {
     if (options.NumPasses == 0xFFFFFFFF)
-      options.NumPasses = (level >= 9 ? kBZip2NumPassesX9 : 
-                          (level >= 7 ? kBZip2NumPassesX7 :  
+      options.NumPasses = (level >= 9 ? kBZip2NumPassesX9 :
+                          (level >= 7 ? kBZip2NumPassesX7 :
                                         kBZip2NumPassesX1));
     if (options.DicSize == 0xFFFFFFFF)
-      options.DicSize = (level >= 5 ? kBZip2DicSizeX5 : 
-                        (level >= 3 ? kBZip2DicSizeX3 : 
+      options.DicSize = (level >= 5 ? kBZip2DicSizeX5 :
+                        (level >= 3 ? kBZip2DicSizeX3 :
                                       kBZip2DicSizeX1));
   }
 
   return Update(
       EXTERNAL_CODECS_VARS
-      m_Items, updateItems, outStream, 
-      m_ArchiveIsOpen ? &m_Archive : NULL, &options, updateCallback);
+      m_Items, updateItems, outStream,
+      m_Archive.IsOpen() ? &m_Archive : NULL, &options, callback);
   COM_TRY_END2
 }
 
@@ -312,18 +382,14 @@ STDMETHODIMP CHandler::SetProperties(const wchar_t **names, const PROPVARIANT *v
     {
       if (prop.vt == VT_BSTR)
       {
-        UString valueString = prop.bstrVal;
-        valueString.MakeUpper();
-        if (valueString == L"COPY")
-          m_MainMethod = NFileHeader::NCompressionMethod::kStored;
-        else if (valueString == L"DEFLATE")
-          m_MainMethod = NFileHeader::NCompressionMethod::kDeflated;
-        else if (valueString == L"DEFLATE64")
-          m_MainMethod = NFileHeader::NCompressionMethod::kDeflated64;
-        else if (valueString == L"BZIP2")
-          m_MainMethod = NFileHeader::NCompressionMethod::kBZip2;
-        else 
-          return E_INVALIDARG;
+        UString m = prop.bstrVal;
+        m.MakeUpper();
+        if (m == L"COPY") m_MainMethod = NFileHeader::NCompressionMethod::kStored;
+        else if (m == L"DEFLATE") m_MainMethod = NFileHeader::NCompressionMethod::kDeflated;
+        else if (m == L"DEFLATE64") m_MainMethod = NFileHeader::NCompressionMethod::kDeflated64;
+        else if (m == L"BZIP2") m_MainMethod = NFileHeader::NCompressionMethod::kBZip2;
+        else if (m == L"LZMA") m_MainMethod = NFileHeader::NCompressionMethod::kLZMA;
+        else return E_INVALIDARG;
       }
       else if (prop.vt == VT_UI4)
       {
@@ -333,6 +399,7 @@ STDMETHODIMP CHandler::SetProperties(const wchar_t **names, const PROPVARIANT *v
           case NFileHeader::NCompressionMethod::kDeflated:
           case NFileHeader::NCompressionMethod::kDeflated64:
           case NFileHeader::NCompressionMethod::kBZip2:
+          case NFileHeader::NCompressionMethod::kLZMA:
             m_MainMethod = (Byte)prop.ulVal;
             break;
           default:
@@ -360,9 +427,13 @@ STDMETHODIMP CHandler::SetProperties(const wchar_t **names, const PROPVARIANT *v
           else
             return E_INVALIDARG;
           m_IsAesMode = true;
+          m_ForceAesMode = true;
         }
         else if (valueString == L"ZIPCRYPTO")
+        {
           m_IsAesMode = false;
+          m_ForceAesMode = true;
+        }
         else
           return E_INVALIDARG;
       }
@@ -383,7 +454,7 @@ STDMETHODIMP CHandler::SetProperties(const wchar_t **names, const PROPVARIANT *v
     }
     else if (name.Left(2) == L"FB")
     {
-      UInt32 num = kNumFastBytesX9;
+      UInt32 num = kDeflateNumFastBytesX9;
       RINOK(ParsePropValue(name.Mid(2), prop, num));
       m_NumFastBytes = num;
     }
@@ -402,14 +473,30 @@ STDMETHODIMP CHandler::SetProperties(const wchar_t **names, const PROPVARIANT *v
     }
     else if (name.Left(1) == L"A")
     {
-      UInt32 num = kDeflateAlgoX5;
+      UInt32 num = kLzAlgoX5;
       RINOK(ParsePropValue(name.Mid(1), prop, num));
       m_Algo = num;
     }
-    else 
+    else if (name.CompareNoCase(L"TC") == 0)
+    {
+      RINOK(SetBoolProperty(m_WriteNtfsTimeExtra, prop));
+    }
+    else if (name.CompareNoCase(L"CL") == 0)
+    {
+      RINOK(SetBoolProperty(m_ForseLocal, prop));
+      if (m_ForseLocal)
+        m_ForseUtf8 = false;
+    }
+    else if (name.CompareNoCase(L"CU") == 0)
+    {
+      RINOK(SetBoolProperty(m_ForseUtf8, prop));
+      if (m_ForseUtf8)
+        m_ForseLocal = false;
+    }
+    else
       return E_INVALIDARG;
   }
   return S_OK;
-}  
+}
 
 }}

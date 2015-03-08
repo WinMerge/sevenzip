@@ -31,11 +31,11 @@ public:
   LPVOID GetPointer() const { return m_Pointer; }
   CGlobalLock(HGLOBAL hGlobal): m_Global(hGlobal)
   {
-    m_Pointer = ::GlobalLock(hGlobal); 
+    m_Pointer = ::GlobalLock(hGlobal);
   };
   ~CGlobalLock()
   {
-    if(m_Pointer != NULL)
+    if (m_Pointer != NULL)
       ::GlobalUnlock(m_Global);
   }
 };

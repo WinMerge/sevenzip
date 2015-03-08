@@ -1,21 +1,23 @@
-// Tar/Handler.cpp
+// SplitHandler.cpp
 
 #include "StdAfx.h"
 
-#include "SplitHandler.h"
-
-#include "Common/Defs.h"
-#include "Common/StringConvert.h"
-#include "Common/NewHandler.h"
 #include "Common/ComTry.h"
+#include "Common/Defs.h"
+#include "Common/NewHandler.h"
+#include "Common/StringConvert.h"
 
-#include "Windows/Time.h"
 #include "Windows/PropVariant.h"
+#include "Windows/Time.h"
 
 #include "../../Common/ProgressUtils.h"
-#include "../../Compress/Copy/CopyCoder.h"
+
+#include "../../Compress/CopyCoder.h"
+
 #include "../Common/ItemNameUtils.h"
 #include "../Common/MultiStream.h"
+
+#include "SplitHandler.h"
 
 using namespace NWindows;
 using namespace NTime;
@@ -23,12 +25,11 @@ using namespace NTime;
 namespace NArchive {
 namespace NSplit {
 
-STATPROPSTG kProps[] = 
+STATPROPSTG kProps[] =
 {
   { NULL, kpidPath, VT_BSTR},
-//  { NULL, kpidIsFolder, VT_BOOL},
   { NULL, kpidSize, VT_UI8},
-  { NULL, kpidPackedSize, VT_UI8},
+  { NULL, kpidPackSize, VT_UI8},
 };
 
 IMP_IInArchive_Props
@@ -38,11 +39,11 @@ class CSeqName
 {
 public:
   UString _unchangedPart;
-  UString _changedPart;    
+  UString _changedPart;
   bool _splitStyle;
   UString GetNextName()
   {
-    UString newName; 
+    UString newName;
     if (_splitStyle)
     {
       int i;
@@ -108,7 +109,7 @@ public:
   }
 };
 
-STDMETHODIMP CHandler::Open(IInStream *stream, 
+STDMETHODIMP CHandler::Open(IInStream *stream,
     const UInt64 * /* maxCheckStartPosition */,
     IArchiveOpenCallback *openArchiveCallback)
 {
@@ -120,7 +121,7 @@ STDMETHODIMP CHandler::Open(IInStream *stream,
   {
     CMyComPtr<IArchiveOpenVolumeCallback> openVolumeCallback;
     CMyComPtr<IArchiveOpenCallback> openArchiveCallbackWrap = openArchiveCallback;
-    if (openArchiveCallbackWrap.QueryInterface(IID_IArchiveOpenVolumeCallback, 
+    if (openArchiveCallbackWrap.QueryInterface(IID_IArchiveOpenVolumeCallback,
         &openVolumeCallback) != S_OK)
       return S_FALSE;
     
@@ -169,7 +170,7 @@ STDMETHODIMP CHandler::Open(IInStream *stream,
       if (numLetters != ext.Length())
         return S_FALSE;
     }
-    else 
+    else
       return S_FALSE;
 
     _streams.Add(stream);
@@ -197,7 +198,6 @@ STDMETHODIMP CHandler::Open(IInStream *stream,
     
     if (openArchiveCallback != NULL)
     {
-      RINOK(openArchiveCallback->SetTotal(NULL, NULL));
       UInt64 numFiles = _streams.Size();
       RINOK(openArchiveCallback->SetCompleted(&numFiles, NULL));
     }
@@ -261,11 +261,8 @@ STDMETHODIMP CHandler::GetProperty(UInt32 /* index */, PROPID propID, PROPVARIAN
     case kpidPath:
       prop = _subName;
       break;
-    case kpidIsFolder:
-      prop = false;
-      break;
     case kpidSize:
-    case kpidPackedSize:
+    case kpidPackSize:
       prop = _totalSize;
       break;
   }

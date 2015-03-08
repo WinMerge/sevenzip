@@ -42,6 +42,11 @@ HRESULT CUpdateCallbackConsole::StartScanning()
   return S_OK;
 }
 
+HRESULT CUpdateCallbackConsole::ScanProgress(UInt64 /* numFolders */, UInt64 /* numFiles */, const wchar_t * /* path */)
+{
+  return CheckBreak();
+}
+
 HRESULT CUpdateCallbackConsole::CanNotFindError(const wchar_t *name, DWORD systemError)
 {
   CantFindFiles.Add(name);
@@ -71,7 +76,7 @@ HRESULT CUpdateCallbackConsole::StartArchive(const wchar_t *name, bool updating)
   if(updating)
     (*OutStream) << kUpdatingArchiveMessage;
   else
-    (*OutStream) << kCreatingArchiveMessage; 
+    (*OutStream) << kCreatingArchiveMessage;
   if (name != 0)
     (*OutStream) << name;
   else
@@ -144,10 +149,8 @@ HRESULT CUpdateCallbackConsole::SetCompleted(const UInt64 *completeValue)
 
 HRESULT CUpdateCallbackConsole::SetRatioInfo(const UInt64 * /* inSize */, const UInt64 * /* outSize */)
 {
-  /*
   if (NConsoleClose::TestBreakSignal())
     return E_ABORT;
-  */
   return S_OK;
 }
 
@@ -188,21 +191,48 @@ HRESULT CUpdateCallbackConsole::SetOperationResult(Int32 )
 {
   m_NeedBeClosed = true;
   m_NeedNewLine = true;
-  return S_OK;  
+  return S_OK;
 }
 
 HRESULT CUpdateCallbackConsole::CryptoGetTextPassword2(Int32 *passwordIsDefined, BSTR *password)
 {
-  if (!PasswordIsDefined) 
+  #ifdef _NO_CRYPTO
+
+  *passwordIsDefined = false;
+  return StringToBstr(L"", password);
+  
+  #else
+  
+  if (!PasswordIsDefined)
   {
     if (AskPassword)
     {
-      Password = GetPassword(OutStream); 
+      Password = GetPassword(OutStream);
       PasswordIsDefined = true;
     }
   }
   *passwordIsDefined = BoolToInt(PasswordIsDefined);
-  CMyComBSTR tempName(Password);
-  *password = tempName.Detach();
+  return StringToBstr(Password, password);
+  
+  #endif
+  
+}
+
+/*
+HRESULT CUpdateCallbackConsole::ShowDeleteFile(const wchar_t *name)
+{
+  // MT_LOCK
+  if (StdOutMode)
+    return S_OK;
+  RINOK(Finilize());
+  m_PercentPrinter.PrintString("Deleting  ");
+  if (name[0] == 0)
+    name = kEmptyFileAlias;
+  m_PercentPrinter.PrintString(name);
+  if (EnablePercents)
+    m_PercentPrinter.RePrintRatio();
+  m_NeedBeClosed = true;
+  m_NeedNewLine = true;
   return S_OK;
 }
+*/

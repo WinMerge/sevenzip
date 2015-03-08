@@ -10,9 +10,9 @@ void CCoder::Execute() { Code(NULL); }
 
 void CCoder::Code(ICompressProgressInfo *progress)
 {
-  Result = Coder->Code(InStream, OutStream, 
-      InSizeAssigned ? &InSizeValue : NULL, 
-      OutSizeAssigned ? &OutSizeValue : NULL, 
+  Result = Coder->Code(InStream, OutStream,
+      InSizeAssigned ? &InSizeValue : NULL,
+      OutSizeAssigned ? &OutSizeValue : NULL,
       progress);
   InStream.Release();
   OutStream.Release();
@@ -39,7 +39,7 @@ HRESULT CCoderMixerMT::ReturnIfError(HRESULT code)
 }
 
 STDMETHODIMP CCoderMixerMT::Code(ISequentialInStream *inStream,
-    ISequentialOutStream *outStream, 
+    ISequentialOutStream *outStream,
     const UInt64 * /* inSize */, const UInt64 * /* outSize */,
     ICompressProgressInfo *progress)
 {
@@ -77,14 +77,16 @@ STDMETHODIMP CCoderMixerMT::Code(ISequentialInStream *inStream,
 
   RINOK(ReturnIfError(E_ABORT));
   RINOK(ReturnIfError(E_OUTOFMEMORY));
-  RINOK(ReturnIfError(S_FALSE));
 
   for (i = 0; i < _coders.Size(); i++)
   {
     HRESULT result = _coders[i].Result;
-    if (result != S_OK && result != E_FAIL)
+    if (result != S_OK && result != E_FAIL && result != S_FALSE)
       return result;
   }
+
+  RINOK(ReturnIfError(S_FALSE));
+  
   for (i = 0; i < _coders.Size(); i++)
   {
     HRESULT result = _coders[i].Result;
@@ -94,4 +96,4 @@ STDMETHODIMP CCoderMixerMT::Code(ISequentialInStream *inStream,
   return S_OK;
 }
 
-}  
+}

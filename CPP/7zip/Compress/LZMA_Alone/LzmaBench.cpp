@@ -28,24 +28,25 @@
 #endif
 #endif
 
-extern "C" 
-{ 
-#include "../../../../C/Alloc.h"
+extern "C"
+{
 #include "../../../../C/7zCrc.h"
+#include "../../../../C/Alloc.h"
 }
+
 #include "../../../Common/MyCom.h"
-#include "../../ICoder.h"
 
 #ifdef BENCH_MT
-#include "../../../Windows/Thread.h"
 #include "../../../Windows/Synchronization.h"
+#include "../../../Windows/Thread.h"
 #endif
 
 #ifdef EXTERNAL_LZMA
 #include "../../../Windows/PropVariant.h"
+#include "../../ICoder.h"
 #else
-#include "../LZMA/LZMADecoder.h"
-#include "../LZMA/LZMAEncoder.h"
+#include "../LzmaDecoder.h"
+#include "../LzmaEncoder.h"
 #endif
 
 static const UInt32 kUncompressMinBlockSize = 1 << 26;
@@ -60,9 +61,9 @@ class CBaseRandomGenerator
 public:
   CBaseRandomGenerator() { Init(); }
   void Init() { A1 = 362436069; A2 = 521288629;}
-  UInt32 GetRnd() 
+  UInt32 GetRnd()
   {
-    return 
+    return
       ((A1 = 36969 * (A1 & 0xffff) + (A1 >> 16)) << 16) +
       ((A2 = 18000 * (A2 & 0xffff) + (A2 >> 16)) );
   }
@@ -73,14 +74,14 @@ class CBenchBuffer
 public:
   size_t BufferSize;
   Byte *Buffer;
-  CBenchBuffer(): Buffer(0) {} 
+  CBenchBuffer(): Buffer(0) {}
   virtual ~CBenchBuffer() { Free(); }
-  void Free() 
-  { 
+  void Free()
+  {
     ::MidFree(Buffer);
     Buffer = 0;
   }
-  bool Alloc(size_t bufferSize) 
+  bool Alloc(size_t bufferSize)
   {
     if (Buffer != 0 && BufferSize == bufferSize)
       return true;
@@ -96,14 +97,14 @@ class CBenchRandomGenerator: public CBenchBuffer
   CBaseRandomGenerator *RG;
 public:
   void Set(CBaseRandomGenerator *rg) { RG = rg; }
-  UInt32 GetVal(UInt32 &res, int numBits) 
+  UInt32 GetVal(UInt32 &res, int numBits)
   {
     UInt32 val = res & (((UInt32)1 << numBits) - 1);
     res >>= numBits;
     return val;
   }
-  UInt32 GetLen(UInt32 &res) 
-  { 
+  UInt32 GetLen(UInt32 &res)
+  {
     UInt32 len = GetVal(res, 2);
     return GetVal(res, 1 + len);
   }
@@ -145,7 +146,7 @@ public:
 };
 
 
-class CBenchmarkInStream: 
+class CBenchmarkInStream:
   public ISequentialInStream,
   public CMyUnknownImp
 {
@@ -179,7 +180,7 @@ STDMETHODIMP CBenchmarkInStream::Read(void *data, UInt32 size, UInt32 *processed
   return S_OK;
 }
   
-class CBenchmarkOutStream: 
+class CBenchmarkOutStream:
   public ISequentialOutStream,
   public CBenchBuffer,
   public CMyUnknownImp
@@ -187,8 +188,8 @@ class CBenchmarkOutStream:
   // bool _overflow;
 public:
   UInt32 Pos;
-  // CBenchmarkOutStream(): _overflow(false) {} 
-  void Init() 
+  // CBenchmarkOutStream(): _overflow(false) {}
+  void Init()
   {
     // _overflow = false;
     Pos = 0;
@@ -214,7 +215,7 @@ STDMETHODIMP CBenchmarkOutStream::Write(const void *data, UInt32 size, UInt32 *p
   return S_OK;
 }
   
-class CCrcOutStream: 
+class CCrcOutStream:
   public ISequentialOutStream,
   public CMyUnknownImp
 {
@@ -251,7 +252,7 @@ static UInt64 GetTimeCount()
     return value.QuadPart;
   */
   return GetTickCount();
-  #endif 
+  #endif
 }
 
 static UInt64 GetFreq()
@@ -261,7 +262,7 @@ static UInt64 GetFreq()
   return 1000000;
   #else
   return 1;
-  #endif 
+  #endif
   #else
   /*
   LARGE_INTEGER value;
@@ -269,7 +270,7 @@ static UInt64 GetFreq()
     return value.QuadPart;
   */
   return 1000;
-  #endif 
+  #endif
 }
 
 #ifndef USE_POSIX_TIME
@@ -284,7 +285,7 @@ static UInt64 GetUserTime()
   if (::GetProcessTimes(::GetCurrentProcess(), &creationTime, &exitTime, &kernelTime, &userTime) != 0)
     return GetTime64(userTime) + GetTime64(kernelTime);
   return (UInt64)GetTickCount() * 10000;
-  #endif 
+  #endif
 }
 
 static UInt64 GetUserFreq()
@@ -293,18 +294,18 @@ static UInt64 GetUserFreq()
   return CLOCKS_PER_SEC;
   #else
   return 10000000;
-  #endif 
+  #endif
 }
 
 class CBenchProgressStatus
 {
   #ifdef BENCH_MT
-  NWindows::NSynchronization::CCriticalSection CS;  
+  NWindows::NSynchronization::CCriticalSection CS;
   #endif
 public:
   HRESULT Res;
   bool EncodeMode;
-  void SetResult(HRESULT res) 
+  void SetResult(HRESULT res)
   {
     #ifdef BENCH_MT
     NWindows::NSynchronization::CCriticalSectionLock lock(CS);
@@ -438,22 +439,19 @@ static UInt64 MyMultDiv64(UInt64 value, UInt64 elapsedTime, UInt64 freq)
 UInt64 GetCompressRating(UInt32 dictionarySize, UInt64 elapsedTime, UInt64 freq, UInt64 size)
 {
   UInt64 t = GetLogSize(dictionarySize) - (kBenchMinDicLogSize << kSubBits);
-  // UInt64 numCommandsForOne = 1000 + ((t * t * 7) >> (2 * kSubBits)); // AMD K8
-  UInt64 numCommandsForOne = 870 + ((t * t * 5) >> (2 * kSubBits)); // Intel Core2
-
+  UInt64 numCommandsForOne = 870 + ((t * t * 5) >> (2 * kSubBits));
   UInt64 numCommands = (UInt64)(size) * numCommandsForOne;
   return MyMultDiv64(numCommands, elapsedTime, freq);
 }
 
 UInt64 GetDecompressRating(UInt64 elapsedTime, UInt64 freq, UInt64 outSize, UInt64 inSize, UInt32 numIterations)
 {
-  // UInt64 numCommands = (inSize * 216 + outSize * 14) * numIterations; // AMD K8
-  UInt64 numCommands = (inSize * 220 + outSize * 8) * numIterations; // Intel Core2
+  UInt64 numCommands = (inSize * 200 + outSize * 4) * numIterations;
   return MyMultDiv64(numCommands, elapsedTime, freq);
 }
 
 #ifdef EXTERNAL_LZMA
-typedef UInt32 (WINAPI * CreateObjectPointer)(const GUID *clsID, 
+typedef UInt32 (WINAPI * CreateObjectPointer)(const GUID *clsID,
     const GUID *interfaceID, void **outObject);
 #endif
 
@@ -574,9 +572,9 @@ HRESULT CEncoderInfo::Init(UInt32 dictionarySize, UInt32 numThreads, CBaseRandom
     return E_OUTOFMEMORY;
   propStreamSpec->Init();
   
-  PROPID propIDs[] = 
-  { 
-    NCoderPropID::kDictionarySize, 
+  PROPID propIDs[] =
+  {
+    NCoderPropID::kDictionarySize,
     NCoderPropID::kMultiThread
   };
   const int kNumProps = sizeof(propIDs) / sizeof(propIDs[0]);
@@ -667,13 +665,13 @@ HRESULT LzmaBench(
   #endif
   UInt32 numThreads, UInt32 dictionarySize, IBenchCallback *callback)
 {
-  UInt32 numEncoderThreads = 
+  UInt32 numEncoderThreads =
     #ifdef BENCH_MT
     (numThreads > 1 ? numThreads / 2 : 1);
     #else
     1;
     #endif
-  UInt32 numSubDecoderThreads = 
+  UInt32 numSubDecoderThreads =
     #ifdef BENCH_MT
     (numThreads > 1 ? 2 : 1);
     #else
@@ -700,14 +698,14 @@ HRESULT LzmaBench(
     #ifdef EXTERNAL_LZMA
     RINOK(codecs->CreateCoder(name, true, encoder.encoder));
     #else
-    encoder.encoder = new NCompress::NLZMA::CEncoder;
+    encoder.encoder = new NCompress::NLzma::CEncoder;
     #endif
     for (UInt32 j = 0; j < numSubDecoderThreads; j++)
     {
       #ifdef EXTERNAL_LZMA
       RINOK(codecs->CreateCoder(name, false, encoder.decoders[j]));
       #else
-      encoder.decoders[j] = new NCompress::NLZMA::CDecoder;
+      encoder.decoders[j] = new NCompress::NLzma::CDecoder;
       #endif
     }
   }
@@ -796,10 +794,9 @@ HRESULT LzmaBench(
     {
       for (UInt32 j = 0; j < numSubDecoderThreads; j++)
       {
-        size_t allocaSize = ((i * numSubDecoderThreads + j) * 16 * 21) & 0x7FF;
         HRESULT res = encoder.CreateDecoderThread(j, (i == 0 && j == 0)
             #ifdef USE_ALLOCA
-            , allocaSize
+            , ((i * numSubDecoderThreads + j) * 16 * 21) & 0x7FF
             #endif
             );
         RINOK(res);
@@ -842,7 +839,7 @@ HRESULT LzmaBench(
 
 
 inline UInt64 GetLZMAUsage(bool multiThread, UInt32 dictionary)
-{ 
+{
   UInt32 hs = dictionary - 1;
   hs |= (hs >> 1);
   hs |= (hs >> 2);
@@ -853,7 +850,7 @@ inline UInt64 GetLZMAUsage(bool multiThread, UInt32 dictionary)
   if (hs > (1 << 24))
     hs >>= 1;
   hs++;
-  return ((hs + (1 << 16)) + (UInt64)dictionary * 2) * 4 + (UInt64)dictionary * 3 / 2 + 
+  return ((hs + (1 << 16)) + (UInt64)dictionary * 2) * 4 + (UInt64)dictionary * 3 / 2 +
       (1 << 20) + (multiThread ? (6 << 20) : 0);
 }
 
@@ -909,10 +906,10 @@ struct CCrcThreads
       Items[i].Wait();
     NumThreads = 0;
   }
-  ~CCrcThreads() 
-  { 
+  ~CCrcThreads()
+  {
     WaitAll();
-    delete []Items; 
+    delete []Items;
   }
 };
 #endif

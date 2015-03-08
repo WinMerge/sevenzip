@@ -14,9 +14,9 @@ struct CVirtThread
   bool ExitEvent;
 
   ~CVirtThread();
-  HRes Create();
+  WRes Create();
   void Start();
-  void WaitFinish() { FinishedEvent.Lock(); } 
+  void WaitFinish() { FinishedEvent.Lock(); }
   virtual void Execute() = 0;
 };
 

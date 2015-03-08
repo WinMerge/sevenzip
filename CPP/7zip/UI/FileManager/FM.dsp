@@ -657,6 +657,34 @@ SOURCE=..\..\..\..\C\Alloc.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\C\Sha256.c
+
+!IF  "$(CFG)" == "FM - Win32 Release"
+
+# ADD CPP /O2
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "FM - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "FM - Win32 ReleaseU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "FM - Win32 DebugU"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\C\Sha256.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\C\Sort.c
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -764,6 +792,10 @@ SOURCE=..\..\..\Windows\Clipboard.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Windows\Clipboard.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Windows\COM.h
 # End Source File
 # Begin Source File
 
@@ -944,6 +976,10 @@ SOURCE=..\..\..\Windows\Synchronization.h
 # Begin Source File
 
 SOURCE=..\..\..\Windows\Thread.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Windows\Time.cpp
 # End Source File
 # Begin Source File
 
@@ -1311,11 +1347,11 @@ SOURCE=..\Agent\UpdateCallbackAgent.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\Compress\Copy\CopyCoder.cpp
+SOURCE=..\..\Compress\CopyCoder.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Copy\CopyCoder.h
+SOURCE=..\..\Compress\CopyCoder.h
 # End Source File
 # End Group
 # Begin Group "Interface"

@@ -12,7 +12,7 @@ static inline void *AllocateForBSTR(size_t cb) { return ::malloc(cb); }
 static inline void FreeForBSTR(void *pv) { ::free(pv);}
 
 static UINT MyStringLen(const wchar_t *s)
-{ 
+{
   UINT i;
   for (i = 0; s[i] != '\0'; i++);
   return i;
@@ -81,7 +81,7 @@ HRESULT VariantCopy(VARIANTARG *dest, VARIANTARG *src)
     return res;
   if (src->vt == VT_BSTR)
   {
-    dest->bstrVal = SysAllocStringByteLen((LPCSTR)src->bstrVal, 
+    dest->bstrVal = SysAllocStringByteLen((LPCSTR)src->bstrVal,
         SysStringByteLen(src->bstrVal));
     if (dest->bstrVal == 0)
       return E_OUTOFMEMORY;
@@ -94,14 +94,10 @@ HRESULT VariantCopy(VARIANTARG *dest, VARIANTARG *src)
 
 LONG CompareFileTime(const FILETIME* ft1, const FILETIME* ft2)
 {
-  if(ft1->dwHighDateTime < ft2->dwHighDateTime)
-    return -1;
-  if(ft1->dwHighDateTime > ft2->dwHighDateTime)
-    return 1;
-  if(ft1->dwLowDateTime < ft2->dwLowDateTime)
-    return -1;
-  if(ft1->dwLowDateTime > ft2->dwLowDateTime)
-    return 1;
+  if (ft1->dwHighDateTime < ft2->dwHighDateTime) return -1;
+  if (ft1->dwHighDateTime > ft2->dwHighDateTime) return 1;
+  if (ft1->dwLowDateTime < ft2->dwLowDateTime) return -1;
+  if (ft1->dwLowDateTime > ft2->dwLowDateTime) return 1;
   return 0;
 }
 

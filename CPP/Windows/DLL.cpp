@@ -36,7 +36,7 @@ bool CLibrary::LoadOperations(HMODULE newModule)
 {
   if (newModule == NULL)
     return false;
-  if(!Free())
+  if (!Free())
     return false;
   _module = newModule;
   return true;
@@ -58,7 +58,7 @@ bool CLibrary::Load(LPCTSTR fileName)
 }
 
 #ifndef _UNICODE
-static inline UINT GetCurrentCodePage() { return ::AreFileApisANSI() ? CP_ACP : CP_OEMCP; } 
+static inline UINT GetCurrentCodePage() { return ::AreFileApisANSI() ? CP_ACP : CP_OEMCP; }
 CSysString GetSysPath(LPCWSTR sysPath)
   { return UnicodeStringToMultiByte(sysPath, GetCurrentCodePage()); }
 
