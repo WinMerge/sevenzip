@@ -97,7 +97,6 @@ struct CArchiveDatabaseEx: public CArchiveDatabase
     CNum folderIndex = FileIndexToFolderIndexMap[fileIndex];
     if (folderIndex >= 0)
     {
-      const CFolder &folderInfo = Folders[folderIndex];
       if (FolderStartFileIndex[folderIndex] == fileIndex)
         return GetFolderFullPackSize(folderIndex);
     }
@@ -244,7 +243,7 @@ private:
       CRecordVector<bool> &digestsDefined, 
       CRecordVector<UInt32> &digests);
 
-  HRESULT CInArchive::ReadStreamsInfo(
+  HRESULT ReadStreamsInfo(
       const CObjectVector<CByteBuffer> *dataVector,
       UInt64 &dataOffset,
       CRecordVector<UInt64> &packSizes,

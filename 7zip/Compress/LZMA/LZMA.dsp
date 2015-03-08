@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LZMA_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /Gz /MD /W3 /GX /O1 /I "../../../" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LZMA_EXPORTS" /D "COMPRESS_MF_MT" /Yu"StdAfx.h" /FD /c
+# ADD CPP /nologo /Gz /MD /W3 /GX /O1 /I "../../../" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LZMA_EXPORTS" /D "COMPRESS_MF_MT" /D "_ST_MODE" /Yu"StdAfx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x419 /d "NDEBUG"
@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LZMA_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /Gz /MTd /W3 /Gm /GX /ZI /Od /I "../../../" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LZMA_EXPORTS" /D "COMPRESS_MF_MT" /Yu"StdAfx.h" /FD /GZ /c
+# ADD CPP /nologo /Gz /MTd /W3 /Gm /GX /ZI /Od /I "../../../" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LZMA_EXPORTS" /D "COMPRESS_MF_MT" /D "_ST_MODE" /Yu"StdAfx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x419 /d "_DEBUG"
@@ -206,38 +206,6 @@ SOURCE=..\LZ\MT\MT.cpp
 SOURCE=..\LZ\MT\MT.h
 # End Source File
 # End Group
-# Begin Group "Pat"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\LZ\Patricia\Pat.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\LZ\Patricia\Pat2.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\LZ\Patricia\Pat2H.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\LZ\Patricia\Pat2R.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\LZ\Patricia\Pat3H.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\LZ\Patricia\Pat4H.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\LZ\Patricia\PatMain.h
-# End Source File
-# End Group
 # Begin Group "BT"
 
 # PROP Default_Filter ""
@@ -259,10 +227,6 @@ SOURCE=..\LZ\BinTree\BinTree4.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\LZ\BinTree\BinTree4b.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\LZ\BinTree\BinTreeMain.h
 # End Source File
 # End Group
@@ -271,23 +235,7 @@ SOURCE=..\LZ\BinTree\BinTreeMain.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\LZ\HashChain\HC.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\LZ\HashChain\HC2.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\LZ\HashChain\HC3.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\LZ\HashChain\HC4.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\LZ\HashChain\HC4b.h
 # End Source File
 # Begin Source File
 

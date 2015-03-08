@@ -612,7 +612,7 @@ void CApp::OnCopy(bool move, bool copyToSame, int srcPanelIndex)
       folderPrefix = srcPanel._currentFolderPrefix;
     filePaths.Reserve(indices.Size());
     for(int i = 0; i < indices.Size(); i++)
-      filePaths.Add(srcPanel.GetItemName(indices[i]));
+      filePaths.Add(srcPanel.GetItemRelPath(indices[i]));
 
     result = destPanel.CopyFrom(folderPrefix, filePaths, true, 0);
 
@@ -682,6 +682,7 @@ void CApp::OnSetSubFolder(int srcPanelIndex)
     if (srcPanel._folder->BindToFolder(realIndex, &newFolder) != S_OK)
       return;
   }
+  destPanel.CloseOpenFolders();
   destPanel._folder = newFolder;
   destPanel.RefreshListCtrl();
 }

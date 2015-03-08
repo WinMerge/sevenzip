@@ -202,6 +202,7 @@ public:
     { OnCopy(true, false, GetFocusedPanelIndex()); }
   void Delete(bool toRecycleBin)
     { GetFocusedPanel().DeleteItems(toRecycleBin); }
+  void CalculateCrc();
   void Split();
   void Combine();
   void Properties()
@@ -261,6 +262,8 @@ public:
   void SetListSettings();
   void SetShowSystemMenu();
   void SwitchOnOffOnePanel();
+  bool GetFlatMode() { return Panels[LastFocusedPanel].GetFlatMode(); }
+  void ChangeFlatMode() { Panels[LastFocusedPanel].ChangeFlatMode(); }
 
   void OpenBookmark(int index)
     { GetFocusedPanel().OpenBookmark(index); }

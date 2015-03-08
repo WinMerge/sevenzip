@@ -93,7 +93,7 @@ LRESULT CPanel::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
       OnShiftSelectMessage();
       return 0;
     case kReLoadMessage:
-      OnReload();
+      RefreshListCtrl(_selectedState);
       return 0;
     case kSetFocusToListView:
       _listView.SetFocus();
@@ -632,6 +632,8 @@ bool CPanel::OnCommand(int code, int itemID, LPARAM lParam, LRESULT &result)
   return CWindow2::OnCommand(code, itemID, lParam, result);
 }
 
+void CPanel::MessageBoxInfo(LPCWSTR message, LPCWSTR caption)
+  { ::MessageBoxW(HWND(*this), message, caption, MB_OK); }
 void CPanel::MessageBox(LPCWSTR message, LPCWSTR caption)
   { ::MessageBoxW(HWND(*this), message, caption, MB_OK | MB_ICONSTOP); }
 void CPanel::MessageBox(LPCWSTR message)
@@ -734,6 +736,13 @@ void CPanel::SetListViewMode(UINT32 index)
   // RefreshListCtrlSaveFocused();
 }
 
+void CPanel::ChangeFlatMode()
+{
+  _flatMode = !_flatMode;
+  RefreshListCtrlSaveFocused();
+}
+
+
 void CPanel::RefreshStatusBar()
 {
   PostMessage(kRefreshStatusBar);
@@ -757,13 +766,24 @@ void CPanel::AddToArchive()
   for (int i = 0; i < indices.Size(); i++)
   {
     int index = indices[i];
-    names.Add(_currentFolderPrefix + GetItemName(index));
+    names.Add(_currentFolderPrefix + GetItemRelPath(index));
   }
   const UString archiveName = CreateArchiveName(
       names.Front(), (names.Size() > 1), false);
   CompressFiles(_currentFolderPrefix, archiveName, 
       names, false, true, false);
   // KillSelection();
+}
+
+static UString GetSubFolderNameForExtract(const UString &archiveName)
+{
+  int slashPos = archiveName.ReverseFind(L'\\');
+  int dotPos = archiveName.ReverseFind(L'.');
+  if (dotPos < 0 || slashPos > dotPos)
+    return archiveName + UString(L"~");
+  UString res = archiveName.Left(dotPos);
+  res.TrimRight();
+  return res;
 }
 
 void CPanel::ExtractArchives()
@@ -789,9 +809,14 @@ void CPanel::ExtractArchives()
       MessageBox(kSelectOneFile);
       return;
     }
-    paths.Add(_currentFolderPrefix + GetItemName(index));
+    paths.Add(_currentFolderPrefix + GetItemRelPath(index));
   }
-  ::ExtractArchives(paths, _currentFolderPrefix, true);
+  UString folderName;
+  if (indices.Size() == 1)
+    folderName = GetSubFolderNameForExtract(GetItemRelPath(indices[0]));
+  else
+    folderName = L"*";
+  ::ExtractArchives(paths, _currentFolderPrefix + folderName + UString(L"\\"), true);
 }
 
 void CPanel::TestArchives()
@@ -817,7 +842,7 @@ void CPanel::TestArchives()
       MessageBox(kSelectOneFile);
       return;
     }
-    paths.Add(_currentFolderPrefix + GetItemName(index));
+    paths.Add(_currentFolderPrefix + GetItemRelPath(index));
   }
   ::TestArchives(paths);
 }

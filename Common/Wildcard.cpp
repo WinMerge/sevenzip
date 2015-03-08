@@ -8,7 +8,9 @@ static const wchar_t kPeriodChar = L'.';
 static const wchar_t kAnyCharsChar = L'*';
 static const wchar_t kAnyCharChar = L'?';
 
+#ifdef _WIN32
 static const wchar_t kDirDelimiter1 = L'\\';
+#endif
 static const wchar_t kDirDelimiter2 = L'/';
 
 static const UString kWildCardCharSet = L"?*";
@@ -23,7 +25,11 @@ static const UString kIllegalFileNameChars = kIllegalWildCardFileNameChars +
 
 static inline bool IsCharDirLimiter(wchar_t c)
 {
-  return (c == kDirDelimiter1 || c == kDirDelimiter2);
+  return (
+    #ifdef _WIN32
+    c == kDirDelimiter1 || 
+    #endif
+    c == kDirDelimiter2);
 }
 
 // -----------------------------------------
@@ -346,6 +352,19 @@ void CCensorNode::AddItem2(bool include, const UString &path, bool recursive)
   AddItem(include, path2, recursive, forFile, forFolder);
 }
 
+void CCensorNode::ExtendExclude(const CCensorNode &fromNodes)
+{
+  ExcludeItems += fromNodes.ExcludeItems;
+  for (int i = 0; i < fromNodes.SubNodes.Size(); i++)
+  {
+    const CCensorNode &node = fromNodes.SubNodes[i];
+    int subNodeIndex = FindSubNode(node.Name);
+    if (subNodeIndex < 0)
+      subNodeIndex = SubNodes.Add(CCensorNode(node.Name, this));
+    SubNodes[subNodeIndex].ExtendExclude(node);
+  }
+}
+
 int CCensor::FindPrefix(const UString &prefix) const
 {
   for (int i = 0; i < Pairs.Size(); i++)
@@ -395,7 +414,7 @@ void CCensor::AddItem(bool include, const UString &path, bool recursive)
     if (DoesNameContainWildCard(front))
       break;
     prefix += front;
-    prefix += L'\\';
+    prefix += WCHAR_PATH_SEPARATOR;
     pathParts.Delete(0);
   }
   int index = FindPrefix(prefix);
@@ -426,20 +445,18 @@ bool CCensor::CheckPath(const UString &path, bool isFile) const
   return finded;
 }
 
+void CCensor::ExtendExclude()
+{
+  int i;
+  for (i = 0; i < Pairs.Size(); i++)
+    if (Pairs[i].Prefix.IsEmpty())
+      break;
+  if (i == Pairs.Size())
+    return;
+  int index = i;
+  for (i = 0; i < Pairs.Size(); i++)
+    if (index != i)
+      Pairs[i].Head.ExtendExclude(Pairs[index].Head);
 }
 
-bool AreTheFileNamesDirDelimiterEqual(const UString &name1, const UString &name2)
-{
-  if(name1.Length() != name2.Length())
-    return false;
-  for(int i = 0; i < name1.Length(); i++)
-  {
-    wchar_t char1 = name1[i], char2 = name2[i];
-    if (char1 == char2)
-      continue;
-    if (IsCharDirLimiter(char1) && IsCharDirLimiter(char2))
-      continue;
-    return false;
-  }
-  return true;
 }

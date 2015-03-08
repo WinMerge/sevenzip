@@ -7,7 +7,9 @@ DIRS =  \
   Cpio\~ \
   Deb\~ \
   GZip\~ \
+  Iso\~ \
   Lzh\~ \
+  Nsis\~ \
   Rar\~ \
   RPM\~ \
   Split\~ \

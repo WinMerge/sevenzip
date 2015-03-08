@@ -58,12 +58,6 @@ void CEncoder::StartNewBlock()
     m_Items[i].Freq = 0;
 }
 
-void CEncoder::SetFreqs(const UInt32 *freqs)
-{
-  for (UInt32 i = 0; i < m_NumSymbols; i++)
-    m_Items[i].Freq = freqs[i];
-}
-
 static const int kSmallest = 1;
 
 // ===========================================================================
@@ -313,6 +307,19 @@ void CEncoder::BuildTree(Byte *levels)
 
   for (n = 0; n < m_NumSymbols; n++) 
     levels[n] = Byte(m_Items[n].Len);
+}
+
+void CEncoder::ReverseBits()
+{ 
+  for (UInt32 symbol = 0; symbol < m_NumSymbols; symbol++)
+  {
+    CItem &item = m_Items[symbol];
+    UInt32 value = item.Code;
+    UInt32 reverseValue = 0;
+    for(UInt32 i = item.Len; i != 0; i--, value >>= 1) 
+      reverseValue = (reverseValue << 1) | (value & 1);
+    item.Code = reverseValue;
+  }
 }
 
 }}

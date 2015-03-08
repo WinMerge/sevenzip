@@ -25,6 +25,7 @@
 22  ICompressSetDecoderProperties2
 23  ICompressWriteCoderProperties
 24  ICompressGetInStreamProcessedSize
+25  ICompressSetCoderMt
 30  ICompressGetSubStreamSize
 31  ICompressSetInStream
 32  ICompressSetOutStream
@@ -90,7 +91,7 @@ A0  IOutArchive
 07 IFolderGetSystemIconIndex
 08 IFolderGetItemFullSize
 09 IFolderClone
-0A IFolderOpen // 
+0A IFolderSetFlatMode
 
 000900000000} FolderInterface.h::IFolderManager
 000900010000} FolderInterface.h::IFolderManagerGetIconPath
@@ -113,7 +114,10 @@ Handler GUIDs:
 06 Lzh
 07 7z
 08 Cab
+09 Nsis
+0A Lzma
 
+E7 Iso
 E8 Bkf
 E9 Chm
 EA Split

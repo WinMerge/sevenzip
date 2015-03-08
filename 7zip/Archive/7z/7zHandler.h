@@ -12,6 +12,10 @@
 #include "7zMethods.h"
 #endif
 
+#ifdef COMPRESS_MT
+#include "../../../Windows/System.h"
+#endif
+
 namespace NArchive {
 namespace N7z {
 
@@ -54,14 +58,29 @@ struct COneMethodInfo
 DEFINE_GUID(CLSID_CFormat7z, 
   0x23170F69, 0x40C1, 0x278A, 0x10, 0x00, 0x00, 0x01, 0x10, 0x07, 0x00, 0x00);
 
+#ifndef __7Z_SET_PROPERTIES
+
+#ifdef EXTRACT_ONLY
+#ifdef COMPRESS_MT
+#define __7Z_SET_PROPERTIES
+#endif
+#else 
+#define __7Z_SET_PROPERTIES
+#endif
+
+#endif
+
+
 class CHandler: 
   public IInArchive,
   #ifdef _7Z_VOL
   public IInArchiveGetStream,
   #endif
+  #ifdef __7Z_SET_PROPERTIES
+  public ISetProperties, 
+  #endif
   #ifndef EXTRACT_ONLY
   public IOutArchive, 
-  public ISetProperties, 
   #endif
   public CMyUnknownImp
 {
@@ -70,9 +89,11 @@ public:
   #ifdef _7Z_VOL
   MY_QUERYINTERFACE_ENTRY(IInArchiveGetStream)
   #endif
+  #ifdef __7Z_SET_PROPERTIES
+  MY_QUERYINTERFACE_ENTRY(ISetProperties)
+  #endif
   #ifndef EXTRACT_ONLY
   MY_QUERYINTERFACE_ENTRY(IOutArchive)
-  MY_QUERYINTERFACE_ENTRY(ISetProperties)
   #endif
   MY_QUERYINTERFACE_END
   MY_ADDREF_RELEASE
@@ -101,6 +122,10 @@ public:
   STDMETHOD(GetStream)(UInt32 index, ISequentialInStream **stream);  
   #endif
 
+  #ifdef __7Z_SET_PROPERTIES
+  STDMETHOD(SetProperties)(const wchar_t **names, const PROPVARIANT *values, Int32 numProperties);
+  #endif
+
   #ifndef EXTRACT_ONLY
   // IOutArchiveHandler
   STDMETHOD(UpdateItems)(ISequentialOutStream *outStream, UInt32 numItems,
@@ -109,7 +134,6 @@ public:
   STDMETHOD(GetFileTimeType)(UInt32 *type);  
 
   // ISetProperties
-  STDMETHOD(SetProperties)(const wchar_t **names, const PROPVARIANT *values, Int32 numProperties);
   
   HRESULT SetSolidSettings(const UString &s);
   HRESULT SetSolidSettings(const PROPVARIANT &value);
@@ -126,6 +150,10 @@ private:
   NArchive::N7z::CArchiveDatabaseEx _database;
   #endif
 
+  #ifdef COMPRESS_MT
+  UInt32 _numThreads;
+  #endif
+
   #ifndef EXTRACT_ONLY
   CObjectVector<COneMethodInfo> _methods;
   CRecordVector<CBind> _binds;
@@ -139,23 +167,7 @@ private:
   bool _compressHeadersFull;
   bool _encryptHeaders;
 
-  bool _copyMode;
-  
-  UInt32 _defaultDicSize;
-  UInt32 _defaultAlgorithm;
-  UInt32 _defaultFastBytes;
-  UString _defaultMatchFinder;
-  
-  UInt32 _defaultBZip2Passes;
-
-  UInt32 _defaultPpmdMemSize;
-  UInt32 _defaultPpmdOrder;
-
-  UInt32 _defaultDeflateFastBytes;
-  UInt32 _defaultDeflatePasses;
-
   bool _autoFilter;
-  bool _multiThread;
   UInt32 _level;
 
   bool _volumeMode;
@@ -168,8 +180,11 @@ private:
       IArchiveUpdateCallback *updateCallback);
 
   HRESULT SetCompressionMethod(CCompressionMethodMode &method,
-      CObjectVector<COneMethodInfo> &methodsInfo,
-      bool multiThread);
+      CObjectVector<COneMethodInfo> &methodsInfo
+      #ifdef COMPRESS_MT
+      , UInt32 numThreads
+      #endif
+      );
 
   HRESULT SetCompressionMethod(
       CCompressionMethodMode &method,
@@ -195,30 +210,6 @@ private:
     _solidExtension = false;
     _numSolidBytesDefined = false;
   }
-  /*
-  void InitSolidPart()
-  {
-    if (_numSolidFiles <= 1)
-      InitSolidFiles();
-  }
-  */
-  void SetSolidBytesLimit()
-  {
-    _numSolidBytes = ((UInt64)_defaultDicSize) << 7;
-    const UInt64 kMinSize = (1<<24);
-    if (_numSolidBytes < kMinSize)
-      _numSolidBytes = kMinSize;
-  }
-  void CheckAndSetSolidBytesLimit()
-  {
-    if (!_numSolidBytesDefined)
-    {
-      if (_copyMode)
-        _numSolidBytes = 0;
-      else
-        SetSolidBytesLimit();
-    }
-  }
 
   void Init()
   {
@@ -226,27 +217,14 @@ private:
     _compressHeaders = true;
     _compressHeadersFull = true;
     _encryptHeaders = false;
-    _multiThread = false;
-    _copyMode = false;
-
-    _defaultDicSize = (1 << 21);
-    _defaultAlgorithm = 1;
-    _defaultFastBytes = 32;
-    _defaultMatchFinder = L"BT4";
-
-    _defaultBZip2Passes = 1;
-
-    _defaultPpmdMemSize = (1 << 24);
-    _defaultPpmdOrder = 6;
-
-    _defaultDeflateFastBytes = 32;
-    _defaultDeflatePasses = 1;
+    #ifdef COMPRESS_MT
+    _numThreads = NWindows::NSystem::GetNumberOfProcessors();
+    #endif
 
     _level = 5;
     _autoFilter = true;
     _volumeMode = false;
     InitSolid();
-    SetSolidBytesLimit();
   }
   #endif
 };

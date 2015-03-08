@@ -77,6 +77,7 @@ static CIDLangPair kIDLangPairs[] =
   { IDM_DELETE, 0x03000233 },
   { IDM_FILE_PROPERTIES, 0x03000240 },
   { IDM_FILE_COMMENT, 0x03000241 },
+  { IDM_FILE_CRC, 0x03000242 },
   { IDM_FILE_SPLIT, 0x03000270 },
   { IDM_FILE_COMBINE, 0x03000271 },
   { IDM_CREATE_FOLDER, 0x03000250 },
@@ -113,6 +114,7 @@ static CIDLangPair kIDLangPairs[] =
 
   { IDM_VIEW_REFRESH, 0x03000440 },
   
+  { IDM_VIEW_FLAT_VIEW, 0x03000449 },
   { IDM_VIEW_TWO_PANELS, 0x03000450 },
   { IDM_VIEW_ARCHIVE_TOOLBAR, 0x03000460 },
   { IDM_VIEW_STANDARD_TOOLBAR, 0x03000461 },
@@ -330,6 +332,8 @@ void OnMenuActivating(HWND hWnd, HMENU hMenu, int position)
       IDM_VIEW_LARGE_ICONS + g_App.GetListViewMode(), MF_BYCOMMAND);
     menu.CheckItem(IDM_VIEW_TWO_PANELS, MF_BYCOMMAND |
         ((g_App.NumPanels == 2) ? MF_CHECKED : MF_UNCHECKED));
+    menu.CheckItem(IDM_VIEW_FLAT_VIEW, MF_BYCOMMAND |
+        ((g_App.GetFlatMode()) ? MF_CHECKED : MF_UNCHECKED));
     menu.CheckItem(IDM_VIEW_ARCHIVE_TOOLBAR, MF_BYCOMMAND |
         (g_App.ShowArchiveToolbar ? MF_CHECKED : MF_UNCHECKED));
     menu.CheckItem(IDM_VIEW_STANDARD_TOOLBAR, MF_BYCOMMAND |
@@ -500,6 +504,9 @@ bool ExecuteFileCommand(int id)
       g_App.Delete(!shift);
       break;
     }
+    case IDM_FILE_CRC:
+      g_App.CalculateCrc();
+      break;
     case IDM_FILE_SPLIT:
       g_App.Split();
       break;
@@ -631,10 +638,12 @@ bool OnMenuCommand(HWND hWnd, int id)
     case IDM_VIEW_REFRESH:
       g_App.RefreshView();
       break;
+    case IDM_VIEW_FLAT_VIEW:
+      g_App.ChangeFlatMode();
+      break;
     case IDM_VIEW_TWO_PANELS:
       g_App.SwitchOnOffOnePanel();
       break;
-
     case IDM_VIEW_STANDARD_TOOLBAR:
       g_App.SwitchStandardToolbar();
       break;

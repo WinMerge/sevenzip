@@ -52,7 +52,6 @@ STDMETHODIMP CHandler::Extract(const UInt32* indices, UInt32 numItems,
   bool testMode = (testModeSpec != 0);
   CMyComPtr<IArchiveExtractCallback> extractCallback = extractCallbackSpec;
   UInt64 importantTotalUnPacked = 0;
-  UInt64 censoredTotalUnPacked = 0, censoredTotalPacked = 0;
 
   bool allFilesMode = (numItems == UInt32(-1));
   if (allFilesMode)
@@ -229,6 +228,9 @@ STDMETHODIMP CHandler::Extract(const UInt32* indices, UInt32 numItems,
           compressProgress
           #ifndef _NO_CRYPTO
           , getTextPassword
+          #endif
+          #ifdef COMPRESS_MT
+          , true, _numThreads
           #endif
           );
 

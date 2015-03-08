@@ -51,6 +51,7 @@ public:
 
   bool CheckPathToRoot(bool include, UStringVector &pathParts, bool isFile) const;
   // bool CheckPathToRoot(const UString &path, bool isFile, bool include) const;
+  void ExtendExclude(const CCensorNode &fromNodes);
 };
 
 struct CPair
@@ -69,11 +70,9 @@ public:
     { return (Pairs.Size() == 1 && Pairs.Front().Prefix.IsEmpty()); }
   void AddItem(bool include, const UString &path, bool recursive);
   bool CheckPath(const UString &path, bool isFile) const;
+  void ExtendExclude();
 };
 
 }
-
-// return true if names differs only with '\' or '/' characters
-bool AreTheFileNamesDirDelimiterEqual(const UString &name1, const UString &name2);
 
 #endif

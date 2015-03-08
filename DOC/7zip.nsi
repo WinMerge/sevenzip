@@ -2,7 +2,7 @@
 ;Defines
 
 !define VERSION_MAJOR 4
-!define VERSION_MINOR 32
+!define VERSION_MINOR 42
 !define VERSION_POSTFIX_FULL ""
 !ifdef WIN64
 !ifdef IA64
@@ -53,7 +53,8 @@
 
   ;Compressor
 !ifndef NO_COMPRESSION
-  SetCompressor /SOLID lzma
+  SetCompressor /solid lzma
+  SetCompressorFilter 1
 !ifdef IA64
   SetCompressorDictSize 8
 !else
@@ -66,8 +67,6 @@
 
 ;--------------------------------
 ;Variables
-
-  Var "MyDllPath"
 
 ;--------------------------------
 ;Interface Settings
@@ -155,7 +154,9 @@ Section
   File cpio.dll
   File deb.dll
   File gz.dll
+  File iso.dll
   File lzh.dll
+  File nsis.dll
   File rar.dll
   File rpm.dll
   File split.dll
@@ -211,6 +212,7 @@ Section
   File ja.txt
   File ka.txt
   File ko.txt
+  File ku.txt
   File lt.txt
   File lv.txt
   File mk.txt
@@ -225,7 +227,10 @@ Section
   File ru.txt
   File sk.txt
   File sl.txt
+  File sq.txt
   File sr.txt
+  File sr-spc.txt
+  File sr-spl.txt
   File sv.txt
   File ta.txt
   File th.txt
@@ -358,7 +363,9 @@ Section "Uninstall"
   Delete $INSTDIR\Formats\cpio.dll
   Delete $INSTDIR\Formats\deb.dll
   Delete $INSTDIR\Formats\gz.dll
+  Delete $INSTDIR\Formats\iso.dll
   Delete $INSTDIR\Formats\lzh.dll
+  Delete $INSTDIR\Formats\nsis.dll
   Delete $INSTDIR\Formats\rar.dll
   Delete $INSTDIR\Formats\rpm.dll
   Delete $INSTDIR\Formats\split.dll
@@ -414,6 +421,7 @@ Section "Uninstall"
   Delete $INSTDIR\Lang\ja.txt
   Delete $INSTDIR\Lang\ka.txt
   Delete $INSTDIR\Lang\ko.txt
+  Delete $INSTDIR\Lang\ku.txt
   Delete $INSTDIR\Lang\lt.txt
   Delete $INSTDIR\Lang\lv.txt
   Delete $INSTDIR\Lang\mk.txt
@@ -428,7 +436,10 @@ Section "Uninstall"
   Delete $INSTDIR\Lang\ru.txt
   Delete $INSTDIR\Lang\sk.txt
   Delete $INSTDIR\Lang\sl.txt
+  Delete $INSTDIR\Lang\sq.txt
   Delete $INSTDIR\Lang\sr.txt
+  Delete $INSTDIR\Lang\sr-spc.txt
+  Delete $INSTDIR\Lang\sr-spl.txt
   Delete $INSTDIR\Lang\sv.txt
   Delete $INSTDIR\Lang\ta.txt
   Delete $INSTDIR\Lang\th.txt
@@ -496,6 +507,7 @@ Section "Uninstall"
   DeleteRegKey HKCR "7-Zip.cpio"
   DeleteRegKey HKCR "7-Zip.deb"
   DeleteRegKey HKCR "7-Zip.gz"
+  DeleteRegKey HKCR "7-Zip.iso"
   DeleteRegKey HKCR "7-Zip.rar"
   DeleteRegKey HKCR "7-Zip.rpm"
   DeleteRegKey HKCR "7-Zip.split"
