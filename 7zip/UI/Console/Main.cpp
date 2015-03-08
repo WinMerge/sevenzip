@@ -18,6 +18,9 @@
 #include "Windows/FileName.h"
 #include "Windows/Defs.h"
 #include "Windows/Error.h"
+#ifdef _WIN32
+#include "Windows/MemoryLock.h"
+#endif
 
 #include "../../IPassword.h"
 #include "../../ICoder.h"
@@ -33,6 +36,8 @@
 #include "OpenCallbackConsole.h"
 #include "ExtractCallbackConsole.h"
 #include "UpdateCallbackConsole.h"
+
+#include "../../MyVersion.h"
 
 #ifndef EXCLUDE_COM
 #include "Windows/DLL.h"
@@ -54,7 +59,7 @@ static const char *kCopyrightString = "\n7-Zip"
 " [NT]"
 #endif
 
-" 4.23  Copyright (c) 1999-2005 Igor Pavlov  2005-06-29\n";
+" " MY_VERSION_COPYRIGHT_DATE "\n";
 
 static const char *kHelpString = 
     "\nUsage: 7z"
@@ -67,7 +72,7 @@ static const char *kHelpString =
     "<Commands>\n"
     "  a: Add files to archive\n"
     "  d: Delete files from archive\n"
-    "  e: Extract files from archive\n"
+    "  e: Extract files from archive (without using directory names)\n"
     "  l: List contents of archive\n"
 //    "  l[a|t][f]: List contents of archive\n"
 //    "    a - with Additional fields\n"
@@ -75,7 +80,7 @@ static const char *kHelpString =
 //    "    f - with Full pathnames\n"
     "  t: Test integrity of archive\n"
     "  u: Update files to archive\n"
-    "  x: eXtract files with full pathname\n"
+    "  x: eXtract files with full paths\n"
     "<Switches>\n"
     "  -ai[r[-|0]]{@listfile|!wildcard}: Include archives\n"
     "  -ax[r[-|0]]{@listfile|!wildcard}: eXclude archives\n"
@@ -86,10 +91,10 @@ static const char *kHelpString =
     "  -p{Password}: set Password\n"
     "  -r[-|0]: Recurse subdirectories\n"
     "  -sfx[{name}]: Create SFX archive\n"
-    "  -si: read data from stdin\n"
+    "  -si[{name}]: read data from stdin\n"
     "  -so: write data to stdout\n"
     "  -t{Type}: Set type of archive\n"
-    "  -v{Size}}[b|k|m|g]: Create volumes\n"
+    "  -v{Size}[b|k|m|g]: Create volumes\n"
     "  -u[-][p#][q#][r#][x#][y#][z#][!newArchiveName]: Update options\n"
     "  -w[{path}]: assign Work directory. Empty path means a temporary directory\n"
     "  -x[r[-|0]]]{@listfile|!wildcard}: eXclude filenames\n"
@@ -176,6 +181,11 @@ int Main2(
     return 0;
   }
 
+  #ifdef _WIN32
+  if (options.LargePages)
+    NSecurity::EnableLockMemoryPrivilege();
+  #endif
+
   CStdOutStream &stdStream = options.StdOutMode ? g_StdErr : g_StdOut;
   g_StdStream = &stdStream;
 
@@ -230,6 +240,8 @@ int Main2(
           if (ecs->NumFileErrors != 0)
             stdStream << "Sub items Errors: " << ecs->NumFileErrors << endl;
         }
+        if (result != S_OK)
+          throw CSystemException(result);
         return NExitCode::kFatalError;
       }
       if (result != S_OK)
@@ -274,9 +286,27 @@ int Main2(
 
     CUpdateErrorInfo errorInfo;
 
-    HRESULT result = UpdateArchive(
-        options.WildcardCensor, uo, 
+    HRESULT result = UpdateArchive(options.WildcardCensor, uo, 
         errorInfo, &openCallback, &callback);
+
+    int exitCode = NExitCode::kSuccess;
+    if (callback.CantFindFiles.Size() > 0)
+    {
+      stdStream << endl;
+      stdStream << "WARNINGS for files:" << endl << endl;
+      int numErrors = callback.CantFindFiles.Size();
+      for (int i = 0; i < numErrors; i++)
+      {
+        stdStream << callback.CantFindFiles[i] << " : ";
+        stdStream << NError::MyFormatMessageW(callback.CantFindCodes[i]) << endl;
+      }
+      stdStream << "----------------" << endl;
+      stdStream << "WARNING: Cannot find " << numErrors << " file";
+      if (numErrors > 1)
+        stdStream << "s";
+      stdStream << endl;
+      exitCode = NExitCode::kWarning;
+    }
 
     if (result != S_OK)
     {
@@ -291,10 +321,12 @@ int Main2(
         stdStream << NError::MyFormatMessageW(errorInfo.SystemError) << endl;
       throw CSystemException(result);
     }
-    int exitCode = NExitCode::kSuccess;
     int numErrors = callback.FailedFiles.Size();
     if (numErrors == 0)
-      stdStream << kEverythingIsOk << endl;
+    {
+      if (callback.CantFindFiles.Size() == 0)
+        stdStream << kEverythingIsOk << endl;
+    }
     else
     {
       stdStream << endl;

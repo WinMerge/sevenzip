@@ -8,23 +8,11 @@
 #include "ZHandler.h"
 #include "../../ICoder.h"
 
-// {23170F69-40C1-278B-0402-050000000000}
-DEFINE_GUID(CLSID_CCompressZDecoder, 
-0x23170F69, 0x40C1, 0x278B, 0x04, 0x02, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00);
-
-// {23170F69-40C1-278A-1000-0001100D0000}
+// {23170F69-40C1-278A-1000-000110050000}
 DEFINE_GUID(CLSID_CZHandler, 
-0x23170F69, 0x40C1, 0x278A, 0x10, 0x00, 0x00, 0x01, 0x10, 0x0D, 0x00, 0x00);
+0x23170F69, 0x40C1, 0x278A, 0x10, 0x00, 0x00, 0x01, 0x10, 0x05, 0x00, 0x00);
 
 HINSTANCE g_hInstance;
-
-#ifndef COMPRESS_BZIP2
-#include "../Common/CodecsPath.h"
-CSysString GetBZip2CodecPath()
-{
-  return GetCodecsFolderPrefix() + TEXT("BZip2.dll");
-}
-#endif
 
 extern "C"
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
@@ -82,7 +70,10 @@ STDAPI GetHandlerProperty(PROPID propID, PROPVARIANT *value)
       return S_OK;
     }
     case NArchive::kExtension:
-      propVariant = L"z";
+      propVariant = L"z taz";
+      break;
+    case NArchive::kAddExtension:
+      propVariant = L"* .tar";
       break;
     case NArchive::kUpdate:
       propVariant = false;

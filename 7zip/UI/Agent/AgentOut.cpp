@@ -1,4 +1,4 @@
-// AgentOutcpp
+// AgentOut.cpp
 
 #include "StdAfx.h"
 
@@ -81,7 +81,7 @@ STDMETHODIMP CAgent::SetFiles(const wchar_t *folderPrefix,
   _folderPrefix = folderPrefix;
   _names.Clear();
   _names.Reserve(numNames);
-  for (int i = 0; i < numNames; i++)
+  for (UINT32 i = 0; i < numNames; i++)
     _names.Add(names[i]);
   return S_OK;
 }
@@ -154,15 +154,21 @@ STDMETHODIMP CAgent::DoOperation(
   if (!CanUpdate())
     return E_NOTIMPL;
   NUpdateArchive::CActionSet actionSet;
-  for (int i = 0; i < NUpdateArchive::NPairState::kNumValues; i++)
+  int i;
+  for (i = 0; i < NUpdateArchive::NPairState::kNumValues; i++)
     actionSet.StateActions[i] = (NUpdateArchive::NPairAction::EEnum)stateActions[i];
 
   CObjectVector<CDirItem> dirItems;
 
   UString folderPrefix = _folderPrefix;
   NFile::NName::NormalizeDirPathPrefix(folderPrefix);
-  UString errorPath;
-  RINOK(::EnumerateDirItems(folderPrefix, _names, _archiveNamePrefix, dirItems, errorPath));
+  UStringVector errorPaths;
+  CRecordVector<DWORD> errorCodes;
+  ::EnumerateDirItems(folderPrefix, _names, _archiveNamePrefix, dirItems, errorPaths, errorCodes);
+  if (errorCodes.Size() > 0)
+  {
+    return errorCodes.Front();
+  }
 
   NWindows::NDLL::CLibrary library;
 
@@ -237,7 +243,7 @@ STDMETHODIMP CAgent::DoOperation(
   }
   
   CMyComPtr<ISetProperties> setProperties;
-  if (outArchive->QueryInterface(&setProperties) == S_OK)
+  if (outArchive->QueryInterface(IID_ISetProperties, (void **)&setProperties) == S_OK)
   {
     if (m_PropNames.Size() == 0)
     {
@@ -249,12 +255,23 @@ STDMETHODIMP CAgent::DoOperation(
       for(i = 0; i < m_PropNames.Size(); i++)
         names.Add((const wchar_t *)m_PropNames[i]);
 
-      RINOK(setProperties->SetProperties(&names.Front(), 
-          &m_PropValues.front(), names.Size()));
+      NWindows::NCOM::CPropVariant *propValues = new NWindows::NCOM::CPropVariant[m_PropValues.Size()];
+      try
+      {
+        for (int i = 0; i < m_PropValues.Size(); i++)
+          propValues[i] = m_PropValues[i];
+        RINOK(setProperties->SetProperties(&names.Front(), propValues, names.Size()));
+      }
+      catch(...)
+      {
+        delete []propValues;
+        throw;
+      }
+      delete []propValues;
     }
   }
   m_PropNames.Clear();
-  m_PropValues.clear();
+  m_PropValues.Clear();
 
   if (sfxModule != NULL)
   {
@@ -265,8 +282,7 @@ STDMETHODIMP CAgent::DoOperation(
     RINOK(CopyBlock(sfxStream, outStream));
   }
 
-  return outArchive->UpdateItems(outStream, updatePairs2.Size(),
-      updateCallback);
+  return outArchive->UpdateItems(outStream, updatePairs2.Size(),updateCallback);
 }
 
 
@@ -340,9 +356,9 @@ STDMETHODIMP CAgent::DeleteItems(
   _archiveFolderItem->GetRealIndices(indices, numItems, realIndices);
   CObjectVector<CUpdatePair2> updatePairs;
   int curIndex = 0;
-  UINT32 numItemsInArchive;
+  UInt32 numItemsInArchive;
   RINOK(GetArchive()->GetNumberOfItems(&numItemsInArchive));
-  for (int i = 0; i < numItemsInArchive; i++)
+  for (UInt32 i = 0; i < numItemsInArchive; i++)
   {
     if (curIndex < realIndices.Size())
       if (realIndices[curIndex] == i)
@@ -379,7 +395,7 @@ HRESULT CAgent::CreateFolder(
   CObjectVector<CUpdatePair2> updatePairs;
   UINT32 numItemsInArchive;
   RINOK(GetArchive()->GetNumberOfItems(&numItemsInArchive));
-  for (int i = 0; i < numItemsInArchive; i++)
+  for (UInt32 i = 0; i < numItemsInArchive; i++)
   {
     CUpdatePair2 updatePair;
     updatePair.NewData = updatePair.NewProperties = false;
@@ -450,7 +466,7 @@ HRESULT CAgent::RenameItem(
   int curIndex = 0;
   UINT32 numItemsInArchive;
   RINOK(GetArchive()->GetNumberOfItems(&numItemsInArchive));
-  for (int i = 0; i < numItemsInArchive; i++)
+  for (UInt32 i = 0; i < numItemsInArchive; i++)
   {
     if (curIndex < realIndices.Size())
       if (realIndices[curIndex] == i)
@@ -469,7 +485,7 @@ HRESULT CAgent::RenameItem(
         UString oldFullPath;
         RINOK(GetArchiveItemPath(GetArchive(), i, DefaultName, oldFullPath));
 
-        if (oldItemPath.CollateNoCase(oldFullPath.Left(oldItemPath.Length())) != 0)
+        if (oldItemPath.CompareNoCase(oldFullPath.Left(oldItemPath.Length())) != 0)
           return E_INVALIDARG;
 
         updatePair.NewName = newItemPath + oldFullPath.Mid(oldItemPath.Length());
@@ -495,11 +511,11 @@ STDMETHODIMP CAgent::SetProperties(const wchar_t **names,
     const PROPVARIANT *values, INT32 numProperties)
 {
   m_PropNames.Clear();
-  m_PropValues.clear();
+  m_PropValues.Clear();
   for (int i = 0; i < numProperties; i++)
   {
     m_PropNames.Add(names[i]);
-    m_PropValues.push_back(values[i]);
+    m_PropValues.Add(values[i]);
   }
   return S_OK;
 }

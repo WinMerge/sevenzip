@@ -101,7 +101,7 @@ SOURCE=.\Far.def
 # End Source File
 # Begin Source File
 
-SOURCE=.\Far.rc
+SOURCE=.\resource.rc
 # End Source File
 # Begin Source File
 
@@ -131,6 +131,14 @@ SOURCE=..\..\..\Common\IntToString.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Common\IntToString.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\NewHandler.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\NewHandler.h
 # End Source File
 # Begin Source File
 
@@ -539,6 +547,14 @@ SOURCE=..\..\Common\FileStreams.cpp
 # Begin Source File
 
 SOURCE=..\..\Common\FileStreams.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.h
 # End Source File
 # End Group
 # End Target

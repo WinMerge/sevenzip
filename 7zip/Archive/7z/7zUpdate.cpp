@@ -89,11 +89,13 @@ UString CUpdateItem::GetExtension() const
   return Name.Mid(GetExtensionPos());
 }
 
+/*
 struct CFolderRef
 {
   const CArchiveDatabaseEx *Database;
   int FolderIndex;
 };
+*/
 
 #define RINOZ(x) { int __tt = (x); if (__tt != 0) return __tt; }
 
@@ -106,10 +108,10 @@ static int CompareMethodIDs(const CMethodID &a1, const CMethodID &a2)
 
 static int CompareBuffers(const CByteBuffer &a1, const CByteBuffer &a2)
 {
-  int c1 = a1.GetCapacity();
-  int c2 = a2.GetCapacity();
+  size_t c1 = a1.GetCapacity();
+  size_t c2 = a2.GetCapacity();
   RINOZ(MyCompare(c1, c2));
-  for (int i = 0; i < c1; i++)
+  for (size_t i = 0; i < c1; i++)
     RINOZ(MyCompare(a1[i], a2[i]));
   return 0;
 }
@@ -156,34 +158,34 @@ static int CompareFolders(const CFolder &f1, const CFolder &f2)
 
 static int CompareFiles(const CFileItem &f1, const CFileItem &f2)
 {
-  return MyStringCollateNoCase(f1.Name, f2.Name);
+  return MyStringCompareNoCase(f1.Name, f2.Name);
 }
 
-static int __cdecl CompareFolderRefs(const void *p1, const void *p2)
+static int CompareFolderRefs(const int *p1, const int *p2, void *param)
 {
-  const CFolderRef &a1 = *((const CFolderRef *)p1);
-  const CFolderRef &a2 = *((const CFolderRef *)p2);
-  const CArchiveDatabaseEx &d1 = *a1.Database;
-  const CArchiveDatabaseEx &d2 = *a2.Database;
+  int i1 = *p1;
+  int i2 = *p2;
+  const CArchiveDatabaseEx &db = *(const CArchiveDatabaseEx *)param;
   RINOZ(CompareFolders(
-      d1.Folders[a1.FolderIndex],
-      d2.Folders[a2.FolderIndex]));
+      db.Folders[i1],
+      db.Folders[i2]));
   RINOZ(MyCompare(
-      d1.NumUnPackStreamsVector[a1.FolderIndex],
-      d2.NumUnPackStreamsVector[a2.FolderIndex]));
-  if (d1.NumUnPackStreamsVector[a1.FolderIndex] == 0)
+      db.NumUnPackStreamsVector[i1],
+      db.NumUnPackStreamsVector[i2]));
+  if (db.NumUnPackStreamsVector[i1] == 0)
     return 0;
   return CompareFiles(
-      d1.Files[(size_t)d1.FolderStartFileIndex[a1.FolderIndex]],
-      d2.Files[(size_t)d2.FolderStartFileIndex[a2.FolderIndex]]);
+      db.Files[db.FolderStartFileIndex[i1]],
+      db.Files[db.FolderStartFileIndex[i2]]);
 }
 
 ////////////////////////////////////////////////////////////
 
-static int __cdecl CompareEmptyItems(const void *p1, const void *p2)
+static int CompareEmptyItems(const int *p1, const int *p2, void *param)
 {
-  const CUpdateItem &u1 = **((CUpdateItem **)p1);
-  const CUpdateItem &u2 = **((CUpdateItem **)p2);
+  const CObjectVector<CUpdateItem> &updateItems = *(const CObjectVector<CUpdateItem> *)param;
+  const CUpdateItem &u1 = updateItems[*p1];
+  const CUpdateItem &u2 = updateItems[*p2];
   if (u1.IsDirectory != u2.IsDirectory)
   {
     if (u1.IsDirectory)
@@ -194,12 +196,12 @@ static int __cdecl CompareEmptyItems(const void *p1, const void *p2)
   {
     if (u1.IsAnti != u2.IsAnti)
       return (u1.IsAnti ? 1 : -1);
-    int n = MyStringCollateNoCase(u1.Name, u2.Name);
+    int n = MyStringCompareNoCase(u1.Name, u2.Name);
     return (u1.IsAnti ? (-n) : n);
   }
   if (u1.IsAnti != u2.IsAnti)
     return (u1.IsAnti ? 1 : -1);
-  return MyStringCollateNoCase(u1.Name, u2.Name);
+  return MyStringCompareNoCase(u1.Name, u2.Name);
 }
 
 struct CRefItem
@@ -234,10 +236,10 @@ struct CRefItem
   }
 };
 
-static int __cdecl CompareUpdateItems(const void *p1, const void *p2)
+static int CompareUpdateItems(const CRefItem *p1, const CRefItem *p2, void *param)
 {
-  const CRefItem &a1 = *((CRefItem *)p1);
-  const CRefItem &a2 = *((CRefItem *)p2);
+  const CRefItem &a1 = *p1;
+  const CRefItem &a2 = *p2;
   const CUpdateItem &u1 = *a1.UpdateItem;
   const CUpdateItem &u2 = *a2.UpdateItem;
   int n;
@@ -251,18 +253,18 @@ static int __cdecl CompareUpdateItems(const void *p1, const void *p2)
   {
     if (u1.IsAnti != u2.IsAnti)
       return (u1.IsAnti ? 1 : -1);
-    n = MyStringCollateNoCase(u1.Name, u2.Name);
+    n = MyStringCompareNoCase(u1.Name, u2.Name);
     return (u1.IsAnti ? (-n) : n);
   }
   if (a1.SortByType)
   {
-    RINOZ(MyStringCollateNoCase(u1.Name + a1.ExtensionPos, u2.Name + a2.ExtensionPos));
-    RINOZ(MyStringCollateNoCase(u1.Name + a1.NamePos, u2.Name + a2.NamePos));
+    RINOZ(MyStringCompareNoCase(u1.Name + a1.ExtensionPos, u2.Name + a2.ExtensionPos));
+    RINOZ(MyStringCompareNoCase(u1.Name + a1.NamePos, u2.Name + a2.NamePos));
     if (u1.LastWriteTimeIsDefined && u2.LastWriteTimeIsDefined)
       RINOZ(CompareFileTime(&u1.LastWriteTime, &u2.LastWriteTime));
     RINOZ(MyCompare(u1.Size, u2.Size))
   }
-  return MyStringCollateNoCase(u1.Name, u2.Name);
+  return MyStringCompareNoCase(u1.Name, u2.Name);
 }
 
 struct CSolidGroup
@@ -455,7 +457,7 @@ static void FromUpdateItemToFileItem(const CUpdateItem &updateItem,
 static HRESULT Update2(
     IInStream *inStream,
     const CArchiveDatabaseEx *database,
-    CObjectVector<CUpdateItem> &updateItems,
+    const CObjectVector<CUpdateItem> &updateItems,
     ISequentialOutStream *seqOutStream,
     IArchiveUpdateCallback *updateCallback,
     const CUpdateOptions &options)
@@ -496,38 +498,32 @@ static HRESULT Update2(
       fileIndexToUpdateIndexMap[index] = i;
   }
 
-  CRecordVector<CFolderRef> folderRefs;
+  CRecordVector<int> folderRefs;
   if (database != 0)
   {
-  for(i = 0; i < database->Folders.Size(); i++)
-  {
-    CNum indexInFolder = 0;
-    CNum numCopyItems = 0;
-    CNum numUnPackStreams = database->NumUnPackStreamsVector[i];
-    for (CNum fileIndex = database->FolderStartFileIndex[i];
-        indexInFolder < numUnPackStreams; fileIndex++)
+    for(i = 0; i < database->Folders.Size(); i++)
     {
-      if (database->Files[fileIndex].HasStream)
+      CNum indexInFolder = 0;
+      CNum numCopyItems = 0;
+      CNum numUnPackStreams = database->NumUnPackStreamsVector[i];
+      for (CNum fileIndex = database->FolderStartFileIndex[i];
+      indexInFolder < numUnPackStreams; fileIndex++)
       {
-        indexInFolder++;
-        int updateIndex = fileIndexToUpdateIndexMap[fileIndex];
-        if (updateIndex >= 0)
-          if (!updateItems[updateIndex].NewData)
-            numCopyItems++;
+        if (database->Files[fileIndex].HasStream)
+        {
+          indexInFolder++;
+          int updateIndex = fileIndexToUpdateIndexMap[fileIndex];
+          if (updateIndex >= 0)
+            if (!updateItems[updateIndex].NewData)
+              numCopyItems++;
+        }
       }
+      if (numCopyItems != numUnPackStreams && numCopyItems != 0)
+        return E_NOTIMPL; // It needs repacking !!!
+      if (numCopyItems > 0)
+        folderRefs.Add(i);
     }
-    if (numCopyItems != numUnPackStreams && numCopyItems != 0)
-      return E_NOTIMPL; // It needs repacking !!!
-    if (numCopyItems > 0)
-    {
-      CFolderRef folderRef;
-      folderRef.Database = database;
-      folderRef.FolderIndex = i;
-      folderRefs.Add(folderRef);
-    }
-  }
-  qsort(&folderRefs.Front(), folderRefs.Size(), sizeof(folderRefs[0]), 
-      CompareFolderRefs);
+    folderRefs.Sort(CompareFolderRefs, (void *)database);
   }
 
   CArchiveDatabase newDatabase;
@@ -535,7 +531,7 @@ static HRESULT Update2(
   /////////////////////////////////////////
   // Write Empty Files & Folders
 
-  CRecordVector<const CUpdateItem *> emptyRefs;
+  CRecordVector<int> emptyRefs;
   for(i = 0; i < updateItems.Size(); i++)
   {
     const CUpdateItem &updateItem = updateItems[i];
@@ -548,13 +544,12 @@ static HRESULT Update2(
       if (updateItem.IndexInArchive != -1)
         if (database->Files[updateItem.IndexInArchive].HasStream)
           continue;
-    emptyRefs.Add(&updateItem);
+    emptyRefs.Add(i);
   }
-  qsort(&emptyRefs.Front(), emptyRefs.Size(), sizeof(emptyRefs[0]), 
-      CompareEmptyItems);
+  emptyRefs.Sort(CompareEmptyItems, (void *)&updateItems);
   for(i = 0; i < emptyRefs.Size(); i++)
   {
-    const CUpdateItem &updateItem = *emptyRefs[i];
+    const CUpdateItem &updateItem = updateItems[emptyRefs[i]];
     CFileItem file;
     if (updateItem.NewProperties)
       FromUpdateItemToFileItem(updateItem, file);
@@ -566,16 +561,26 @@ static HRESULT Update2(
   ////////////////////////////
 
   COutArchive archive;
-  archive.Create(seqOutStream, false);
+  RINOK(archive.Create(seqOutStream, false));
   RINOK(archive.SkeepPrefixArchiveHeader());
   UInt64 complexity = 0;
   for(i = 0; i < folderRefs.Size(); i++)
-    complexity += database->GetFolderFullPackSize(folderRefs[i].FolderIndex);
+    complexity += database->GetFolderFullPackSize(folderRefs[i]);
+  UInt64 inSizeForReduce = 0;
   for(i = 0; i < updateItems.Size(); i++)
   {
     const CUpdateItem &updateItem = updateItems[i];
     if (updateItem.NewData)
+    {
       complexity += updateItem.Size;
+      if (numSolidFiles == 1)
+      {
+        if (updateItem.Size > inSizeForReduce)
+          inSizeForReduce = updateItem.Size;
+      }
+      else
+        inSizeForReduce += updateItem.Size;
+    }
   }
   RINOK(updateCallback->SetTotal(complexity));
   complexity = 0;
@@ -586,7 +591,7 @@ static HRESULT Update2(
 
   for(i = 0; i < folderRefs.Size(); i++)
   {
-    int folderIndex = folderRefs[i].FolderIndex;
+    int folderIndex = folderRefs[i];
     
     RINOK(WriteRange(inStream, archive.SeqStream,
         database->GetFolderStreamPos(folderIndex, 0),
@@ -641,6 +646,10 @@ static HRESULT Update2(
   SplitFilesToGroups(*options.Method, options.UseFilters, options.MaxFilter, 
       updateItems, groups);
 
+  const UInt32 kMinReduceSize = (1 << 16);
+  if (inSizeForReduce < kMinReduceSize)
+    inSizeForReduce = kMinReduceSize;
+
   for (int groupIndex = 0; groupIndex < groups.Size(); groupIndex++)
   {
     const CSolidGroup &group = groups[groupIndex];
@@ -652,7 +661,7 @@ static HRESULT Update2(
     for (i = 0; i < numFiles; i++)
       refItems.Add(CRefItem(group.Indices[i], 
           updateItems[group.Indices[i]], numSolidFiles > 1));
-    qsort(&refItems.Front(), refItems.Size(), sizeof(refItems[0]), CompareUpdateItems);
+    refItems.Sort(CompareUpdateItems, 0);
     
     CRecordVector<UInt32> indices;
     indices.Reserve(numFiles);
@@ -694,7 +703,7 @@ static HRESULT Update2(
           if (numSubFiles == 0)
             prevExtension = ext;
           else
-            if (ext.CollateNoCase(prevExtension) != 0)
+            if (ext.CompareNoCase(prevExtension) != 0)
               break;
         }
       }
@@ -713,7 +722,7 @@ static HRESULT Update2(
       CMyComPtr<ICompressProgressInfo> compressProgress = localCompressProgressSpec;
       localCompressProgressSpec->Init(localProgress, &complexity, NULL);
       
-      RINOK(encoder.Encode(solidInStream, NULL, folderItem, 
+      RINOK(encoder.Encode(solidInStream, NULL, &inSizeForReduce, folderItem, 
         archive.SeqStream, newDatabase.PackSizes, compressProgress));
       // for()
       // newDatabase.PackCRCsDefined.Add(false);
@@ -862,7 +871,7 @@ HRESULT UpdateVolume(
     RINOK(volumeCallback->GetVolumeStream(volumeIndex, &volumeStream));
    
     COutArchive archive;
-    archive.Create(volumeStream, true);
+    RINOK(archive.Create(volumeStream, true));
     RINOK(archive.SkeepPrefixArchiveHeader());
         
     CSequentialInStreamWithCRC *inCrcStreamSpec = new CSequentialInStreamWithCRC;
@@ -914,7 +923,6 @@ public:
   
   HRESULT Flush();
   STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
-  STDMETHOD(WritePart)(const void *data, UInt32 size, UInt32 *processedSize);
 };
 
 HRESULT COutVolumeStream::Flush()
@@ -943,7 +951,7 @@ STDMETHODIMP COutVolumeStream::Write(const void *data, UInt32 size, UInt32 *proc
       RINOK(VolumeCallback->GetVolumeStream(_volIndex, &_volumeStream));
       _volIndex++;
       _curPos = 0;
-      _archive.Create(_volumeStream, true);
+      RINOK(_archive.Create(_volumeStream, true));
       RINOK(_archive.SkeepPrefixArchiveHeader());
       _crc.Init();
       continue;
@@ -959,7 +967,7 @@ STDMETHODIMP COutVolumeStream::Write(const void *data, UInt32 size, UInt32 *proc
     if(processedSize != NULL)
       *processedSize += realProcessed;
     _curPos += realProcessed;
-    if (realProcessed != curSize)
+    if (realProcessed != curSize && realProcessed == 0)
       return E_FAIL;
     if (_curPos == pureSize)
     {
@@ -969,16 +977,12 @@ STDMETHODIMP COutVolumeStream::Write(const void *data, UInt32 size, UInt32 *proc
   return S_OK;
 }
 
-STDMETHODIMP COutVolumeStream::WritePart(const void *data, UInt32 size, UInt32 *processedSize)
-{
-  return Write(data, size, processedSize);
-}
 #endif
 
 HRESULT Update(
     IInStream *inStream,
     const CArchiveDatabaseEx *database,
-    CObjectVector<CUpdateItem> &updateItems,
+    const CObjectVector<CUpdateItem> &updateItems,
     ISequentialOutStream *seqOutStream,
     IArchiveUpdateCallback *updateCallback,
     const CUpdateOptions &options)

@@ -148,13 +148,12 @@ const wchar_t *kMethods[] =
 
 const int kNumMethods = sizeof(kMethods) / sizeof(kMethods[0]);
 const wchar_t *kUnknownMethod = L"Unknown";
+const wchar_t *kPPMdMethod = L"PPMd";
 
 CHandler::CHandler():
   m_ArchiveIsOpen(false)
 {
   InitMethodProperties();
-  m_Method.MethodSequence.Add(NFileHeader::NCompressionMethod::kDeflated);
-  m_Method.MethodSequence.Add(NFileHeader::NCompressionMethod::kStored);
 }
 
 STDMETHODIMP CHandler::GetArchiveProperty(PROPID propID, PROPVARIANT *value)
@@ -240,7 +239,7 @@ STDMETHODIMP CHandler::GetProperty(UInt32 index, PROPID aPropID,  PROPVARIANT *a
       break;
     case kpidComment:
     {
-      int size = item.Comment.GetCapacity();
+      int size = (int)item.Comment.GetCapacity();
       if (size > 0)
       {
         AString s;
@@ -260,6 +259,8 @@ STDMETHODIMP CHandler::GetProperty(UInt32 index, PROPID aPropID,  PROPVARIANT *a
       UString method;
       if (item.CompressionMethod < kNumMethods)
         method = kMethods[item.CompressionMethod];
+      else if (item.CompressionMethod == NFileHeader::NCompressionMethod::kWinZipPPMd)
+        method = kPPMdMethod;
       else
         method = kUnknownMethod;
       propVariant = method;
@@ -322,6 +323,7 @@ STDMETHODIMP CHandler::Open(IInStream *inStream,
 
 STDMETHODIMP CHandler::Close()
 {
+  m_Items.Clear();
   m_Archive.Close();
   m_ArchiveIsOpen = false;
   return S_OK;

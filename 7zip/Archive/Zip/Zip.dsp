@@ -93,11 +93,11 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\DllExports.cpp
+SOURCE=..\Archive.def
 # End Source File
 # Begin Source File
 
-SOURCE=.\resource.h
+SOURCE=.\DllExports.cpp
 # End Source File
 # Begin Source File
 
@@ -111,10 +111,6 @@ SOURCE=.\StdAfx.cpp
 # Begin Source File
 
 SOURCE=.\StdAfx.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Zip.def
 # End Source File
 # End Group
 # Begin Group "Common"
@@ -143,6 +139,14 @@ SOURCE=..\..\..\Common\CRC.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Common\CRC.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\NewHandler.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\NewHandler.h
 # End Source File
 # Begin Source File
 
@@ -212,14 +216,6 @@ SOURCE=..\..\..\Windows\PropVariant.cpp
 
 SOURCE=..\..\..\Windows\PropVariant.h
 # End Source File
-# Begin Source File
-
-SOURCE=..\..\..\Windows\Synchronization.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\Windows\Synchronization.h
-# End Source File
 # End Group
 # Begin Group "Archive Common"
 
@@ -239,14 +235,6 @@ SOURCE=..\Common\CoderLoader.cpp
 # Begin Source File
 
 SOURCE=..\Common\CoderLoader.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\Common\CrossThreadProgress.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\Common\CrossThreadProgress.h
 # End Source File
 # Begin Source File
 
@@ -334,19 +322,19 @@ SOURCE=..\..\Common\ProgressUtils.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Common\StreamBinder.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Common\StreamBinder.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\Common\StreamObjects.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\Common\StreamObjects.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.h
 # End Source File
 # End Group
 # Begin Group "Engine"

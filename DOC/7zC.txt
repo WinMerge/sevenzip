@@ -1,7 +1,7 @@
-7z ANSI-C Decoder 4.22
+7z ANSI-C Decoder 4.23
 ----------------------
 
-7z ANSI-C Decoder 4.22 Copyright (C) 1999-2005 Igor Pavlov
+7z ANSI-C Decoder 4.23 Copyright (C) 1999-2005 Igor Pavlov
 
 7z ANSI-C provides 7z/LZMA decoding.
 7z ANSI-C version is simplified version ported from C++ code.
@@ -54,9 +54,6 @@ In that example 7-Zip will use 512KB solid blocks. So it needs to decompress onl
 Limitations of current version of 7z ANSI-C Decoder
 ---------------------------------------------------
 
- - It doesn't support separated "folder" items inside archive.
-   But you still can use files that are in subfolders
- - It doesn't support empty files (size = 0) inside archive.
  - It reads only "FileName", "Size", and "CRC" information for each file in archive.
  - It supports only LZMA and Copy (no compression) methods.
  - It converts original UTF-16 Unicode file names to UTF-8 Unicode file names.

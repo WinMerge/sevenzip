@@ -15,6 +15,9 @@
 #include "Windows/Synchronization.h"
 #include "Windows/Error.h"
 #include "Windows/FileName.h"
+#ifdef _WIN32
+#include "Windows/MemoryLock.h"
+#endif
 
 #include "../../IStream.h"
 #include "../../IPassword.h"
@@ -33,6 +36,9 @@
 using namespace NWindows;
 
 HINSTANCE g_hInstance;
+#ifndef _UNICODE
+bool g_IsNT = false;
+#endif
 
 static const wchar_t *kExceptionErrorMessage = L"Error:";
 static const wchar_t *kUserBreak  = L"Break signaled";
@@ -71,6 +77,11 @@ int Main2()
 
   parser.Parse1(commandStrings, options);
   parser.Parse2(options);
+
+  #ifdef _WIN32
+  if (options.LargePages)
+    NSecurity::EnableLockMemoryPrivilege();
+  #endif
   
   bool isExtractGroupCommand = options.Command.IsFromExtractGroup();
  
@@ -99,14 +110,9 @@ int Main2()
           options.ArchivePathsFullSorted,
           options.WildcardCensor.Pairs.Front().Head, 
           eo, options.ShowDialog, &openCallback, ecs);
-    if (result == S_FALSE)
-    {
-      MyMessageBox(IDS_OPEN_IS_NOT_SUPORTED_ARCHIVE, 0x02000604);
-      return NExitCode::kFatalError;    
-    }
-    else if (result != S_OK)
+    if (result != S_OK)
       throw CSystemException(result);
-    if (ecs->Messages.Size() > 0)
+    if (ecs->Messages.Size() > 0 || ecs->NumArchiveErrors != 0)
       return NExitCode::kFatalError;    
   }
   else if (options.Command.IsFromUpdateGroup())
@@ -162,18 +168,20 @@ static bool inline IsItWindowsNT()
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
   g_hInstance = hInstance;
-  InitCommonControls();
-
-  ReloadLang();
-
-
-  #ifdef UNICODE
+  #ifdef _UNICODE
   if (!IsItWindowsNT())
   {
     MyMessageBox(L"This program requires Windows NT/2000/XP/2003");
     return NExitCode::kFatalError;
   }
+  #else
+  g_IsNT = IsItWindowsNT();
   #endif
+
+  InitCommonControls();
+
+  ReloadLang();
+
   // setlocale(LC_COLLATE, ".ACP");
   try
   {

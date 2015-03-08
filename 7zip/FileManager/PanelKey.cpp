@@ -8,7 +8,7 @@
 #include "../PropID.h"
 #include "App.h"
 
-// static LPCTSTR kHelpTopic = _T("FM/index.htm");
+// static LPCWSTR kHelpTopic = L"FM/index.htm";
 
 struct CVKeyPropIDPair
 {
@@ -152,8 +152,7 @@ bool CPanel::OnKeyDown(LPNMLVKEYDOWN keyDownInfo, LRESULT &result)
     */
     case VK_DELETE:
     {
-      // if (shift)
-      DeleteItems();
+      DeleteItems(!shift);
       return true;
     }
     case VK_INSERT:

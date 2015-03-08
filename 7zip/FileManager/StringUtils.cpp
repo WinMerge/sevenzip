@@ -9,7 +9,8 @@ void SplitStringToTwoStrings(const UString &src, UString &dest1, UString &dest2)
   dest1.Empty();
   dest2.Empty();
   bool quoteMode = false;
-  for (int i = 0; i < src.Length(); i++)
+  int i;
+  for (i = 0; i < src.Length(); i++)
   {
     wchar_t c = src[i];
     if (c == L'\"')
@@ -65,13 +66,3 @@ UString JoinStrings(const UStringVector &srcStrings)
   return destString;
 }
 
-/*
-void SplitString(const CSysString &srcString, CSysStringVector &destStrings)
-{
-  destStrings.Clear();
-  UStringVector destStringsTemp;
-  SplitString(GetUnicodeString(srcString), destStringsTemp);
-  for (int i = 0; i < destStringsTemp.Size(); i++);
-    destStrings.Add(GetSysUnicodeString
-}
-*/

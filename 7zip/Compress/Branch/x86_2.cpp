@@ -31,7 +31,7 @@ bool CBCJ2_x86_Encoder::Create()
     return false;
   if (_buffer == 0)
   {
-    _buffer = (Byte *)BigAlloc(kBufferSize);
+    _buffer = (Byte *)MidAlloc(kBufferSize);
     if (_buffer == 0)
       return false;
   }
@@ -40,7 +40,7 @@ bool CBCJ2_x86_Encoder::Create()
 
 CBCJ2_x86_Encoder::~CBCJ2_x86_Encoder()
 {
-  BigFree(_buffer);
+  ::MidFree(_buffer);
 }
 
 HRESULT CBCJ2_x86_Encoder::Flush()
@@ -102,7 +102,6 @@ HRESULT CBCJ2_x86_Encoder::CodeReal(ISequentialInStream **inStreams,
   UInt32 nowPos = 0;
   UInt64 nowPos64 = 0;
   UInt32 bufferPos = 0;
-  UInt32 processedSize;
 
   Byte prevByte = 0;
 
@@ -112,8 +111,18 @@ HRESULT CBCJ2_x86_Encoder::CodeReal(ISequentialInStream **inStreams,
 
   while(true)
   {
-    UInt32 size = kBufferSize - bufferPos;
-    RINOK(inStream->Read(_buffer + bufferPos, size, &processedSize));
+    UInt32 processedSize = 0;
+    while(true)
+    {
+      UInt32 size = kBufferSize - (bufferPos + processedSize);
+      UInt32 processedSizeLoc;
+      if (size == 0)
+        break;
+      RINOK(inStream->Read(_buffer + bufferPos + processedSize, size, &processedSizeLoc));
+      if (processedSizeLoc == 0)
+        break;
+      processedSize += processedSizeLoc;
+    }
     UInt32 endPos = bufferPos + processedSize;
     
     if (endPos < 5)

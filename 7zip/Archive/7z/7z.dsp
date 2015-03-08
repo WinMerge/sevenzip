@@ -93,7 +93,7 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\7z.def
+SOURCE=..\Archive.def
 # End Source File
 # Begin Source File
 
@@ -495,6 +495,14 @@ SOURCE=..\..\Common\StreamObjects.cpp
 # Begin Source File
 
 SOURCE=..\..\Common\StreamObjects.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.h
 # End Source File
 # End Group
 # Begin Group "Windows"

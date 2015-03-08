@@ -15,7 +15,7 @@
 static const char *kTrimDefaultCharSet  = " \n\t";
 
 template <class T>
-inline size_t MyStringLen(const T *s)
+inline int MyStringLen(const T *s)
 { 
   int i;
   for (i = 0; s[i] != '\0'; i++);
@@ -34,9 +34,9 @@ inline wchar_t* MyStringGetNextCharPointer(wchar_t *p)
   { return (p + 1); }
 inline const wchar_t* MyStringGetNextCharPointer(const wchar_t *p)
   { return (p + 1); }
-inline wchar_t* MyStringGetPrevCharPointer(const wchar_t *base, wchar_t *p)
+inline wchar_t* MyStringGetPrevCharPointer(const wchar_t *, wchar_t *p)
   { return (p - 1); }
-inline const wchar_t* MyStringGetPrevCharPointer(const wchar_t *base, const wchar_t *p)
+inline const wchar_t* MyStringGetPrevCharPointer(const wchar_t *, const wchar_t *p)
   { return (p - 1); }
 
 #ifdef _WIN32
@@ -90,19 +90,23 @@ wchar_t MyCharUpper(wchar_t c);
 //////////////////////////////////////
 // Compare
 
+/*
 #ifndef _WIN32_WCE
 int MyStringCollate(const char *s1, const char *s2);
 int MyStringCollateNoCase(const char *s1, const char *s2);
 #endif
 int MyStringCollate(const wchar_t *s1, const wchar_t *s2);
 int MyStringCollateNoCase(const wchar_t *s1, const wchar_t *s2);
+*/
 
 int MyStringCompare(const char *s1, const char  *s2);
 int MyStringCompare(const wchar_t *s1, const wchar_t *s2);
 
-template <class T>
-inline int MyStringCompareNoCase(const T *s1, const T *s2)
-  { return MyStringCollateNoCase(s1, s2); }
+#ifdef _WIN32
+int MyStringCompareNoCase(const char *s1, const char  *s2);
+#endif
+
+int MyStringCompareNoCase(const wchar_t *s1, const wchar_t *s2);
 
 template <class T>
 class CStringBase
@@ -112,7 +116,7 @@ class CStringBase
     const T *p = _chars;
     while (charSet.Find(*p) >= 0 && (*p != 0))
       p = GetNextCharPointer(p);
-    Delete(0, p - _chars);
+    Delete(0, (int)(p - _chars));
   }
   void TrimRightWithCharSet(const CStringBase &charSet)
   {
@@ -131,7 +135,7 @@ class CStringBase
     }
     if(pLast != NULL)
     {
-      int i = pLast - _chars;
+      int i = (int)(pLast - _chars);
       Delete(i, _length - i);
     }
 
@@ -358,10 +362,12 @@ public:
 
   int CompareNoCase(const CStringBase& s) const
     { return MyStringCompareNoCase(_chars, s._chars); }
+  /*
   int Collate(const CStringBase& s) const
     { return MyStringCollate(_chars, s._chars); }
   int CollateNoCase(const CStringBase& s) const
     { return MyStringCollateNoCase(_chars, s._chars); }
+  */
 
   int Find(T c) const { return Find(c, 0); }
   int Find(T c, int startIndex) const
@@ -370,7 +376,7 @@ public:
     while (true)
     {
       if (*p == c)
-        return p - _chars;
+        return (int)(p - _chars);
       if (*p == 0)
         return -1;
       p = GetNextCharPointer(p);
@@ -400,7 +406,7 @@ public:
     while (true)
     {
       if (*p == c)
-        return p - _chars;
+        return (int)(p - _chars);
       if (p == _chars)
         return -1;
       p = GetPrevCharPointer(_chars, p);

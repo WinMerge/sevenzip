@@ -99,7 +99,7 @@ class COutMultiVolStream:
   public IOutStream,
   public CMyUnknownImp
 {
-  size_t _streamIndex; // required stream
+  int _streamIndex; // required stream
   UInt64 _offsetPos; // offset from start of _streamIndex index
   UInt64 _absPos;
   UInt64 _length;
@@ -129,7 +129,6 @@ public:
   MY_UNKNOWN_IMP1(IOutStream)
 
   STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
-  STDMETHOD(WritePart)(const void *data, UInt32 size, UInt32 *processedSize);
   STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition);
   STDMETHOD(SetSize)(Int64 newSize);
 };
@@ -142,7 +141,7 @@ STDMETHODIMP COutMultiVolStream::Write(const void *data, UInt32 size, UInt32 *pr
     *processedSize = 0;
   while(size > 0)
   {
-    if (_streamIndex >= (size_t)Streams.Size())
+    if (_streamIndex >= Streams.Size())
     {
       CSubStreamInfo subStream;
 
@@ -207,15 +206,11 @@ STDMETHODIMP COutMultiVolStream::Write(const void *data, UInt32 size, UInt32 *pr
       _streamIndex++;
       _offsetPos = 0;
     }
-    if (realProcessed != curSize)
+    if (realProcessed == 0 && curSize != 0)
       return E_FAIL;
+    break;
   }
   return S_OK;
-}
-
-STDMETHODIMP COutMultiVolStream::WritePart(const void *data, UInt32 size, UInt32 *processedSize)
-{
-  return Write(data, size, processedSize);
 }
 
 STDMETHODIMP COutMultiVolStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition)
@@ -528,9 +523,9 @@ HRESULT EnumerateInArchiveItems(const NWildcard::CCensor &censor,
   {
     CArchiveItem ai;
 
-    RINOK(GetArchiveItemPath(archive, i, defaultItemName, ai.Name));
+    RINOK(GetArchiveItemPath(archive, i, ai.Name));
     RINOK(IsArchiveItemFolder(archive, i, ai.IsDirectory));
-    ai.Censored = censor.CheckPath(ai.Name, !ai.IsDirectory);
+    ai.Censored = censor.CheckPath(ai.Name.IsEmpty() ? defaultItemName : ai.Name, !ai.IsDirectory);
     RINOK(GetArchiveItemFileTime(archive, i, 
         archiveFileInfo.LastWriteTime, ai.LastWriteTime));
 
@@ -588,14 +583,14 @@ static HRESULT UpdateWithItemLists(
 #ifdef _WIN32
 class CCurrentDirRestorer
 {
-  CSysString m_CurrentDirectory;
+  UString m_CurrentDirectory;
 public:
   CCurrentDirRestorer()
     { NFile::NDirectory::MyGetCurrentDirectory(m_CurrentDirectory); }
   ~CCurrentDirRestorer()
     { RestoreDirectory();}
   bool RestoreDirectory()
-    { return BOOLToBool(::SetCurrentDirectory(m_CurrentDirectory)); }
+    { return BOOLToBool(NFile::NDirectory::MySetCurrentDirectory(m_CurrentDirectory)); }
 };
 #endif
 
@@ -694,12 +689,17 @@ HRESULT UpdateArchive(const NWildcard::CCensor &censor,
       CEnumDirItemUpdateCallback enumCallback;
       enumCallback.Callback = callback;
       RINOK(callback->StartScanning());
-      UString errorPath;
-      HRESULT res = EnumerateItems(censor, dirItems, &enumCallback, errorPath);
+      UStringVector errorPaths;
+      CRecordVector<DWORD> errorCodes;
+      HRESULT res = EnumerateItems(censor, dirItems, &enumCallback, errorPaths, errorCodes);
+      for (int i = 0; i < errorPaths.Size(); i++)
+      {
+        RINOK(callback->CanNotFindError(errorPaths[i], errorCodes[i]));
+      }
       if(res != S_OK) 
       {
         errorInfo.Message = L"Scanning error";
-        errorInfo.FileName = errorPath;
+        // errorInfo.FileName = errorPath;
         return res;
       }
       RINOK(callback->FinishScanning());

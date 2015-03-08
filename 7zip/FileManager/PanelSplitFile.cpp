@@ -31,10 +31,10 @@ public:
   {
     if (_data != 0)
       return false;
-    _data = BigAlloc(size);
+    _data = ::MidAlloc(size);
     return _data != 0;
   }
-  ~CMyBuffer() { BigFree(_data); }
+  ~CMyBuffer() { ::MidFree(_data); }
 };
 
 struct CVolSeqName
@@ -184,15 +184,13 @@ void CApp::Split()
   CPanel &srcPanel = Panels[srcPanelIndex];
   if (!srcPanel.IsFSFolder())
   {
-    srcPanel.MessageBox(LangLoadStringW(IDS_OPERATION_IS_NOT_SUPPORTED, 0x03020208));
+    srcPanel.MessageBox(LangString(IDS_OPERATION_IS_NOT_SUPPORTED, 0x03020208));
     return;
   }
   CRecordVector<UInt32> indices;
   srcPanel.GetOperatedItemIndices(indices);
   if (indices.IsEmpty())
     return;
-  UString title;
-  UString message;
   if (indices.Size() != 1)
   {
     srcPanel.MessageBox(L"Select one file");
@@ -225,6 +223,12 @@ void CApp::Split()
   CProgressDialog progressDialog;
   spliter.ProgressDialog = &progressDialog;
 
+  UString progressWindowTitle = LangString(IDS_APP_TITLE, 0x03000000);
+  UString title = LangString(IDS_SPLITTING, 0x03020510);
+
+  progressDialog.MainWindow = _window;
+  progressDialog.MainTitle = progressWindowTitle;
+  progressDialog.MainAddTitle = title + UString(L" ");
   progressDialog.ProgressSynch.SetTitleFileName(itemName);
 
   path = splitDialog.Path;
@@ -264,8 +268,7 @@ void CApp::Split()
   CThread thread;
   if (!thread.Create(CThreadSplit::MyThreadFunction, &spliter))
     throw 271824;
-  progressDialog.Create(
-    LangLoadStringW(IDS_SPLITTING, 0x03020510));
+  progressDialog.Create(title, _window);
 
   if (!spliter.Error.IsEmpty())
     srcPanel.MessageBoxMyError(spliter.Error);
@@ -389,15 +392,13 @@ void CApp::Combine()
   CPanel &srcPanel = Panels[srcPanelIndex];
   if (!srcPanel.IsFSFolder())
   {
-    srcPanel.MessageBox(LangLoadStringW(IDS_OPERATION_IS_NOT_SUPPORTED, 0x03020208));
+    srcPanel.MessageBox(LangString(IDS_OPERATION_IS_NOT_SUPPORTED, 0x03020208));
     return;
   }
   CRecordVector<UInt32> indices;
   srcPanel.GetOperatedItemIndices(indices);
   if (indices.IsEmpty())
     return;
-  UString title;
-  UString message;
   if (indices.Size() != 1)
   {
     srcPanel.MessageBox(L"Select only first file");
@@ -420,11 +421,11 @@ void CApp::Combine()
       path = destPanel._currentFolderPrefix;
   CCopyDialog copyDialog;
   copyDialog.Value = path;
-  copyDialog.Title = LangLoadStringW(IDS_COMBINE, 0x03020600);
+  copyDialog.Title = LangString(IDS_COMBINE, 0x03020600);
   copyDialog.Title += ' ';
   copyDialog.Title += itemName;
 
-  copyDialog.Static = LangLoadStringW(IDS_COMBINE_TO, 0x03020601);;
+  copyDialog.Static = LangString(IDS_COMBINE_TO, 0x03020601);;
   if (copyDialog.Create(srcPanel.GetParent()) == IDCANCEL)
     return;
 
@@ -433,7 +434,14 @@ void CApp::Combine()
 
   CProgressDialog progressDialog;
   combiner.ProgressDialog = &progressDialog;
-  
+
+  UString progressWindowTitle = LangString(IDS_APP_TITLE, 0x03000000);
+  UString title = LangString(IDS_COMBINING, 0x03020610);
+
+  progressDialog.MainWindow = _window;
+  progressDialog.MainTitle = progressWindowTitle;
+  progressDialog.MainAddTitle = title + UString(L" ");
+
   path = copyDialog.Value;
   NFile::NName::NormalizeDirPathPrefix(path);
   if (!NFile::NDirectory::CreateComplexDirectory(path))
@@ -452,7 +460,7 @@ void CApp::Combine()
   CThread thread;
   if (!thread.Create(CThreadCombine::MyThreadFunction, &combiner))
     throw 271824;
-  progressDialog.Create(LangLoadStringW(IDS_COMBINING, 0x03020610));
+  progressDialog.Create(title, _window);
 
   if (!combiner.Error.IsEmpty())
     srcPanel.MessageBoxMyError(combiner.Error);

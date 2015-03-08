@@ -93,11 +93,11 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\DllExports.cpp
+SOURCE=..\Codec.def
 # End Source File
 # Begin Source File
 
-SOURCE=.\LZMA.def
+SOURCE=.\DllExports.cpp
 # End Source File
 # Begin Source File
 
@@ -131,6 +131,14 @@ SOURCE=..\..\Common\OutBuffer.cpp
 # Begin Source File
 
 SOURCE=..\..\Common\OutBuffer.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.h
 # End Source File
 # End Group
 # Begin Group "RangeCoder"

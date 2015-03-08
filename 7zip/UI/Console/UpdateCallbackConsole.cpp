@@ -11,6 +11,8 @@
 
 using namespace NWindows;
 
+static const wchar_t *kEmptyFileAlias = L"[Content]";
+
 static const char *kCreatingArchiveMessage = "Creating archive ";
 static const char *kUpdatingArchiveMessage = "Updating archive ";
 static const char *kScanningMessage = "Scanning";
@@ -28,6 +30,24 @@ HRESULT CUpdateCallbackConsole::OpenResult(const wchar_t *name, HRESULT result)
 HRESULT CUpdateCallbackConsole::StartScanning()
 {
   (*OutStream) << kScanningMessage;
+  return S_OK;
+}
+
+HRESULT CUpdateCallbackConsole::CanNotFindError(const wchar_t *name, DWORD systemError)
+{
+  CantFindFiles.Add(name);
+  CantFindCodes.Add(systemError);
+  // m_PercentPrinter.ClosePrint();
+  if (!m_WarningsMode)
+  {
+    (*OutStream) << endl << endl;
+    m_PercentPrinter.PrintNewLine();
+    m_WarningsMode = true;
+  }
+  m_PercentPrinter.PrintString(name);
+  m_PercentPrinter.PrintString(":  WARNING: ");
+  m_PercentPrinter.PrintString(NError::MyFormatMessageW(systemError));
+  m_PercentPrinter.PrintNewLine();
   return S_OK;
 }
 
@@ -111,6 +131,8 @@ HRESULT CUpdateCallbackConsole::GetStream(const wchar_t *name, bool isAnti)
     m_PercentPrinter.PrintString("Anti item    ");
   else
     m_PercentPrinter.PrintString("Compressing  ");
+  if (wcslen(name) == 0)
+    name = kEmptyFileAlias;
   m_PercentPrinter.PrintString(name);
   if (EnablePercents)
   {

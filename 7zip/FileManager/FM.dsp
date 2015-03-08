@@ -259,6 +259,14 @@ SOURCE=.\NetFolder.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\PhysDriveFolder.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\PhysDriveFolder.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\RootFolder.cpp
 # End Source File
 # Begin Source File
@@ -401,15 +409,6 @@ SOURCE=.\PanelSplitFile.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\Resource\SettingsPage\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Resource\SettingsPage\resource.rc
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
 SOURCE=.\Resource\SettingsPage\SettingsPage.cpp
 # End Source File
 # Begin Source File
@@ -461,15 +460,6 @@ SOURCE=Resource\PasswordDialog\PasswordDialog.cpp
 
 SOURCE=Resource\PasswordDialog\PasswordDialog.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\Resource\PasswordDialog\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Resource\PasswordDialog\resource.rc
-# PROP Exclude_From_Build 1
-# End Source File
 # End Group
 # Begin Group "Progress"
 
@@ -481,15 +471,6 @@ SOURCE=.\Resource\ProgressDialog2\ProgressDialog.cpp
 # Begin Source File
 
 SOURCE=.\Resource\ProgressDialog2\ProgressDialog.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Resource\ProgressDialog2\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Resource\ProgressDialog2\resource.rc
-# PROP Exclude_From_Build 1
 # End Source File
 # End Group
 # Begin Group "About"
@@ -503,15 +484,6 @@ SOURCE=.\Resource\AboutDialog\AboutDialog.cpp
 
 SOURCE=.\Resource\AboutDialog\AboutDialog.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\Resource\AboutDialog\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Resource\AboutDialog\resource.rc
-# PROP Exclude_From_Build 1
-# End Source File
 # End Group
 # Begin Group "Benchmark"
 
@@ -524,28 +496,10 @@ SOURCE=.\Resource\BenchmarkDialog\BenchmarkDialog.cpp
 
 SOURCE=.\Resource\BenchmarkDialog\BenchmarkDialog.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\Resource\BenchmarkDialog\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Resource\BenchmarkDialog\resource.rc
-# PROP Exclude_From_Build 1
-# End Source File
 # End Group
 # Begin Group "Split"
 
 # PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\Resource\SplitDialog\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Resource\SplitDialog\resource.rc
-# PROP Exclude_From_Build 1
-# End Source File
 # Begin Source File
 
 SOURCE=.\Resource\SplitDialog\SplitDialog.cpp
@@ -736,6 +690,14 @@ SOURCE=..\..\Windows\Control\Window2.h
 # End Group
 # Begin Source File
 
+SOURCE=..\..\Windows\CommonDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Windows\CommonDialog.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Windows\Defs.h
 # End Source File
 # Begin Source File
@@ -757,6 +719,14 @@ SOURCE=..\..\Windows\Error.cpp
 # Begin Source File
 
 SOURCE=..\..\Windows\Error.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Windows\FileDevice.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Windows\FileDevice.h
 # End Source File
 # Begin Source File
 
@@ -812,6 +782,18 @@ SOURCE=..\..\Windows\Memory.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\Windows\MemoryLock.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Windows\MemoryLock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Windows\Menu.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Windows\Menu.h
 # End Source File
 # Begin Source File
@@ -857,6 +839,14 @@ SOURCE=..\..\Windows\ResourceString.cpp
 # Begin Source File
 
 SOURCE=..\..\Windows\ResourceString.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Windows\Security.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Windows\Security.h
 # End Source File
 # Begin Source File
 
@@ -1107,6 +1097,10 @@ SOURCE=..\Common\StreamObjects.h
 # Begin Source File
 
 SOURCE=.\7zFM.exe.manifest
+# End Source File
+# Begin Source File
+
+SOURCE=.\7zipLogo.ico
 # End Source File
 # Begin Source File
 

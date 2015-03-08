@@ -19,8 +19,8 @@
 #include "../../Common/LimitedStreams.h"
 
 #include "../../Compress/Copy/CopyCoder.h"
-#include "../../Compress/Arj/Decoder1.h"
-#include "../../Compress/Arj/Decoder2.h"
+#include "../../Compress/Arj/ArjDecoder1.h"
+#include "../../Compress/Arj/ArjDecoder2.h"
 
 #include "../Common/ItemNameUtils.h"
 #include "../Common/OutStreamWithCRC.h"
@@ -256,6 +256,7 @@ STDMETHODIMP CHandler::Open(IInStream *inStream,
 
 STDMETHODIMP CHandler::Close()
 {
+  _items.Clear();
   _stream.Release();
   return S_OK;
 }

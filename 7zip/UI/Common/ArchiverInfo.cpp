@@ -53,15 +53,6 @@ static void SplitString(const UString &srcString, UStringVector &destStrings)
 typedef UInt32 (WINAPI * GetHandlerPropertyFunc)(
     PROPID propID, PROPVARIANT *value);
 
-/*
-UString GetCurrentModulePath()
-{
-  TCHAR fullPath[MAX_PATH + 1];
-  ::GetModuleFileName(g_hInstance, fullPath, MAX_PATH);
-  return fullPath;
-}
-*/
-
 static UString GetModuleFolderPrefix()
 {
   UString path;
@@ -72,7 +63,21 @@ static UString GetModuleFolderPrefix()
 
 static wchar_t *kFormatFolderName = L"Formats";
 static LPCTSTR kRegistryPath = TEXT("Software\\7-zip");
-static LPCTSTR kProgramPathValue = TEXT("Path");
+static LPCWSTR kProgramPathValue = L"Path";
+
+#ifdef _WIN32
+static bool ReadPathFromRegistry(HKEY baseKey, UString &path)
+{
+  NRegistry::CKey key;
+  if(key.Open(baseKey, kRegistryPath, KEY_READ) == ERROR_SUCCESS)
+    if (key.QueryValue(kProgramPathValue, path) == ERROR_SUCCESS)
+    {
+      NName::NormalizeDirPathPrefix(path);
+      return true;
+    }
+  return false;
+}
+#endif
 
 static UString GetBaseFolderPrefixFromRegistry()
 {
@@ -81,28 +86,12 @@ static UString GetBaseFolderPrefixFromRegistry()
   if (NFind::FindFile(moduleFolderPrefix + kFormatFolderName, fileInfo))
     if (fileInfo.IsDirectory())
       return moduleFolderPrefix;
-  CSysString pathSys;
+  UString path;
   #ifdef _WIN32
-  {
-    NRegistry::CKey key;
-    if(key.Open(HKEY_CURRENT_USER, kRegistryPath, KEY_READ) == ERROR_SUCCESS)
-      if (key.QueryValue(kProgramPathValue, pathSys) == ERROR_SUCCESS)
-      {
-        UString path = GetUnicodeString(pathSys);
-        NName::NormalizeDirPathPrefix(path);
-        return path;
-      }
-  }
-  {
-    NRegistry::CKey key;
-    if(key.Open(HKEY_LOCAL_MACHINE, kRegistryPath, KEY_READ) == ERROR_SUCCESS)
-      if (key.QueryValue(kProgramPathValue, pathSys) == ERROR_SUCCESS)
-      {
-        UString path = GetUnicodeString(pathSys);
-        NName::NormalizeDirPathPrefix(path);
-        return path;
-      }
-  }
+  if(ReadPathFromRegistry(HKEY_CURRENT_USER, path))
+    return path;
+  if(ReadPathFromRegistry(HKEY_LOCAL_MACHINE, path))
+    return path;
   #endif
   return moduleFolderPrefix;
 }
@@ -132,7 +121,6 @@ void ReadArchiverInfoList(CObjectVector<CArchiverInfo> &archivers)
   {
     CArchiverInfo item;
     item.UpdateEnabled = true;
-    item.KeepName = false;
     item.Name = L"7z";
     item.Extensions.Add(CArchiverExtInfo(L"7z"));
     #ifndef _SFX
@@ -163,7 +151,6 @@ void ReadArchiverInfoList(CObjectVector<CArchiverInfo> &archivers)
   {
     CArchiverInfo item;
     item.UpdateEnabled = true;
-    item.KeepName = false;
     item.Name = L"GZip";
     item.Extensions.Add(CArchiverExtInfo(L"gz"));
     item.Extensions.Add(CArchiverExtInfo(L"tgz", L".tar"));
@@ -190,7 +177,6 @@ void ReadArchiverInfoList(CObjectVector<CArchiverInfo> &archivers)
   {
     CArchiverInfo item;
     item.UpdateEnabled = true;
-    item.KeepName = false;
     item.Name = L"Tar";
     item.Extensions.Add(CArchiverExtInfo(L"tar"));
     archivers.Add(item);
@@ -201,7 +187,6 @@ void ReadArchiverInfoList(CObjectVector<CArchiverInfo> &archivers)
   {
     CArchiverInfo item;
     item.UpdateEnabled = true;
-    item.KeepName = false;
     item.Name = L"Zip";
     item.Extensions.Add(CArchiverExtInfo(L"zip"));
     #ifndef _SFX
@@ -215,7 +200,6 @@ void ReadArchiverInfoList(CObjectVector<CArchiverInfo> &archivers)
   #ifdef FORMAT_CPIO
   {
     CArchiverInfo item;
-    item.UpdateEnabled = false;
     item.Name = L"Cpio";
     item.Extensions.Add(CArchiverExtInfo(L"cpio"));
     archivers.Add(item);
@@ -225,7 +209,6 @@ void ReadArchiverInfoList(CObjectVector<CArchiverInfo> &archivers)
   #ifdef FORMAT_RPM
   {
     CArchiverInfo item;
-    item.UpdateEnabled = false;
     item.Name = L"Rpm";
     item.Extensions.Add(CArchiverExtInfo(L"rpm", L".cpio.gz"));
     archivers.Add(item);
@@ -235,7 +218,6 @@ void ReadArchiverInfoList(CObjectVector<CArchiverInfo> &archivers)
   #ifdef FORMAT_ARJ
   {
     CArchiverInfo item;
-    item.UpdateEnabled = false;
     item.Name = L"Arj";
     item.Extensions.Add(CArchiverExtInfo(L"arj"));
     #ifndef _SFX
@@ -249,7 +231,6 @@ void ReadArchiverInfoList(CObjectVector<CArchiverInfo> &archivers)
   #ifdef FORMAT_Z
   {
     CArchiverInfo item;
-    item.UpdateEnabled = false;
     item.Name = L"Z";
     item.Extensions.Add(CArchiverExtInfo(L"Z"));
     #ifndef _SFX
@@ -309,10 +290,9 @@ void ReadArchiverInfoList(CObjectVector<CArchiverInfo> &archivers)
       continue;
 
     UString ext  = prop.bstrVal;
-    // item.Extension = prop.bstrVal;
-    prop.Clear();
-
     UString addExt;
+
+    prop.Clear();
 
     if (getHandlerProperty(NArchive::kAddExtension, &prop) != S_OK)
       continue;
@@ -332,11 +312,11 @@ void ReadArchiverInfoList(CObjectVector<CArchiverInfo> &archivers)
     for (int i = 0; i < exts.Size(); i++)
     {
       CArchiverExtInfo extInfo;
-      extInfo.Extension = exts[i];
+      extInfo.Ext = exts[i];
       if (addExts.Size() > 0)
-        extInfo.AddExtension = addExts[i];
-      if (extInfo.AddExtension == L"*")
-        extInfo.AddExtension.Empty();
+        extInfo.AddExt = addExts[i];
+      if (extInfo.AddExt == L"*")
+        extInfo.AddExt.Empty();
       item.Extensions.Add(extInfo);
     }
 
@@ -363,6 +343,12 @@ void ReadArchiverInfoList(CObjectVector<CArchiverInfo> &archivers)
       }
     }
     prop.Clear();
+
+    if (getHandlerProperty(NArchive::kAssociate, &prop) == S_OK)
+      if (prop.vt == VT_BOOL)
+        item.Associate = VARIANT_BOOLToBool(prop.boolVal);
+    prop.Clear();
+
 
     archivers.Add(item);
   }

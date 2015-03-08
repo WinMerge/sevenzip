@@ -332,6 +332,14 @@ SOURCE=..\..\..\Windows\Control\ListView.h
 # End Group
 # Begin Source File
 
+SOURCE=..\..\..\Windows\CommonDialog.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Windows\CommonDialog.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Windows\DLL.cpp
 # End Source File
 # Begin Source File
@@ -377,6 +385,14 @@ SOURCE=..\..\..\Windows\FileName.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Windows\FileName.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Windows\MemoryLock.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Windows\MemoryLock.h
 # End Source File
 # Begin Source File
 
@@ -638,15 +654,6 @@ SOURCE=..\..\FileManager\Resource\ProgressDialog2\ProgressDialog.cpp
 
 SOURCE=..\..\FileManager\Resource\ProgressDialog2\ProgressDialog.h
 # End Source File
-# Begin Source File
-
-SOURCE=..\..\FileManager\Resource\ProgressDialog2\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\FileManager\Resource\ProgressDialog2\resource.rc
-# PROP Exclude_From_Build 1
-# End Source File
 # End Group
 # Begin Group "Messages"
 
@@ -658,15 +665,6 @@ SOURCE=..\..\FileManager\Resource\MessagesDialog\MessagesDialog.cpp
 # Begin Source File
 
 SOURCE=..\..\FileManager\Resource\MessagesDialog\MessagesDialog.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\FileManager\Resource\MessagesDialog\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\FileManager\Resource\MessagesDialog\resource.rc
-# PROP Exclude_From_Build 1
 # End Source File
 # End Group
 # Begin Group "Overwtite"
@@ -692,15 +690,6 @@ SOURCE=..\..\FileManager\Resource\PasswordDialog\PasswordDialog.cpp
 
 SOURCE=..\..\FileManager\Resource\PasswordDialog\PasswordDialog.h
 # End Source File
-# Begin Source File
-
-SOURCE=..\..\FileManager\Resource\PasswordDialog\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\FileManager\Resource\PasswordDialog\resource.rc
-# PROP Exclude_From_Build 1
-# End Source File
 # End Group
 # Begin Group "Compress Dialog"
 
@@ -713,15 +702,6 @@ SOURCE=.\CompressDialog.cpp
 
 SOURCE=.\CompressDialog.h
 # End Source File
-# Begin Source File
-
-SOURCE=..\Resource\CompressDialog\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\Resource\CompressDialog\resource.rc
-# PROP Exclude_From_Build 1
-# End Source File
 # End Group
 # Begin Group "Extract Dialog"
 
@@ -733,15 +713,6 @@ SOURCE=.\ExtractDialog.cpp
 # Begin Source File
 
 SOURCE=.\ExtractDialog.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\Resource\ExtractDialog\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\Resource\ExtractDialog\resource.rc
-# PROP Exclude_From_Build 1
 # End Source File
 # End Group
 # End Group
@@ -891,6 +862,14 @@ SOURCE=..\..\Common\FileStreams.cpp
 # Begin Source File
 
 SOURCE=..\..\Common\FileStreams.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.h
 # End Source File
 # End Group
 # Begin Group "Compress"

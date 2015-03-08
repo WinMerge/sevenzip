@@ -13,6 +13,7 @@
 
 #include "../../FileManager/FormatUtils.h"
 #include "../../FileManager/ExtractCallback.h"
+#include "../../FileManager/LangUtils.h"
 
 #include "../Common/ArchiveExtractCallback.h"
 #include "../Explorer/MyMessages.h"
@@ -109,8 +110,10 @@ HRESULT ExtractGUI(
       outputDir = dialog.DirectoryPath;
       options.OverwriteMode = dialog.OverwriteMode;
       options.PathMode = dialog.PathMode;
+      #ifndef _SFX
       openCallback->Password = dialog.Password;
       openCallback->PasswordIsDefined = !dialog.Password.IsEmpty();
+      #endif
     }
     if (!NFile::NDirectory::MyGetFullPathName(outputDir, options.OutputDir))
     {
@@ -134,13 +137,8 @@ HRESULT ExtractGUI(
     */
   }
   
-  UString title = 
-  #ifdef LANG        
-  LangLoadStringW(options.TestMode ? IDS_PROGRESS_TESTING : IDS_PROGRESS_EXTRACTING, 
+  UString title = LangStringSpec(options.TestMode ? IDS_PROGRESS_TESTING : IDS_PROGRESS_EXTRACTING, 
       options.TestMode ? 0x02000F90: 0x02000890);
-  #else
-  NWindows::MyLoadStringW(options.TestMode ? IDS_PROGRESS_TESTING : IDS_PROGRESS_EXTRACTING);
-  #endif
 
   extracter.ExtractCallbackSpec = extractCallback;
   extracter.ExtractCallback = extractCallback;
@@ -156,18 +154,18 @@ HRESULT ExtractGUI(
   if (!thread.Create(CThreadExtracting::MyThreadFunction, &extracter))
     throw 271824;
   extracter.ExtractCallbackSpec->StartProgressDialog(title);
-  if (extracter.Result == S_OK && options.TestMode && extracter.ExtractCallbackSpec->Messages.IsEmpty())
+  if (extracter.Result == S_OK && options.TestMode && 
+      extracter.ExtractCallbackSpec->Messages.IsEmpty() &&
+      extracter.ExtractCallbackSpec->NumArchiveErrors == 0)
   {
     #ifndef _SFX
-    MessageBoxW(0, LangLoadStringW(IDS_MESSAGE_NO_ERRORS, 0x02000608),
-      LangLoadStringW(IDS_PROGRESS_TESTING, 0x02000F90), 0);
+    MessageBoxW(0, LangString(IDS_MESSAGE_NO_ERRORS, 0x02000608),
+      LangString(IDS_PROGRESS_TESTING, 0x02000F90), 0);
     #endif
   }
   if (extracter.Result != S_OK)
-  {
     if (!extracter.ErrorMessage.IsEmpty())
       throw extracter.ErrorMessage;
-  }
   return extracter.Result;
 }
 

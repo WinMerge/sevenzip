@@ -25,21 +25,24 @@ static NSynchronization::CCriticalSection g_CriticalSection;
 
 static const TCHAR *kCUKeyPath = TEXT("Software\\7-ZIP\\FM");
 static const TCHAR *kAssociations = TEXT("Associations");
-static const TCHAR *kExtPlugins = TEXT("Plugins");
+static const WCHAR *kExtPlugins = L"Plugins";
 static const TCHAR *kExtEnabled = TEXT("Enabled");
+
+static CSysString GetAssociationsPath()
+{
+  return CSysString(kCUKeyPath) + CSysString('\\') + CSysString(kAssociations);
+}
 
 bool ReadInternalAssociation(const wchar_t *ext, CExtInfo &extInfo)
 {
   NSynchronization::CCriticalSectionLock lock(g_CriticalSection);
   CKey key;
-  if(key.Open(HKEY_CURRENT_USER, CSysString(kCUKeyPath) 
-      + CSysString('\\') + CSysString(kAssociations)
-      + CSysString('\\') + CSysString(GetSystemString(ext)), 
-      KEY_READ) != ERROR_SUCCESS)
+  if(key.Open(HKEY_CURRENT_USER, GetAssociationsPath() + CSysString('\\') + 
+      CSysString(GetSystemString(ext)), KEY_READ) != ERROR_SUCCESS)
     return false;
-  CSysString pluginsString;
+  UString pluginsString;
   key.QueryValue(kExtPlugins, pluginsString);
-  SplitString(GetUnicodeString(pluginsString), extInfo.Plugins);
+  SplitString(pluginsString, extInfo.Plugins);
   return true;
 }
 
@@ -48,8 +51,7 @@ void ReadInternalAssociations(CObjectVector<CExtInfo> &items)
   items.Clear();
   NSynchronization::CCriticalSectionLock lock(g_CriticalSection);
   CKey associationsKey;
-  if(associationsKey.Open(HKEY_CURRENT_USER, CSysString(kCUKeyPath) 
-      + CSysString('\\') + CSysString(kAssociations), KEY_READ) != ERROR_SUCCESS)
+  if(associationsKey.Open(HKEY_CURRENT_USER, GetAssociationsPath(), KEY_READ) != ERROR_SUCCESS)
     return;
   CSysStringVector extNames;
   associationsKey.EnumKeys(extNames);
@@ -62,9 +64,9 @@ void ReadInternalAssociations(CObjectVector<CExtInfo> &items)
     CKey key;
     if(key.Open(associationsKey, extName, KEY_READ) != ERROR_SUCCESS)
       return;
-    CSysString pluginsString;
+    UString pluginsString;
     key.QueryValue(kExtPlugins, pluginsString);
-    SplitString(GetUnicodeString(pluginsString), extInfo.Plugins);
+    SplitString(pluginsString, extInfo.Plugins);
     /*
     if (key.QueryValue(kExtEnabled, extInfo.Enabled) != ERROR_SUCCESS)
       extInfo.Enabled = false;
@@ -86,7 +88,7 @@ void WriteInternalAssociations(const CObjectVector<CExtInfo> &items)
     const CExtInfo &extInfo = items[i];
     CKey key;
     key.Create(associationsKey, GetSystemString(extInfo.Ext));
-    key.SetValue(kExtPlugins, GetSystemString(JoinStrings(extInfo.Plugins)));
+    key.SetValue(kExtPlugins, JoinStrings(extInfo.Plugins));
     // key.SetValue(kExtEnabled, extInfo.Enabled);
   }
 }
@@ -102,8 +104,6 @@ static const TCHAR *kShellKeyName = TEXT("shell");
 static const TCHAR *kOpenKeyName = TEXT("open");
 static const TCHAR *kCommandKeyName = TEXT("command");
 
-static const TCHAR *kOpenCommandValue = TEXT("7zFMn.exe \"%1\"");
-
 static CSysString GetExtensionKeyName(const CSysString &extension)
 {
   return CSysString(TEXT(".")) + extension;
@@ -114,7 +114,7 @@ static CSysString GetExtProgramKeyName(const CSysString &extension)
   return CSysString(TEXT("7-Zip.")) + extension;
 }
 
-bool CheckShellExtensionInfo(const CSysString &extension)
+static bool CheckShellExtensionInfo2(const CSysString &extension)
 {
   NSynchronization::CCriticalSectionLock lock(g_CriticalSection);
   CKey extKey;
@@ -124,10 +124,16 @@ bool CheckShellExtensionInfo(const CSysString &extension)
   if (extKey.QueryValue(NULL, programNameValue) != ERROR_SUCCESS)
     return false;
   CSysString extProgramKeyName = GetExtProgramKeyName(extension);
-  if (programNameValue.CollateNoCase(extProgramKeyName) != 0)
+  return (programNameValue.CompareNoCase(extProgramKeyName) == 0);
+}
+
+bool CheckShellExtensionInfo(const CSysString &extension)
+{
+  NSynchronization::CCriticalSectionLock lock(g_CriticalSection);
+  if (!CheckShellExtensionInfo2(extension))
     return false;
   CKey extProgKey;
-  return (extProgKey.Open(HKEY_CLASSES_ROOT, extProgramKeyName, KEY_READ) == ERROR_SUCCESS);
+  return (extProgKey.Open(HKEY_CLASSES_ROOT, GetExtProgramKeyName(extension), KEY_READ) == ERROR_SUCCESS);
 }
 
 static void DeleteShellExtensionKey(const CSysString &extension)
@@ -150,15 +156,15 @@ static void DeleteShellExtensionProgramKey(const CSysString &extension)
 
 void DeleteShellExtensionInfo(const CSysString &extension)
 {
-  if (CheckShellExtensionInfo(extension))
+  if (CheckShellExtensionInfo2(extension))
     DeleteShellExtensionKey(extension);
   DeleteShellExtensionProgramKey(extension);
 }
 
 void AddShellExtensionInfo(const CSysString &extension,
-    const CSysString &programTitle, 
-    const CSysString &programOpenCommand, 
-    const CSysString &iconPath,
+    const UString &programTitle, 
+    const UString &programOpenCommand, 
+    const UString &iconPath,
     const void *shellNewData, int shellNewDataSize)
 {
   DeleteShellExtensionKey(extension);
@@ -196,18 +202,7 @@ void AddShellExtensionInfo(const CSysString &extension,
   CKey commandKey;
   commandKey.Create(openKey, kCommandKeyName);
 
-  CSysString params;
-  /*
-  if (!NSystem::MyGetWindowsDirectory(aParams))
-  {
-    aParams.Empty();
-    // return;
-  }
-  else
-    NFile::NName::NormalizeDirPathPrefix(aParams);
-  */
-  // aParams += kOpenCommandValue;
-  HRESULT result = commandKey.SetValue(NULL, programOpenCommand);
+  commandKey.SetValue(NULL, programOpenCommand);
 }
 
 ///////////////////////////
@@ -233,7 +228,7 @@ static bool CheckContextMenuHandlerCommon(const CSysString &aKeyName)
   CSysString aValue;
   if (aKey.QueryValue(NULL, aValue) != ERROR_SUCCESS)
     return false;
-  return (aValue.CollateNoCase(kContextMenuHandlerCLASSIDValue) == 0);
+  return (aValue.CompareNoCase(kContextMenuHandlerCLASSIDValue) == 0);
 }
 
 bool CheckContextMenuHandler()

@@ -41,7 +41,7 @@ static UString ConvertSizeToString(UINT64 value)
   return UString(s) + L" G";
 }
 
-LRESULT CPanel::SetItemText(LVITEM &item)
+LRESULT CPanel::SetItemText(LVITEMW &item)
 {
   UINT32 realIndex = GetRealIndex(item);
   /*
@@ -82,9 +82,9 @@ LRESULT CPanel::SetItemText(LVITEM &item)
   if ((item.mask & LVIF_TEXT) == 0)
     return 0;
 
-  if (realIndex == (UINT32)-1)
+  if (realIndex == kParentIndex)
     return 0;
-  UString string;
+  UString s;
   UINT32 subItemIndex = item.iSubItem;
   PROPID propID = _visibleProperties[subItemIndex].ID;
   /*
@@ -120,6 +120,7 @@ LRESULT CPanel::SetItemText(LVITEM &item)
   }
   if (needRead)
   */
+
   if (_folder->GetProperty(realIndex, propID, &propVariant) != S_OK)
       throw 2723407;
 
@@ -128,25 +129,33 @@ LRESULT CPanel::SetItemText(LVITEM &item)
       propID == kpidClusterSize)
       &&
       (propVariant.vt == VT_UI8 || propVariant.vt == VT_UI4))
-  {
-    string = ConvertSizeToString(ConvertPropVariantToUInt64(propVariant));
-  }
+    s = ConvertSizeToString(ConvertPropVariantToUInt64(propVariant));
   else
-  {
-    string = ConvertPropertyToString(propVariant, propID, false);
-  }
+    s = ConvertPropertyToString(propVariant, propID, false);
 
   int size = item.cchTextMax;
   if(size > 0)
   {
-    if(string.Length() + 1 > size)
-      string = string.Left(size - 1);
-    lstrcpy(item.pszText, GetSystemString(string));
+    if(s.Length() + 1 > size)
+      s = s.Left(size - 1);
+    wcscpy(item.pszText, s);
   }
   return 0;
 }
 
 extern DWORD g_ComCtl32Version;
+
+void CPanel::OnItemChanged(NMLISTVIEW *item)
+{
+  int index = item->lParam;
+  if (index == kParentIndex)
+    return;
+  bool oldSelected = (item->uOldState & LVIS_SELECTED) != 0;
+  bool newSelected = (item->uNewState & LVIS_SELECTED) != 0;
+  // Don't change this code. It works only with such check
+  if(oldSelected != newSelected)
+    _selectedStatusVector[index] = newSelected;
+}
 
 bool CPanel::OnNotifyList(LPNMHDR header, LRESULT &result)
 {
@@ -157,7 +166,12 @@ bool CPanel::OnNotifyList(LPNMHDR header, LRESULT &result)
   {
     case LVN_ITEMCHANGED:
     {
-      RefreshStatusBar();
+      if (_enableItemChangeNotify)
+      {
+        if (!_mySelectMode)
+          OnItemChanged((LPNMLISTVIEW)header);
+        RefreshStatusBar();
+      }
       return false;
     }
     /*
@@ -168,9 +182,9 @@ bool CPanel::OnNotifyList(LPNMHDR header, LRESULT &result)
       }
     */
 
-    case LVN_GETDISPINFO:
+    case LVN_GETDISPINFOW:
     {
-      LV_DISPINFO  *dispInfo = (LV_DISPINFO *)header;
+      LV_DISPINFOW *dispInfo = (LV_DISPINFOW *)header;
 
       //is the sub-item information being requested?
 
@@ -243,29 +257,34 @@ bool CPanel::OnNotifyList(LPNMHDR header, LRESULT &result)
       */
     case NM_CLICK:
     {
+      // we need SetFocusToList, if we drag-select items from other panel.
+      SetFocusToList();
       RefreshStatusBar();
-      if(g_ComCtl32Version >= MAKELONG(71, 4))
-      {
-        OnLeftClick((LPNMITEMACTIVATE)header);
-      }
+      if(_mySelectMode)
+        if(g_ComCtl32Version >= MAKELONG(71, 4))
+          OnLeftClick((LPNMITEMACTIVATE)header);
       return false;
     }
-    case LVN_BEGINLABELEDIT:
-      result = OnBeginLabelEdit((LV_DISPINFO *)header);
+    case LVN_BEGINLABELEDITW:
+      result = OnBeginLabelEdit((LV_DISPINFOW *)header);
       return true;
-    case LVN_ENDLABELEDIT:
-      result = OnEndLabelEdit((LV_DISPINFO *)header);
+    case LVN_ENDLABELEDITW:
+      result = OnEndLabelEdit((LV_DISPINFOW *)header);
       return true;
 
     case NM_CUSTOMDRAW:
-      return OnCustomDraw((LPNMLVCUSTOMDRAW)header, result);
+    {
+      if (_mySelectMode)
+        return OnCustomDraw((LPNMLVCUSTOMDRAW)header, result);
+      break;
+    }
     case LVN_BEGINDRAG:
-    case LVN_BEGINRDRAG:
     {
       OnDrag((LPNMLISTVIEW)header);
       RefreshStatusBar();
       break;
     }
+    // case LVN_BEGINRDRAG:
   }
   return false;
 }
@@ -290,7 +309,7 @@ bool CPanel::OnCustomDraw(LPNMLVCUSTOMDRAW lplvcd, LRESULT &result)
     */
     int realIndex = lplvcd->nmcd.lItemlParam;
     bool selected = false;
-    if (realIndex != -1)
+    if (realIndex != kParentIndex)
       selected = _selectedStatusVector[realIndex];
     if (selected)
       lplvcd->clrTextBk = RGB(255, 192, 192);
@@ -331,10 +350,9 @@ void CPanel::OnRefreshStatusBar()
 {
   CRecordVector<UINT32> indices;
   GetOperatedItemIndices(indices);
-  
-  _statusBar.SetText(0, GetSystemString(MyFormatNew(IDS_N_SELECTED_ITEMS, 
-      0x02000301, NumberToStringW(indices.Size()))));
-  
+
+  _statusBar.SetText(0, MyFormatNew(IDS_N_SELECTED_ITEMS, 0x02000301, NumberToString(indices.Size())));
+
   UString selectSizeString;
 
   if (indices.Size() > 0)
@@ -344,32 +362,24 @@ void CPanel::OnRefreshStatusBar()
       totalSize += GetItemSize(indices[i]);
     selectSizeString = ConvertSizeToString(totalSize);
   }
-  _statusBar.SetText(1, GetSystemString(selectSizeString));
+  _statusBar.SetText(1, selectSizeString);
 
   int focusedItem = _listView.GetFocusedItem();
   UString sizeString;
   UString dateString;
-  // CSysString nameString;
   if (focusedItem >= 0 && _listView.GetSelectedCount() > 0)
   {
     int realIndex = GetRealItemIndex(focusedItem);
-    if (realIndex != -1)
+    if (realIndex != kParentIndex)
     {
       sizeString = ConvertSizeToString(GetItemSize(realIndex));
       NCOM::CPropVariant propVariant;
       if (_folder->GetProperty(realIndex, kpidLastWriteTime, &propVariant) == S_OK)
         dateString = ConvertPropertyToString(propVariant, kpidLastWriteTime, false);
     }
-    // nameString = GetSystemString(GetItemName(realIndex));
   }
-  _statusBar.SetText(2, GetSystemString(sizeString));
-  _statusBar.SetText(3, GetSystemString(dateString));
+  _statusBar.SetText(2, sizeString);
+  _statusBar.SetText(3, dateString);
   // _statusBar.SetText(4, nameString);
-
-
-  /*
-  _statusBar2.SetText(1, GetSystemString(MyFormatNew(L"{0} bytes", 
-      NumberToStringW(totalSize))));
-  */
-  // _statusBar.SetText(L"yyy"));
+  // _statusBar2.SetText(1, MyFormatNew(L"{0} bytes", NumberToStringW(totalSize)));
 }

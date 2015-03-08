@@ -40,18 +40,15 @@ static UINT32 g_MethodMap[] = { 0, 1, 3, 5, 7, 9 };
 static HRESULT SetOutProperties(IOutFolderArchive *outArchive, UINT32 method)
 {
   CMyComPtr<ISetProperties> setProperties;
-  if (outArchive->QueryInterface(&setProperties) == S_OK)
+  if (outArchive->QueryInterface(IID_ISetProperties, (void **)&setProperties) == S_OK)
   {
     UStringVector realNames;
     realNames.Add(UString(L"x"));
-    std::vector<NCOM::CPropVariant> values;
-    values.push_back(NCOM::CPropVariant((UINT32)method));
-
+    NCOM::CPropVariant value = (UInt32)method;
     CRecordVector<const wchar_t *> names;
     for(int i = 0; i < realNames.Size(); i++)
       names.Add(realNames[i]);
-    RINOK(setProperties->SetProperties(&names.Front(), 
-      &values.front(), names.Size()));
+    RINOK(setProperties->SetProperties(&names.Front(), &value, names.Size()));
   }
   return S_OK;
 }
@@ -365,7 +362,7 @@ HRESULT CompressFiles(const CObjectVector<PluginPanelItem> &pluginPanelItems)
       const CArchiverInfo &archiverInfo = fullArchiverInfoList[i];
       if (archiverInfo.UpdateEnabled)
       {
-        if (archiverInfo.Name.CollateNoCase(compressionInfo.ArchiveType) == 0)
+        if (archiverInfo.Name.CompareNoCase(compressionInfo.ArchiveType) == 0)
           archiverIndex = archiverInfoList.Size();
         archiverInfoList.Add(archiverInfo);
       }
@@ -595,7 +592,6 @@ HRESULT CompressFiles(const CObjectVector<PluginPanelItem> &pluginPanelItems)
      g_StartupInfo.GetMsgString(NMessageID::kUpdating), 1 << 16);
 
 
-  // std::auto_ptr<CProxyHandler> proxyHandler;
   NFind::CFileInfoW fileInfo;
 
   CMyComPtr<IOutFolderArchive> outArchive;
@@ -616,7 +612,7 @@ HRESULT CompressFiles(const CObjectVector<PluginPanelItem> &pluginPanelItems)
         &archiveType,
         NULL));
 
-    if (archiverInfoFinal.Name.CollateNoCase((const wchar_t *)archiveType) != 0)
+    if (archiverInfoFinal.Name.CompareNoCase((const wchar_t *)archiveType) != 0)
       throw "Type of existing archive differs from specified type";
     HRESULT result = archiveHandler.QueryInterface(
         IID_IOutFolderArchive, &outArchive);

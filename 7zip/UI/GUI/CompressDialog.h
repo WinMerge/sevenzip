@@ -107,10 +107,10 @@ class CCompressDialog: public NWindows::NControl::CModalDialog
   
   void SetMethod();
   int GetMethodID();
-  CSysString GetMethodSpec();
+  UString GetMethodSpec();
 
-  AddDictionarySize(UInt32 size, bool kilo, bool maga);
-  AddDictionarySize(UInt32 size);
+  int AddDictionarySize(UInt32 size, bool kilo, bool maga);
+  int AddDictionarySize(UInt32 size);
   
   void SetDictionary();
   UInt32 GetDictionary();
@@ -136,11 +136,12 @@ public:
   UString OriginalFileName; // for bzip2, gzip2
 
   INT_PTR Create(HWND wndParent = 0)
-    { return CModalDialog::Create(MAKEINTRESOURCE(IDD_DIALOG_COMPRESS ), wndParent); }
+    { return CModalDialog::Create(IDD_DIALOG_COMPRESS, wndParent); }
 
 protected:
 
   void CheckSFXControlsEnable();
+  void CheckVolumeEnable();
   void CheckControlsEnable();
 
 	void OnButtonSetArchive();

@@ -30,7 +30,7 @@ using namespace NWindows;
 using namespace NFile;
 
 static const wchar_t *kIncorrectOutDir = L"Incorrect output directory path";
-static const wchar_t *kDefaultSfxModule = L"7zC.sfx";
+static const wchar_t *kDefaultSfxModule = L"7z.sfx";
 static const wchar_t *kSFXExtension = L"exe";
 
 struct CThreadUpdating
@@ -195,9 +195,9 @@ static HRESULT ShowDialog(const NWildcard::CCensor &censor,
   if (censor.Pairs.Size() > 0)
   {
     const NWildcard::CPair &pair = censor.Pairs[0];
-    if (pair.Head.Items.Size() > 0)
+    if (pair.Head.IncludeItems.Size() > 0)
     {
-      const NWildcard::CItem &item = pair.Head.Items[0];
+      const NWildcard::CItem &item = pair.Head.IncludeItems[0];
       if (item.ForFile)
       {
         UString name = pair.Prefix;
@@ -209,7 +209,7 @@ static HRESULT ShowDialog(const NWildcard::CCensor &censor,
         }
         if (NFind::FindFile(name, fileInfo))
         {
-          if (censor.Pairs.Size() == 1 && pair.Head.Items.Size() == 1)
+          if (censor.Pairs.Size() == 1 && pair.Head.IncludeItems.Size() == 1)
             oneFile = !fileInfo.IsDirectory();
         }
       }
@@ -350,8 +350,7 @@ HRESULT UpdateGUI(
   CThread thread;
   if (!thread.Create(CThreadUpdating::MyThreadFunction, &tu))
     throw 271824;
-  const UString title = LangLoadStringW(IDS_PROGRESS_COMPRESSING, 0x02000DC0);
-  tu.UpdateCallbackGUI->StartProgressDialog(title);
+  tu.UpdateCallbackGUI->StartProgressDialog(LangString(IDS_PROGRESS_COMPRESSING, 0x02000DC0));
   return tu.Result;
 }
 

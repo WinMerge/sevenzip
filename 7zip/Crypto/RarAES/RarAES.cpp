@@ -17,7 +17,8 @@ namespace NRar29 {
 
 CDecoder::CDecoder():
   _thereIsSalt(false),
-  _needCalculate(true)
+  _needCalculate(true),
+  _rar350Mode(false)
 {
   for (int i = 0; i < sizeof(_salt); i++)
     _salt[i] = 0;
@@ -53,8 +54,12 @@ STDMETHODIMP CDecoder::SetDecoderProperties2(const Byte *data, UInt32 size)
   return S_OK;
 }
 
+static const int kMaxPasswordLength = 127 * 2;
+
 STDMETHODIMP CDecoder::CryptoSetPassword(const Byte *data, UInt32 size)
 {
+  if (size > kMaxPasswordLength)
+    size = kMaxPasswordLength;
   bool same = false;
   if (size == buffer.GetCapacity())
   {
@@ -104,10 +109,9 @@ void CDecoder::Calculate()
 {
   if (_needCalculate)
   {
-    const int MAXPASSWORD = 128;
-    const int SALT_SIZE = 8;
+    const int kSaltSize = 8;
     
-    Byte rawPassword[2 * MAXPASSWORD+ SALT_SIZE];
+    Byte rawPassword[kMaxPasswordLength + kSaltSize];
     
     memcpy(rawPassword, buffer, buffer.GetCapacity());
     
@@ -115,36 +119,42 @@ void CDecoder::Calculate()
     
     if (_thereIsSalt)
     {
-      memcpy(rawPassword + rawLength, _salt, SALT_SIZE);
-      rawLength += SALT_SIZE;
+      memcpy(rawPassword + rawLength, _salt, kSaltSize);
+      rawLength += kSaltSize;
     }
     
-    hash_context c;
-    hash_initial(&c);
-    
+    CSHA1 sha;
+    sha.Init();
+
+    // seems rar reverts hash for sha.
     const int hashRounds = 0x40000;
     int i;
     for (i = 0; i < hashRounds; i++)
     {
-      hash_process(&c, rawPassword, rawLength);
+      sha.Update(rawPassword, rawLength, _rar350Mode);
       Byte pswNum[3];
       pswNum[0] = (Byte)i;
       pswNum[1] = (Byte)(i >> 8);
       pswNum[2] = (Byte)(i >> 16);
-      hash_process(&c, pswNum, 3);
+      sha.Update(pswNum, 3, _rar350Mode);
       if (i % (hashRounds / 16) == 0)
       {
-        hash_context tempc = c;
-        UInt32 digest[5];
-        hash_final(&tempc, digest);
-        aesInit[i / (hashRounds / 16)] = (Byte)digest[4];
+        CSHA1 shaTemp = sha;
+        Byte digest[20];
+        shaTemp.Final(digest);
+        aesInit[i / (hashRounds / 16)] = (Byte)digest[4 * 4 + 3];
       }
     }
-    UInt32 digest[5];
-    hash_final(&c, digest);
+    /*
+    // it's test message for sha
+    const char *message = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+    sha.Update((const Byte *)message, strlen(message));
+    */
+    Byte digest[20];
+    sha.Final(digest);
     for (i = 0; i < 4; i++)
       for (int j = 0; j < 4; j++)
-        aesKey[i * 4 + j] = (Byte)(digest[i] >> (j * 8));
+        aesKey[i * 4 + j] = (digest[i * 4 + 3 - j]);
   }
   _needCalculate = false;
 }

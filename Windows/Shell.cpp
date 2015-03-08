@@ -2,9 +2,16 @@
 
 #include "StdAfx.h"
 
+#ifndef _UNICODE
+#include "Common/StringConvert.h"
+#endif
 #include "Common/MyCom.h"
 #include "Windows/Shell.h"
 #include "Windows/COM.h"
+
+#ifndef _UNICODE
+extern bool g_IsNT;
+#endif
 
 namespace NWindows {
 namespace NShell {
@@ -77,26 +84,34 @@ CDrop::~CDrop()
   Free();
 }
 
-UINT CDrop::QueryFile(UINT fileIndex, LPTSTR fileName, UINT fileNameSize)
-{
-  return ::DragQueryFile(m_Object, fileIndex, fileName, fileNameSize);
-}
-
 UINT CDrop::QueryCountOfFiles()
 {
-  return QueryFile(0xFFFFFFFF, NULL, 0);
+  return QueryFile(0xFFFFFFFF, (LPTSTR)NULL, 0);
 }
 
-CSysString CDrop::QueryFileName(UINT fileIndex)
+UString CDrop::QueryFileName(UINT fileIndex)
 {
-  CSysString fileName;
-  UINT bufferSize = QueryFile(fileIndex, NULL, 0);
-  QueryFile(fileIndex, fileName.GetBuffer(bufferSize), bufferSize + 1);
-  fileName.ReleaseBuffer();
+  UString fileName;
+  #ifndef _UNICODE
+  if (!g_IsNT)
+  {
+    AString fileNameA;
+    UINT bufferSize = QueryFile(fileIndex, (LPTSTR)NULL, 0);
+    QueryFile(fileIndex, fileNameA.GetBuffer(bufferSize + 2), bufferSize + 1);
+    fileNameA.ReleaseBuffer();
+    fileName = GetUnicodeString(fileNameA);
+  }
+  else
+  #endif
+  {
+    UINT bufferSize = QueryFile(fileIndex, (LPWSTR)NULL, 0);
+    QueryFile(fileIndex, fileName.GetBuffer(bufferSize + 2), bufferSize + 1);
+    fileName.ReleaseBuffer();
+  }
   return fileName;
 }
 
-void CDrop::QueryFileNames(CSysStringVector &fileNames)
+void CDrop::QueryFileNames(UStringVector &fileNames)
 {
   fileNames.Clear();
   UINT numFiles = QueryCountOfFiles();
@@ -111,8 +126,7 @@ void CDrop::QueryFileNames(CSysStringVector &fileNames)
 
 bool GetPathFromIDList(LPCITEMIDLIST itemIDList, CSysString &path)
 {
-  bool result = BOOLToBool(::SHGetPathFromIDList(itemIDList, 
-      path.GetBuffer(MAX_PATH)));
+  bool result = BOOLToBool(::SHGetPathFromIDList(itemIDList, path.GetBuffer(MAX_PATH * 2)));
   path.ReleaseBuffer();
   return result;
 }
@@ -138,6 +152,7 @@ int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM data)
       SendMessage(hwnd, BFFM_SETSELECTION, TRUE, data);
       break;
     }
+    /*
     case BFFM_SELCHANGED: 
     {
       TCHAR dir[MAX_PATH];
@@ -147,6 +162,7 @@ int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM data)
         SendMessage(hwnd, BFFM_SETSTATUSTEXT, 0, (LPARAM)TEXT(""));
       break;
     }
+    */
     default:
       break;
   }
@@ -176,5 +192,101 @@ bool BrowseForFolder(HWND owner, LPCTSTR title,
       BIF_NEWDIALOGSTYLE | BIF_RETURNONLYFSDIRS | BIF_STATUSTEXT, initialFolder, resultPath);
   // BIF_STATUSTEXT; BIF_USENEWUI   (Version 5.0)
 }
+
+#ifndef _UNICODE
+
+typedef BOOL (WINAPI * SHGetPathFromIDListWP)(LPCITEMIDLIST pidl, LPWSTR pszPath);
+
+bool GetPathFromIDList(LPCITEMIDLIST itemIDList, UString &path)
+{
+  path.Empty();
+  SHGetPathFromIDListWP shGetPathFromIDListW = (SHGetPathFromIDListWP)
+    ::GetProcAddress(::GetModuleHandleW(L"shell32.dll"), "SHGetPathFromIDListW");
+  if (shGetPathFromIDListW == 0)
+    return false;
+  bool result = BOOLToBool(shGetPathFromIDListW(itemIDList, path.GetBuffer(MAX_PATH * 2)));
+  path.ReleaseBuffer();
+  return result;
+}
+
+typedef LPITEMIDLIST (WINAPI * SHBrowseForFolderWP)(LPBROWSEINFOW lpbi);
+
+bool BrowseForFolder(LPBROWSEINFOW browseInfo, UString &resultPath)
+{
+  NWindows::NCOM::CComInitializer comInitializer;
+  SHBrowseForFolderWP shBrowseForFolderW = (SHBrowseForFolderWP)
+    ::GetProcAddress(::GetModuleHandleW(L"shell32.dll"), "SHBrowseForFolderW");
+  if (shBrowseForFolderW == 0)
+    return false;
+  LPITEMIDLIST itemIDList = shBrowseForFolderW(browseInfo);
+  if (itemIDList == NULL)
+    return false;
+  CItemIDList itemIDListHolder;
+  itemIDListHolder.Attach(itemIDList);
+  return GetPathFromIDList(itemIDList, resultPath);
+}
+
+
+int CALLBACK BrowseCallbackProc2(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM data) 
+{
+  switch(uMsg) 
+  {
+    case BFFM_INITIALIZED:
+    {
+      SendMessageW(hwnd, BFFM_SETSELECTIONW, TRUE, data);
+      break;
+    }
+    /*
+    case BFFM_SELCHANGED: 
+    {
+      wchar_t dir[MAX_PATH * 2];
+
+      if (shGetPathFromIDListW((LPITEMIDLIST)lp , dir)) 
+        SendMessageW(hwnd, BFFM_SETSTATUSTEXTW, 0, (LPARAM)dir);
+      else
+        SendMessageW(hwnd, BFFM_SETSTATUSTEXTW, 0, (LPARAM)L"");
+      break;
+    }
+    */
+    default:
+      break;
+  }
+  return 0;
+}
+
+
+static bool BrowseForFolder(HWND owner, LPCWSTR title, UINT ulFlags, 
+    LPCWSTR initialFolder, UString &resultPath)
+{
+  UString displayName;
+  BROWSEINFOW browseInfo;
+  browseInfo.hwndOwner = owner;
+  browseInfo.pidlRoot = NULL; 
+  browseInfo.pszDisplayName = displayName.GetBuffer(MAX_PATH);
+  browseInfo.lpszTitle = title;
+  browseInfo.ulFlags = ulFlags;
+  browseInfo.lpfn = (initialFolder != NULL) ? BrowseCallbackProc2 : NULL;
+  browseInfo.lParam = (LPARAM)initialFolder;
+  return BrowseForFolder(&browseInfo, resultPath);
+}
+
+bool BrowseForFolder(HWND owner, LPCWSTR title, LPCWSTR initialFolder, UString &resultPath)
+{
+  if (g_IsNT)
+    return BrowseForFolder(owner, title, 
+      BIF_NEWDIALOGSTYLE | BIF_RETURNONLYFSDIRS 
+      //  | BIF_STATUSTEXT // This flag is not supported when BIF_NEWDIALOGSTYLE is specified.
+      , initialFolder, resultPath);
+  // BIF_STATUSTEXT; BIF_USENEWUI   (Version 5.0)
+  CSysString s;
+  bool res = BrowseForFolder(owner, GetSystemString(title), 
+      BIF_NEWDIALOGSTYLE | BIF_RETURNONLYFSDIRS 
+      // | BIF_STATUSTEXT  // This flag is not supported when BIF_NEWDIALOGSTYLE is specified.
+      , GetSystemString(initialFolder), s); 
+  resultPath = GetUnicodeString(s);
+  return res;
+}
+
+#endif
 
 }}

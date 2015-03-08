@@ -64,12 +64,14 @@ public:
 	// NExtractionDialog::NFilesMode::EEnum FilesMode;
 
   UString DirectoryPath;
+  #ifndef _SFX
   UString Password;
+  #endif
   NExtract::NPathMode::EEnum PathMode;
   NExtract::NOverwriteMode::EEnum OverwriteMode;
 
   INT_PTR Create(HWND aWndParent = 0)
-    { return CModalDialog::Create(MAKEINTRESOURCE(IDD_DIALOG_EXTRACT), aWndParent); }
+    { return CModalDialog::Create(IDD_DIALOG_EXTRACT, aWndParent); }
 };
 
 #endif

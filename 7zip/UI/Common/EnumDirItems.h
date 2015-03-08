@@ -11,16 +11,17 @@
 void AddDirFileInfo(
     const UString &prefix, 
     const UString &fullPathName,
-    NWindows::NFile::NFind::CFileInfoW &fileInfo, 
+    const NWindows::NFile::NFind::CFileInfoW &fileInfo, 
     CObjectVector<CDirItem> &dirItems);
 
 
-HRESULT EnumerateDirItems(
+void EnumerateDirItems(
     const UString &baseFolderPrefix,
     const UStringVector &fileNames,
     const UString &archiveNamePrefix, 
     CObjectVector<CDirItem> &dirItems, 
-    UString &errorPath);
+    UStringVector &errorPaths,
+    CRecordVector<DWORD> &errorCodes);
 
 struct IEnumDirItemCallback
 {
@@ -32,6 +33,7 @@ HRESULT EnumerateItems(
     const NWildcard::CCensor &censor, 
     CObjectVector<CDirItem> &dirItems, 
     IEnumDirItemCallback *callback, 
-    UString &errorPath);
+    UStringVector &errorPaths,
+    CRecordVector<DWORD> &errorCodes);
 
 #endif

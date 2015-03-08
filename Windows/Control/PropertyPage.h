@@ -9,7 +9,7 @@
 namespace NWindows {
 namespace NControl {
 
-BOOL APIENTRY ProperyPageProcedure(HWND dialogHWND, UINT message, UINT wParam, LONG lParam);
+INT_PTR APIENTRY ProperyPageProcedure(HWND dialogHWND, UINT message, WPARAM wParam, LPARAM lParam);
 
 class CPropertyPage: public CDialog
 {
@@ -33,6 +33,14 @@ public:
   virtual void OnReset(const PSHNOTIFY *aPSHNOTIFY) { OnReset(); }
 };
 
+struct CPageInfo
+{
+  CPropertyPage *Page;
+  UString Title;
+  UINT ID;
+};
+
+int MyPropertySheet(const CObjectVector<CPageInfo> &pagesInfo, HWND hwndParent, const UString &title);
 
 }}
 

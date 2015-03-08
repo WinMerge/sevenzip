@@ -4,6 +4,7 @@
 
 #include "CopyCoder.h"
 #include "../../../Common/Alloc.h"
+#include "../../Common/StreamUtils.h"
 
 namespace NCompress {
 
@@ -11,7 +12,7 @@ static const UInt32 kBufferSize = 1 << 17;
 
 CCopyCoder::~CCopyCoder()
 {
-  BigFree(_buffer);
+  ::MidFree(_buffer);
 }
 
 STDMETHODIMP CCopyCoder::Code(ISequentialInStream *inStream,
@@ -21,7 +22,7 @@ STDMETHODIMP CCopyCoder::Code(ISequentialInStream *inStream,
 {
   if (_buffer == 0)
   {
-    _buffer = (Byte *)BigAlloc(kBufferSize);
+    _buffer = (Byte *)::MidAlloc(kBufferSize);
     if (_buffer == 0)
       return E_OUTOFMEMORY;
   }
@@ -34,10 +35,10 @@ STDMETHODIMP CCopyCoder::Code(ISequentialInStream *inStream,
     if (outSize != 0)
       if (size > *outSize - TotalSize)
         size = (UInt32)(*outSize - TotalSize);
-    RINOK(inStream->ReadPart(_buffer, size, &realProcessedSize));
+    RINOK(inStream->Read(_buffer, size, &realProcessedSize));
     if(realProcessedSize == 0)
       break;
-    RINOK(outStream->Write(_buffer, realProcessedSize, NULL));
+    RINOK(WriteStream(outStream, _buffer, realProcessedSize, NULL));
     TotalSize += realProcessedSize;
     if (progress != NULL)
     {

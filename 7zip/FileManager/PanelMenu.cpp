@@ -22,14 +22,15 @@ static const UINT kSystemStartMenuID = kPluginMenuStartID + 100;
 
 void CPanel::InvokeSystemCommand(const char *command)
 {
-  if (!IsFSFolder())
+  if (!IsFSFolder() && !IsFSDrivesFolder())
     return;
   CRecordVector<UINT32> operatedIndices;
   GetOperatedItemIndices(operatedIndices);
   if (operatedIndices.IsEmpty())
     return;
   CMyComPtr<IContextMenu> contextMenu;
-  CreateShellContextMenu(operatedIndices, contextMenu);
+  if (CreateShellContextMenu(operatedIndices, contextMenu) != S_OK)
+    return;
 
   CMINVOKECOMMANDINFO ci;
   ZeroMemory(&ci, sizeof(ci));
@@ -58,19 +59,19 @@ void CPanel::EditPaste()
   InvokeSystemCommand("paste");
 }
 
-void CPanel::CreateShellContextMenu(
+HRESULT CPanel::CreateShellContextMenu(
     const CRecordVector<UINT32> &operatedIndices,
     CMyComPtr<IContextMenu> &systemContextMenu)
 {
   systemContextMenu.Release();
-  UString folderPath = GetUnicodeString(_currentFolderPrefix);
+  UString folderPath = GetFsPath();
 
   CMyComPtr<IShellFolder> desktopFolder;
-  ::SHGetDesktopFolder(&desktopFolder);
+  RINOK(::SHGetDesktopFolder(&desktopFolder));
   if (!desktopFolder) 
   {
     // ShowMessage("Failed to get Desktop folder.");
-    return;
+    return E_FAIL;
   }
   
   // Separate the file from the folder.
@@ -80,24 +81,19 @@ void CPanel::CreateShellContextMenu(
   // is located in.
   LPITEMIDLIST parentPidl;
   DWORD eaten;
-  DWORD result = desktopFolder->ParseDisplayName(
+  RINOK(desktopFolder->ParseDisplayName(
       GetParent(), 0, (wchar_t *)(const wchar_t *)folderPath, 
-      &eaten, &parentPidl, 0);
-  if (result != NOERROR) 
-  {
-    // ShowMessage("Invalid file name.");
-    return;
-  }
+      &eaten, &parentPidl, 0));
   
   // Get an IShellFolder for the folder
   // the file is located in.
   CMyComPtr<IShellFolder> parentFolder;
-  result = desktopFolder->BindToObject(parentPidl,
-      0, IID_IShellFolder, (void**)&parentFolder);
+  RINOK(desktopFolder->BindToObject(parentPidl,
+      0, IID_IShellFolder, (void**)&parentFolder));
   if (!parentFolder) 
   {
     // ShowMessage("Invalid file name.");
-    return;
+    return E_FAIL;
   }
   
   // Get a pidl for the file itself.
@@ -107,10 +103,10 @@ void CPanel::CreateShellContextMenu(
   {
     LPITEMIDLIST pidl;
     UString fileName = GetItemName(operatedIndices[i]);
-    HRESULT result = parentFolder->ParseDisplayName(GetParent(), 0, 
-      (wchar_t *)(const wchar_t *)fileName, &eaten, &pidl, 0);
-    if (result != NOERROR)
-      return;
+    if (IsFSDrivesFolder())
+      fileName += L'\\';
+    RINOK(parentFolder->ParseDisplayName(GetParent(), 0, 
+      (wchar_t *)(const wchar_t *)fileName, &eaten, &pidl, 0));
     pidls.Add(pidl);
   }
 
@@ -130,14 +126,15 @@ void CPanel::CreateShellContextMenu(
 
   // Get the IContextMenu for the file.
   CMyComPtr<IContextMenu> cm;
-  result = parentFolder->GetUIObjectOf(GetParent(), pidls.Size(), 
-      (LPCITEMIDLIST *)&pidls.Front(), IID_IContextMenu, 0, (void**)&cm);
+  RINOK( parentFolder->GetUIObjectOf(GetParent(), pidls.Size(), 
+      (LPCITEMIDLIST *)&pidls.Front(), IID_IContextMenu, 0, (void**)&cm));
   if (!cm) 
   {
     // ShowMessage("Unable to get context menu interface.");
-    return;
+    return E_FAIL;
   }
   systemContextMenu = cm;
+  return S_OK;
 }
 
 void CPanel::CreateSystemMenu(HMENU menuSpec, 
@@ -201,17 +198,17 @@ void CPanel::CreateSystemMenu(HMENU menuSpec,
     systemContextMenu->QueryContextMenu(hMenu, 0, kSystemStartMenuID, 0x7FFF, Flags);
     
 
-    MENUITEMINFO menuItem;
-    menuItem.cbSize = sizeof(menuItem);
-    menuItem.fMask = MIIM_SUBMENU | MIIM_TYPE | MIIM_ID;
-    menuItem.fType = MFT_STRING;
-    menuItem.hSubMenu = popupMenu.Detach();
-    // menuDestroyer.Disable();
-    CSysString popupMenuCaption = LangLoadString(IDS_SYSTEM, 0x030202A0);
-    menuItem.dwTypeData = (LPTSTR)(LPCTSTR)popupMenuCaption;
-    
-    InsertMenuItem(menuSpec, 0, TRUE, &menuItem);
-
+    {
+      CMenu menu;
+      menu.Attach(menuSpec);
+      CMenuItem menuItem;
+      menuItem.fMask = MIIM_SUBMENU | MIIM_TYPE | MIIM_ID;
+      menuItem.fType = MFT_STRING;
+      menuItem.hSubMenu = popupMenu.Detach();
+      // menuDestroyer.Disable();
+      menuItem.StringValue = LangString(IDS_SYSTEM, 0x030202A0);
+      menu.InsertItem(0, true, menuItem);
+    }
     /*
     if (Cmd < 100 && Cmd != 0) 
     {
@@ -255,32 +252,28 @@ void CPanel::CreateSevenZipMenu(HMENU menuSpec,
   // menu.CreatePopup();
 
   bool sevenZipMenuCreated = false;
-  UString currentFolderUnicode;
-  UString folder = GetUnicodeString(_currentFolderPrefix);
-  CSysString currentFolderSys = GetSystemString(_currentFolderPrefix);
 
   CMyComPtr<IContextMenu> contextMenu;
   if (contextMenu.CoCreateInstance(CLSID_CZipContextMenu, IID_IContextMenu) == S_OK)
   {
     CMyComPtr<IInitContextMenu> initContextMenu;
-    if (contextMenu.QueryInterface(IID_IInitContextMenu, 
-        &initContextMenu) != S_OK)
+    if (contextMenu.QueryInterface(IID_IInitContextMenu, &initContextMenu) != S_OK)
       return;
-    currentFolderUnicode = GetUnicodeString(_currentFolderPrefix);;
+    UString currentFolderUnicode = _currentFolderPrefix;
     UStringVector names;
-    for(int i = 0; i < operatedIndices.Size(); i++)
+    int i;
+    for(i = 0; i < operatedIndices.Size(); i++)
       names.Add(currentFolderUnicode + GetItemName(operatedIndices[i]));
     CRecordVector<const wchar_t *> namePointers;
     for(i = 0; i < operatedIndices.Size(); i++)
       namePointers.Add(names[i]);
     
-    ::SetCurrentDirectory(::GetSystemString(_currentFolderPrefix));
-    if (initContextMenu->InitContextMenu(folder, &namePointers.Front(),
+    // NFile::NDirectory::MySetCurrentDirectory(currentFolderUnicode);
+    if (initContextMenu->InitContextMenu(currentFolderUnicode, &namePointers.Front(),
         operatedIndices.Size()) == S_OK)
     {
-      HRESULT res = contextMenu->QueryContextMenu(menu, 0, 
-        kSevenZipStartMenuID, 
-        kSystemStartMenuID - 1, 0);
+      HRESULT res = contextMenu->QueryContextMenu(menu, 0, kSevenZipStartMenuID, 
+          kSystemStartMenuID - 1, 0);
       sevenZipMenuCreated = (HRESULT_SEVERITY(res) == SEVERITY_SUCCESS);
       if (sevenZipMenuCreated)
         sevenZipContextMenu = contextMenu;
@@ -309,7 +302,7 @@ void CPanel::CreateFileMenu(HMENU menuSpec,
     CreateSystemMenu(menu, operatedIndices, systemContextMenu);
 
   if (menu.GetItemCount() > 0)
-    menu.AppendItem(MF_SEPARATOR, 0, 0);
+    menu.AppendItem(MF_SEPARATOR, 0, (LPCTSTR)0);
 
   LoadFileMenu(menu, menu.GetItemCount(), !operatedIndices.IsEmpty(), programMenu);
 }
@@ -341,7 +334,7 @@ bool CPanel::InvokePluginCommand(int id,
   commandInfo.lpTitle = "";
   commandInfo.lpVerbW = LPCWSTR(offset);
   commandInfo.lpParameters = NULL;
-  UString currentFolderUnicode = GetUnicodeString(_currentFolderPrefix);;
+  UString currentFolderUnicode = _currentFolderPrefix;
   commandInfo.lpDirectoryW = currentFolderUnicode;
   commandInfo.lpTitleW = L"";
   // commandInfo.ptInvoke.x = xPos;

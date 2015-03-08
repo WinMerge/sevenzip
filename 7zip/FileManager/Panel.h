@@ -30,6 +30,8 @@ const int kParentFolderID = 100;
 const int kPluginMenuStartID = 1000;
 const int kToolbarStartID = 2000;
 
+const int kParentIndex = -1;
+
 class CPanelCallback
 {
 public:
@@ -134,8 +136,9 @@ struct CSelectedState
 {
   int FocusedItem;
   UString FocusedName;
+  bool SelectFocused;
   UStringVector SelectedNames;
-  CSelectedState(): FocusedItem(-1) {}
+  CSelectedState(): FocusedItem(-1), SelectFocused(false) {}
 };
 
 class CPanel:public NWindows::NControl::CWindow2
@@ -150,27 +153,31 @@ class CPanel:public NWindows::NControl::CWindow2
   CAppState *_appState;
 
   bool OnCommand(int code, int itemID, LPARAM lParam, LRESULT &result);
-  LRESULT OnMessage(UINT message, UINT wParam, LPARAM lParam);
+  LRESULT OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
   virtual bool OnCreate(CREATESTRUCT *createStruct);
   virtual bool OnSize(WPARAM wParam, int xSize, int ySize);
   virtual void OnDestroy();
   virtual bool OnNotify(UINT controlID, LPNMHDR lParam, LRESULT &result);
   void OnComboBoxCommand(UINT code, LPARAM &aParam);
+  bool OnNotifyComboBoxEndEdit(PNMCBEENDEDITW info, LRESULT &result);
+  #ifndef _UNICODE
   bool OnNotifyComboBoxEndEdit(PNMCBEENDEDIT info, LRESULT &result);
+  #endif
   bool OnNotifyReBar(LPNMHDR lParam, LRESULT &result);
   bool OnNotifyComboBox(LPNMHDR lParam, LRESULT &result);
+  void OnItemChanged(NMLISTVIEW *item);
   bool OnNotifyList(LPNMHDR lParam, LRESULT &result);
   void OnDrag(LPNMLISTVIEW nmListView);
   bool OnKeyDown(LPNMLVKEYDOWN keyDownInfo, LRESULT &result);
-  BOOL OnBeginLabelEdit(LV_DISPINFO * lpnmh);
-  BOOL OnEndLabelEdit(LV_DISPINFO * lpnmh);
+  BOOL OnBeginLabelEdit(LV_DISPINFOW * lpnmh);
+  BOOL OnEndLabelEdit(LV_DISPINFOW * lpnmh);
   void OnColumnClick(LPNMLISTVIEW info);
   bool OnCustomDraw(LPNMLVCUSTOMDRAW lplvcd, LRESULT &result);
 
 public:
   CPanelCallback *_panelCallback;
 
-  void DeleteItems();
+  void DeleteItems(bool toRecycleBin);
   void CreateFolder();
   void CreateFile();
 
@@ -182,7 +189,8 @@ private:
   // void InitColumns2(PROPID sortID);
   void InsertColumn(int index);
 
-  void RefreshListCtrl(const UString &focusedName, int focusedPos,
+  void SetFocusedSelectedItem(int index, bool select);
+  void RefreshListCtrl(const UString &focusedName, int focusedPos, bool selectFocused,
       const UStringVector &selectedNames);
 
   void OnShiftSelectMessage();
@@ -192,14 +200,15 @@ private:
   // void OnUpWithShift();
   // void OnDownWithShift();
 public:
+  void UpdateSelection();
   void SelectSpec(bool selectMode);
   void SelectByType(bool selectMode);
   void SelectAll(bool selectMode);
   void InvertSelection();
 private:
 
-  CSysString GetFileType(UInt32 index);
-  LRESULT SetItemText(LVITEM &item);
+  // UString GetFileType(UInt32 index);
+  LRESULT SetItemText(LVITEMW &item);
 
   // CRecordVector<PROPID> m_ColumnsPropIDs;
 
@@ -219,9 +228,13 @@ public:
   bool _showRealFileIcons;
   // bool _virtualMode;
   // CUIntVector _realIndices;
+  bool _enableItemChangeNotify;
+  bool _mySelectMode;
   CBoolVector _selectedStatusVector;
 
-  UInt32 GetRealIndex(const LVITEM &item) const
+  UString _focusedName;
+
+  UInt32 GetRealIndex(const LVITEMW &item) const
   {
     /*
     if (_virtualMode)
@@ -303,25 +316,25 @@ public:
       _startGroupSelect(0), 
       _selectionIsDefined(false),
       _ListViewMode(3),
-      _xSize(300)
+      _xSize(300),
+      _mySelectMode(false),
+      _enableItemChangeNotify(true)
       {} 
 
   void SetExtendedStyle()
   {
-    // DWORD extendedStyle = _listView.GetExtendedListViewStyle();
     if (_listView != 0)
       _listView.SetExtendedListViewStyle(_exStyle);
-    // extendedStyle |= _exStyle;
   }
 
 
   bool _needSaveInfo;
-  CSysString _typeIDString;
+  UString _typeIDString;
   CListViewInfo _listViewInfo;
   CItemProperties _properties;
   CItemProperties _visibleProperties;
   
-  int _sortID;
+  PROPID _sortID;
   // int _sortIndex;
   bool _ascending;
 
@@ -336,7 +349,7 @@ public:
 
   CMyComPtr<IContextMenu> _sevenZipContextMenu;
   CMyComPtr<IContextMenu> _systemContextMenu;
-  void CreateShellContextMenu(
+  HRESULT CreateShellContextMenu(
       const CRecordVector<UInt32> &operatedIndices,
       CMyComPtr<IContextMenu> &systemContextMenu);
   void CreateSystemMenu(HMENU menu, 
@@ -379,6 +392,9 @@ public:
   bool IsFSFolder() const;
   bool IsFSDrivesFolder() const;
 
+  UString GetFsPath() const;
+  UString GetDriveOrNetworkPrefix() const;
+
   bool DoesItSupportOperations() const;
 
   bool _processTimer;
@@ -393,6 +409,10 @@ public:
     public:
       CDisableTimerProcessing(CPanel &panel): _panel(panel) 
       { 
+        Disable();
+      }
+      void Disable()
+      {
         _processTimerMem = _panel._processTimer;
         _processNotifyMem = _panel._processNotify;
         _panel._processTimer = false; 
@@ -418,6 +438,7 @@ public:
   void MessageBox(LPCWSTR message, LPCWSTR caption);
   void MessageBoxMyError(LPCWSTR message);
   void MessageBoxError(HRESULT errorCode, LPCWSTR caption);
+  void MessageBoxError(HRESULT errorCode);
   void MessageBoxLastError(LPCWSTR caption);
   void MessageBoxLastError();
 

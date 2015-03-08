@@ -93,15 +93,11 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=..\Archive.def
+# End Source File
+# Begin Source File
+
 SOURCE=.\DllExports.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Rar.def
-# End Source File
-# Begin Source File
-
-SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
@@ -179,6 +175,14 @@ SOURCE=..\..\..\Common\StringConvert.h
 # Begin Source File
 
 SOURCE=..\..\..\Common\Types.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\UTFConvert.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\UTFConvert.h
 # End Source File
 # Begin Source File
 
@@ -403,6 +407,14 @@ SOURCE=..\..\Common\StreamObjects.cpp
 # Begin Source File
 
 SOURCE=..\..\Common\StreamObjects.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.h
 # End Source File
 # End Group
 # Begin Group "7z"

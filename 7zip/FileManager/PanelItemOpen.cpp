@@ -7,6 +7,7 @@
 #include "Common/StringConvert.h" 
 #include "Common/Random.h"
 #include "Common/StringConvert.h"
+#include "Common/AutoPtr.h"
 
 #include "Windows/FileDir.h"
 #include "Windows/FileFind.h"
@@ -28,9 +29,9 @@ using namespace NFile;
 using namespace NDirectory;
 
 extern HWND g_HWND;
-
-static inline UINT GetCurrentFileCodePage()
-  {  return AreFileApisANSI() ? CP_ACP : CP_OEMCP;}
+#ifndef _UNICODE
+extern bool g_IsNT;
+#endif
 
 static wchar_t *kTempDirPrefix = L"7zO"; 
 
@@ -80,8 +81,7 @@ HRESULT CPanel::OpenItemAsArchive(const UString &name,
   // _password.Empty();
 
   NDLL::CLibrary library;
-  RINOK(OpenFileFolderPlugin(GetUnicodeString(filePath), 
-      &library, &newFolder, GetParent()));
+  RINOK(OpenFileFolderPlugin(filePath, &library, &newFolder, GetParent()));
  
   folderLink.ParentFolder = _folder;
   folderLink.ItemName = name;
@@ -129,7 +129,7 @@ HRESULT CPanel::OpenParentArchiveFolder()
         if (OnOpenItemChanged(folderLink.FolderPath, folderLink.ItemName) != S_OK)
         {
           ::MessageBoxW(HWND(*this), MyFormatNew(IDS_CANNOT_UPDATE_FILE, 
-              0x03020281, GetUnicodeString(folderLink.FilePath)), L"7-Zip", MB_OK | MB_ICONSTOP);
+              0x03020281, folderLink.FilePath), L"7-Zip", MB_OK | MB_ICONSTOP);
           return S_OK;
         }
       }
@@ -144,75 +144,132 @@ static bool DoItemAlwaysStart(const UString &name)
   int extPos = name.ReverseFind('.');
   if (extPos < 0)
     return false;
-  const UString ext = name.Mid(extPos + 1);
-  return  (ext == UString(L"exe") || ext == UString(L"bat") || ext == UString(L"com"));
+  UString ext = name.Mid(extPos + 1);
+  ext.MakeLower();
+  return (ext == UString(L"exe") || 
+    ext == UString(L"bat") || 
+    ext == UString(L"com") ||
+    ext == UString(L"chm"));
 }
 
 static HANDLE StartEditApplication(const UString &path, HWND window)
 {
-  CSysString command;
+  UString command;
   ReadRegEditor(command);
   if (command.IsEmpty())
   {
     if (!MyGetWindowsDirectory(command))
       return 0;
     NFile::NName::NormalizeDirPathPrefix(command);
-    command += TEXT("notepad.exe");
+    command += L"notepad.exe";
   }
-  command = CSysString(TEXT("\"")) + command + CSysString(TEXT("\""));
-  command += TEXT(" \"");
-  command += GetSystemString(path);
-  command += TEXT("\"");
+  command = UString(L"\"") + command + UString(L"\"");
+  command += L" \"";
+  command += UString(path);
+  command += L"\"";
 
-  STARTUPINFO startupInfo;
-  startupInfo.cb = sizeof(startupInfo);
-  startupInfo.lpReserved = 0;
-  startupInfo.lpDesktop = 0;
-  startupInfo.lpTitle = 0;
-  startupInfo.dwFlags = 0;
-  startupInfo.cbReserved2 = 0;
-  startupInfo.lpReserved2 = 0;
-  
   PROCESS_INFORMATION processInformation;
-  BOOL result = ::CreateProcess(NULL, (TCHAR *)(const TCHAR *)command, 
+  BOOL result;
+  #ifndef _UNICODE
+  if (!g_IsNT)
+  {
+    STARTUPINFOA startupInfo;
+    startupInfo.cb = sizeof(startupInfo);
+    startupInfo.lpReserved = 0;
+    startupInfo.lpDesktop = 0;
+    startupInfo.lpTitle = 0;
+    startupInfo.dwFlags = 0;
+    startupInfo.cbReserved2 = 0;
+    startupInfo.lpReserved2 = 0;
+    
+    result = ::CreateProcessA(NULL, (CHAR *)(const CHAR *)GetSystemString(command), 
       NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInformation);
+  }
+  else
+  #endif
+  {
+    STARTUPINFOW startupInfo;
+    startupInfo.cb = sizeof(startupInfo);
+    startupInfo.lpReserved = 0;
+    startupInfo.lpDesktop = 0;
+    startupInfo.lpTitle = 0;
+    startupInfo.dwFlags = 0;
+    startupInfo.cbReserved2 = 0;
+    startupInfo.lpReserved2 = 0;
+    
+    result = ::CreateProcessW(NULL, (WCHAR *)(const WCHAR *)command, 
+      NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInformation);
+  }
+
   if (result != FALSE)
   {
     ::CloseHandle(processInformation.hThread);
     return processInformation.hProcess;
   }
-  ::MessageBoxW(window, LangLoadStringW(IDS_CANNOT_START_EDITOR, 0x03020282), 
+  ::MessageBoxW(window, LangString(IDS_CANNOT_START_EDITOR, 0x03020282), 
       L"7-Zip", MB_OK  | MB_ICONSTOP);
   return 0;
 }
 
+#ifndef _UNICODE
+typedef BOOL (WINAPI * ShellExecuteExWP)(LPSHELLEXECUTEINFOW lpExecInfo);
+#endif
+
 static HANDLE StartApplication(const UString &path, HWND window)
 {
-  SHELLEXECUTEINFO execInfo;
-  execInfo.cbSize = sizeof(execInfo);
-  execInfo.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_DDEWAIT;
-  execInfo.hwnd = NULL;
-  execInfo.lpVerb = NULL;
-  const CSysString sysPath = GetSystemString(path);
-  execInfo.lpFile = sysPath;
-  execInfo.lpParameters = NULL;
-  execInfo.lpDirectory = NULL;
-  execInfo.nShow = SW_SHOWNORMAL;
-  execInfo.hProcess = 0;
-  bool success = BOOLToBool(::ShellExecuteEx(&execInfo));
-  UINT32 result = (UINT32)execInfo.hInstApp;
+  UINT32 result;
+  HANDLE hProcess;
+  #ifndef _UNICODE
+  if (g_IsNT)
+  {
+    SHELLEXECUTEINFOW execInfo;
+    execInfo.cbSize = sizeof(execInfo);
+    execInfo.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_DDEWAIT;
+    execInfo.hwnd = NULL;
+    execInfo.lpVerb = NULL;
+    execInfo.lpFile = path;
+    execInfo.lpParameters = NULL;
+    execInfo.lpDirectory = NULL;
+    execInfo.nShow = SW_SHOWNORMAL;
+    execInfo.hProcess = 0;
+    ShellExecuteExWP shellExecuteExW = (ShellExecuteExWP)
+    ::GetProcAddress(::GetModuleHandleW(L"shell32.dll"), "ShellExecuteExW");
+    if (shellExecuteExW == 0)
+      return 0;
+    shellExecuteExW(&execInfo);
+    result = (UINT32)execInfo.hInstApp;
+    hProcess = execInfo.hProcess;
+  }
+  else
+  #endif
+  {
+    SHELLEXECUTEINFO execInfo;
+    execInfo.cbSize = sizeof(execInfo);
+    execInfo.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_DDEWAIT;
+    execInfo.hwnd = NULL;
+    execInfo.lpVerb = NULL;
+    const CSysString sysPath = GetSystemString(path);
+    execInfo.lpFile = sysPath;
+    execInfo.lpParameters = NULL;
+    execInfo.lpDirectory = NULL;
+    execInfo.nShow = SW_SHOWNORMAL;
+    execInfo.hProcess = 0;
+    ::ShellExecuteEx(&execInfo);
+    result = (UINT32)execInfo.hInstApp;
+    hProcess = execInfo.hProcess;
+  }
   if(result <= 32)
   {
     switch(result)
     {
       case SE_ERR_NOASSOC:
-        ::MessageBox(window, 
-          NError::MyFormatMessage(::GetLastError()),
-          // TEXT("There is no application associated with the given file name extension"),
-          TEXT("7-Zip"), MB_OK | MB_ICONSTOP);
+        ::MessageBoxW(window, 
+          NError::MyFormatMessageW(::GetLastError()),
+          // L"There is no application associated with the given file name extension",
+          L"7-Zip", MB_OK | MB_ICONSTOP);
     }
   }
-  return execInfo.hProcess;
+  return hProcess;
 }
 
 void CPanel::EditItem(int index)
@@ -229,7 +286,7 @@ void CPanel::EditItem(int index)
 
 void CPanel::OpenFolderExternal(int index)
 {
-  HANDLE hProcess = StartApplication(_currentFolderPrefix + GetItemName(index), (HWND)*this);
+  HANDLE hProcess = StartApplication(GetFsPath() + GetItemName(index), (HWND)*this);
   if (hProcess != 0)
     ::CloseHandle(hProcess);
 }
@@ -262,12 +319,12 @@ void CPanel::OpenItem(int index, bool tryInternal, bool tryExternal)
   }
 }
        
-HRESULT CPanel::OnOpenItemChanged(const UString &folderPath, const UString &itemName)
+LRESULT CPanel::OnOpenItemChanged(const UString &folderPath, const UString &itemName)
 {
   CMyComPtr<IFolderOperations> folderOperations;
   if (_folder.QueryInterface(IID_IFolderOperations, &folderOperations) != S_OK)
   {
-    MessageBox(LangLoadStringW(IDS_OPERATION_IS_NOT_SUPPORTED, 0x03020208));
+    MessageBox(LangString(IDS_OPERATION_IS_NOT_SUPPORTED, 0x03020208));
     return E_FAIL;
   }
   UStringVector fileNames;
@@ -315,8 +372,9 @@ public:
 
 static DWORD WINAPI MyThreadFunction(void *param)
 {
-  // CTmpProcessInfo *tmpProcessInfo = (CTmpProcessInfo *)param;
-  std::auto_ptr<CTmpProcessInfo> tmpProcessInfo((CTmpProcessInfo *)param);
+  CMyAutoPtr<CTmpProcessInfo> tmpProcessInfoPtr((CTmpProcessInfo *)param);
+  CTmpProcessInfo *tmpProcessInfo = tmpProcessInfoPtr.get();
+
   HANDLE hProcess = tmpProcessInfo->ProcessHandle;
   HANDLE events[2] = { g_ExitEventLauncher._exitEvent, hProcess};
   DWORD waitResult = ::WaitForMultipleObjects(2, events, FALSE, INFINITE);
@@ -337,10 +395,10 @@ static DWORD WINAPI MyThreadFunction(void *param)
           0x03020280, tmpProcessInfo->ItemName);
       if (::MessageBoxW(g_HWND, message, L"7-Zip", MB_OKCANCEL | MB_ICONQUESTION) == IDOK)
       {
-        if (SendMessage(tmpProcessInfo->Window, kOpenItemChanged, 0, (LONG_PTR)tmpProcessInfo.get()) != 1)
+        if (SendMessage(tmpProcessInfo->Window, kOpenItemChanged, 0, (LONG_PTR)tmpProcessInfo) != 1)
         {
           ::MessageBoxW(g_HWND, MyFormatNew(IDS_CANNOT_UPDATE_FILE, 
-              0x03020281, GetUnicodeString(tmpProcessInfo->FilePath)), L"7-Zip", MB_OK | MB_ICONSTOP);
+              0x03020281, tmpProcessInfo->FilePath), L"7-Zip", MB_OK | MB_ICONSTOP);
           return 0;
         }
       }
@@ -363,7 +421,7 @@ void CPanel::OpenItemInArchive(int index, bool tryInternal, bool tryExternal,
   CMyComPtr<IFolderOperations> folderOperations;
   if (_folder.QueryInterface(IID_IFolderOperations, &folderOperations) != S_OK)
   {
-    MessageBox(LangLoadStringW(IDS_OPERATION_IS_NOT_SUPPORTED, 0x03020208));
+    MessageBox(LangString(IDS_OPERATION_IS_NOT_SUPPORTED, 0x03020208));
     return;
   }
 
@@ -380,13 +438,14 @@ void CPanel::OpenItemInArchive(int index, bool tryInternal, bool tryExternal,
 
   if ((result != S_OK && result != E_ABORT))
   {
-    MessageBoxError(result, L"7-Zip");
+    MessageBoxError(result);
     return;
   }
 
   UString tempFilePath = tempDirNorm + name;
 
-  std::auto_ptr<CTmpProcessInfo> tmpProcessInfo(new CTmpProcessInfo());
+  CMyAutoPtr<CTmpProcessInfo> tmpProcessInfoPtr(new CTmpProcessInfo());
+  CTmpProcessInfo *tmpProcessInfo = tmpProcessInfoPtr.get();
   tmpProcessInfo->FolderPath = tempDir;
   tmpProcessInfo->FilePath = tempFilePath;
   if (!NFind::FindFile(tempFilePath, tmpProcessInfo->FileInfo))
@@ -422,10 +481,10 @@ void CPanel::OpenItemInArchive(int index, bool tryInternal, bool tryExternal,
   tmpProcessInfo->ProcessHandle = hProcess;
 
   CThread thread;
-  if (!thread.Create(MyThreadFunction, tmpProcessInfo.get()))
+  if (!thread.Create(MyThreadFunction, tmpProcessInfo))
     throw 271824;
   tempDirectory.DisableDeleting();
-  tmpProcessInfo.release();
+  tmpProcessInfoPtr.release();
   tmpProcessInfoRelease._needDelete = false;
 }
 
@@ -440,7 +499,7 @@ static bool CheckDeleteItem(UINT64 currentFileTime, UINT64 folderFileTime)
 
 void DeleteOldTempFiles()
 {
-  CSysString tempPath;
+  UString tempPath;
   if(!NFile::NDirectory::MyGetTempPath(tempPath))
     throw 1;
 
@@ -449,10 +508,10 @@ void DeleteOldTempFiles()
   UINT64 currentFileTime;
   if(!::SystemTimeToFileTime(&systemTime, (FILETIME *)&currentFileTime))
     throw 2;
-  CSysString searchWildCard = tempPath + kTempDirPrefix + TEXT("*.tmp");
-  searchWildCard += TCHAR(NName::kAnyStringWildcard);
-  NFind::CEnumerator enumerator(searchWildCard);
-  NFind::CFileInfo fileInfo;
+  UString searchWildCard = tempPath + kTempDirPrefix + L"*.tmp";
+  searchWildCard += WCHAR(NName::kAnyStringWildcard);
+  NFind::CEnumeratorW enumerator(searchWildCard);
+  NFind::CFileInfoW fileInfo;
   while(enumerator.Next(fileInfo))
   {
     if (!fileInfo.IsDirectory())

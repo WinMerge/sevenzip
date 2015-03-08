@@ -93,7 +93,7 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\BZip2.def
+SOURCE=..\Archive.def
 # End Source File
 # Begin Source File
 
@@ -102,10 +102,6 @@ SOURCE=.\BZip2.ico
 # Begin Source File
 
 SOURCE=.\DllExports.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
@@ -259,6 +255,14 @@ SOURCE=..\..\Common\ProgressUtils.cpp
 # Begin Source File
 
 SOURCE=..\..\Common\ProgressUtils.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.h
 # End Source File
 # End Group
 # Begin Source File

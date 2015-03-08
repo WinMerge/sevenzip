@@ -27,7 +27,7 @@ using namespace NCommandLineParser;
 using namespace NWindows;
 using namespace NFile;
 
-static const int kNumSwitches = 24;
+static const int kNumSwitches = 25;
 
 namespace NKey {
 enum Enum
@@ -55,7 +55,8 @@ enum Enum
   kStdOut,
   kOverwrite,
   kEmail,
-  kShowDialog
+  kShowDialog,
+  kLargePages
 };
 
 }
@@ -117,7 +118,8 @@ static const CSwitchForm kSwitchForms[kNumSwitches] =
     { L"SO",  NSwitchType::kSimple, false, 0 },
     { L"AO",  NSwitchType::kPostChar, false, 1, 1, kOverwritePostCharSet},
     { L"SEML", NSwitchType::kUnLimitedPostString, false, 0},
-    { L"AD",  NSwitchType::kSimple, false }
+    { L"AD",  NSwitchType::kSimple, false },
+    { L"SLP", NSwitchType::kUnLimitedPostString, false, 0}
   };
 
 static const int kNumCommandForms = 7;
@@ -228,7 +230,7 @@ static bool AddNameToCensor(NWildcard::CCensor &wildcardCensor,
       recursed = false;
       break;
   }
-  wildcardCensor.AddItem(name, include, recursed);
+  wildcardCensor.AddItem(include, name, recursed);
   return true;
 }
 
@@ -374,6 +376,72 @@ static void AddSwitchWildCardsToCensor(NWildcard::CCensor &wildcardCensor,
   }
 }
 
+#ifdef _WIN32
+
+// This code converts all short file names to long file names.
+
+static void ConvertToLongName(const UString &prefix, UString &name)
+{
+  if (name.IsEmpty() || DoesNameContainWildCard(name))
+    return;
+  NFind::CFileInfoW fileInfo;
+  if (NFind::FindFile(prefix + name, fileInfo))
+    name = fileInfo.Name;
+}
+
+static void ConvertToLongNames(const UString &prefix, CObjectVector<NWildcard::CItem> &items)
+{
+  for (int i = 0; i < items.Size(); i++)
+  {
+    NWildcard::CItem &item = items[i];
+    if (item.Recursive || item.PathParts.Size() != 1)
+      continue;
+    ConvertToLongName(prefix, item.PathParts.Front());
+  }
+}
+
+static void ConvertToLongNames(const UString &prefix, NWildcard::CCensorNode &node)
+{
+  ConvertToLongNames(prefix, node.IncludeItems);
+  ConvertToLongNames(prefix, node.ExcludeItems);
+  int i;
+  for (i = 0; i < node.SubNodes.Size(); i++)
+    ConvertToLongName(prefix, node.SubNodes[i].Name);
+  // mix folders with same name
+  for (i = 0; i < node.SubNodes.Size(); i++)
+  {
+    NWildcard::CCensorNode &nextNode1 = node.SubNodes[i];
+    for (int j = i + 1; j < node.SubNodes.Size();)
+    {
+      const NWildcard::CCensorNode &nextNode2 = node.SubNodes[j];
+      if (nextNode1.Name.CompareNoCase(nextNode2.Name) == 0)
+      {
+        nextNode1.IncludeItems += nextNode2.IncludeItems;
+        nextNode1.ExcludeItems += nextNode2.ExcludeItems;
+        node.SubNodes.Delete(j);
+      }
+      else
+        j++;
+    }
+  }
+  for (i = 0; i < node.SubNodes.Size(); i++)
+  {
+    NWildcard::CCensorNode &nextNode = node.SubNodes[i];
+    ConvertToLongNames(prefix + nextNode.Name + wchar_t(NFile::NName::kDirDelimiter), nextNode); 
+  }
+}
+
+static void ConvertToLongNames(NWildcard::CCensor &censor)
+{
+  for (int i = 0; i < censor.Pairs.Size(); i++)
+  {
+    NWildcard::CPair &pair = censor.Pairs[i];
+    ConvertToLongNames(pair.Prefix, pair.Head);
+  }
+}
+
+#endif
+
 static NUpdateArchive::NPairAction::EEnum GetUpdatePairActionType(int i)
 {
   switch(i)
@@ -480,7 +548,7 @@ static bool ParseComplexSize(const UString &src, UInt64 &result)
   const wchar_t *start = s;
   const wchar_t *end;
   UInt64 number = ConvertStringToUInt64(start, &end);
-  int numDigits = end - start;
+  int numDigits = (int)(end - start);
   if (numDigits == 0 || s.Length() > numDigits + 1)
     return false;
   if (s.Length() == numDigits)
@@ -625,7 +693,7 @@ static void SetArchiveType(const UString &archiveType,
 
 CArchiveCommandLineParser::CArchiveCommandLineParser(): parser(kNumSwitches) {}
 
-void CArchiveCommandLineParser::Parse1(UStringVector commandStrings,
+void CArchiveCommandLineParser::Parse1(const UStringVector &commandStrings,
     CArchiveCommandLineOptions &options)
 {
   try
@@ -643,6 +711,16 @@ void CArchiveCommandLineParser::Parse1(UStringVector commandStrings,
   options.StdOutMode = parser[NKey::kStdOut].ThereIs;
   options.EnableHeaders = !parser[NKey::kDisableHeaders].ThereIs;
   options.HelpMode = parser[NKey::kHelp1].ThereIs || parser[NKey::kHelp2].ThereIs;
+
+  #ifdef _WIN32
+  options.LargePages = false;
+  if (parser[NKey::kLargePages].ThereIs)
+  {
+    const UString &postString = parser[NKey::kLargePages].PostStrings.Front();
+    if (postString.IsEmpty())
+      options.LargePages = true;
+  }
+  #endif
 }
 
 void CArchiveCommandLineParser::Parse2(CArchiveCommandLineOptions &options)
@@ -718,14 +796,26 @@ void CArchiveCommandLineParser::Parse2(CArchiveCommandLineOptions &options)
     if (thereIsArchiveName)
       AddCommandLineWildCardToCensr(archiveWildcardCensor, options.ArchiveName, true, NRecursedType::kNonRecursed);
 
+    #ifdef _WIN32
+    ConvertToLongNames(archiveWildcardCensor);
+    #endif
+
     CObjectVector<CDirItem> dirItems;
-    UString errorPath;
-    if (EnumerateItems(archiveWildcardCensor, dirItems, NULL, errorPath) != S_OK)
-      throw "cannot find archive";
+    {
+      UStringVector errorPaths;
+      CRecordVector<DWORD> errorCodes;
+      HRESULT res = EnumerateItems(archiveWildcardCensor, dirItems, NULL, errorPaths, errorCodes);
+      if (res != S_OK || errorPaths.Size() > 0)
+        throw "cannot find archive";
+    }
     UStringVector archivePaths;
     int i;
     for (i = 0; i < dirItems.Size(); i++)
-      archivePaths.Add(dirItems[i].FullPath);
+    {
+      const CDirItem &dirItem = dirItems[i];
+      if (!dirItem.IsDirectory())
+        archivePaths.Add(dirItem.FullPath);
+    }
 
     if (archivePaths.Size() == 0)
       throw "there is no such archive";
@@ -826,6 +916,10 @@ void CArchiveCommandLineParser::Parse2(CArchiveCommandLineOptions &options)
       throw kTerminalOutError;
     if(updateOptions.StdInMode)
       updateOptions.StdInFileName = parser[NKey::kStdIn].PostStrings.Front();
+
+    #ifdef _WIN32
+    ConvertToLongNames(options.WildcardCensor);
+    #endif
   }
   else 
     throw kUserErrorMessage;

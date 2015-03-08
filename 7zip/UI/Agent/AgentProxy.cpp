@@ -22,7 +22,7 @@ int CProxyFolder::FindDirSubItemIndex(const UString &name, int &insertPos) const
       return -1;
     }
     int mid = (left + right) / 2;
-    int compare = name.CollateNoCase(Folders[mid].Name);
+    int compare = name.CompareNoCase(Folders[mid].Name);
     if (compare == 0)
       return mid;
     if (compare < 0)
@@ -98,7 +98,8 @@ void CProxyFolder::AddRealIndices(CUIntVector &realIndices) const
 {
   if (IsLeaf)
     realIndices.Add(Index);
-  for(int i = 0; i < Folders.Size(); i++)
+  int i;
+  for(i = 0; i < Folders.Size(); i++)
     Folders[i].AddRealIndices(realIndices);
   for(i = 0; i < Files.Size(); i++)
     realIndices.Add(Files[i].Index);

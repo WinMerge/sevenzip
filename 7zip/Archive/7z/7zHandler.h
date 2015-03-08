@@ -50,9 +50,9 @@ struct COneMethodInfo
 };
 #endif
 
-// {23170F69-40C1-278A-1000-000110050000}
+// {23170F69-40C1-278A-1000-000110070000}
 DEFINE_GUID(CLSID_CFormat7z, 
-  0x23170F69, 0x40C1, 0x278A, 0x10, 0x00, 0x00, 0x01, 0x10, 0x05, 0x00, 0x00);
+  0x23170F69, 0x40C1, 0x278A, 0x10, 0x00, 0x00, 0x01, 0x10, 0x07, 0x00, 0x00);
 
 class CHandler: 
   public IInArchive,
@@ -140,11 +140,20 @@ private:
   bool _encryptHeaders;
 
   bool _copyMode;
+  
   UInt32 _defaultDicSize;
   UInt32 _defaultAlgorithm;
   UInt32 _defaultFastBytes;
   UString _defaultMatchFinder;
+  
   UInt32 _defaultBZip2Passes;
+
+  UInt32 _defaultPpmdMemSize;
+  UInt32 _defaultPpmdOrder;
+
+  UInt32 _defaultDeflateFastBytes;
+  UInt32 _defaultDeflatePasses;
+
   bool _autoFilter;
   bool _multiThread;
   UInt32 _level;
@@ -219,11 +228,20 @@ private:
     _encryptHeaders = false;
     _multiThread = false;
     _copyMode = false;
+
     _defaultDicSize = (1 << 21);
-    _defaultBZip2Passes = 1;
     _defaultAlgorithm = 1;
     _defaultFastBytes = 32;
     _defaultMatchFinder = L"BT4";
+
+    _defaultBZip2Passes = 1;
+
+    _defaultPpmdMemSize = (1 << 24);
+    _defaultPpmdOrder = 6;
+
+    _defaultDeflateFastBytes = 32;
+    _defaultDeflatePasses = 1;
+
     _level = 5;
     _autoFilter = true;
     _volumeMode = false;

@@ -12,10 +12,12 @@
 #include "../PropID.h"
 
 #include "Panel.h"
+#include "resource.h"
 
 #include "RootFolder.h"
 
 #include "PropertyName.h"
+#include "LangUtils.h"
 
 using namespace NWindows;
 
@@ -98,8 +100,8 @@ void CPanel::InitColumns()
 
   UINT32 numProperties;
   enumProperties->GetNumberOfProperties(&numProperties);  
-  UINT32 i;
-  for (i = 0; i < numProperties; i++)
+  int i;
+  for (i = 0; i < (int)numProperties; i++)
   {
     CMyComBSTR name;
     PROPID propID;
@@ -184,10 +186,8 @@ void CPanel::InitColumns()
 void CPanel::InsertColumn(int index)
 {
   const CItemProperty &property = _visibleProperties[index];
-  LV_COLUMN column;
+  LV_COLUMNW column;
   column.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM | LVCF_ORDER;
-  TCHAR string[1024];
-  column.pszText = string;
   column.cx = property.Width;
   column.fmt = GetColumnAlign(property.ID, property.Type);
   column.iOrder = property.Order;
@@ -195,13 +195,13 @@ void CPanel::InsertColumn(int index)
   UString propertyName = GetNameOfProperty(property.ID);
   if (propertyName.IsEmpty())
     propertyName = property.Name;
-  lstrcpy(string, GetSystemString(propertyName));
+  column.pszText = (wchar_t *)(const wchar_t *)propertyName;
   _listView.InsertColumn(index, &column);
 }
 
 void CPanel::RefreshListCtrl()
 {
-  RefreshListCtrl(UString(), 0, UStringVector());
+  RefreshListCtrl(UString(), -1, true, UStringVector());
 }
 
 int CALLBACK CompareItems(LPARAM lParam1, LPARAM lParam2, LPARAM lpData);
@@ -221,8 +221,8 @@ void CPanel::GetSelectedNames(UStringVector &selectedNames)
   for (int i = 0; i < _listView.GetItemCount(); i++)
   {
     const int kSize = 1024;
-    TCHAR name[kSize + 1];
-    LVITEM item;
+    WCHAR name[kSize + 1];
+    LVITEMW item;
     item.iItem = i;
     item.pszText = name;
     item.cchTextMax  = kSize;
@@ -231,10 +231,10 @@ void CPanel::GetSelectedNames(UStringVector &selectedNames)
     if (!_listView.GetItem(&item))
       continue;
     int realIndex = GetRealIndex(item);
-    if (realIndex == -1)
+    if (realIndex == kParentIndex)
       continue;
     if (_selectedStatusVector[realIndex])
-      selectedNames.Add(GetUnicodeString(item.pszText));
+      selectedNames.Add(item.pszText);
   }
   */
   selectedNames.Sort();
@@ -245,30 +245,42 @@ void CPanel::SaveSelectedState(CSelectedState &s)
   s.FocusedName.Empty();
   s.SelectedNames.Clear();
   s.FocusedItem = _listView.GetFocusedItem();
-  if (s.FocusedItem >= 0)
+  if (!_focusedName.IsEmpty())
   {
-    int realIndex = GetRealItemIndex(s.FocusedItem);
-    if (realIndex != -1)
-      s.FocusedName = GetItemName(realIndex);
-    /*
-    const int kSize = 1024;
-    TCHAR name[kSize + 1];
-    LVITEM item;
-    item.iItem = focusedItem;
-    item.pszText = name;
-    item.cchTextMax  = kSize;
-    item.iSubItem = 0;
-    item.mask = LVIF_TEXT;
-    if (_listView.GetItem(&item))
-      focusedName = GetUnicodeString(item.pszText);
-    */
+    s.FocusedName = _focusedName;
+    s.SelectFocused = true;
+    _focusedName.Empty();
+  }
+  else
+  {
+    if (s.FocusedItem >= 0)
+    {
+      int realIndex = GetRealItemIndex(s.FocusedItem);
+      if (realIndex != kParentIndex)
+        s.FocusedName = GetItemName(realIndex);
+        /*
+        const int kSize = 1024;
+        WCHAR name[kSize + 1];
+        LVITEMW item;
+        item.iItem = focusedItem;
+        item.pszText = name;
+        item.cchTextMax  = kSize;
+        item.iSubItem = 0;
+        item.mask = LVIF_TEXT;
+        if (_listView.GetItem(&item))
+        focusedName = item.pszText;
+      */
+    }
   }
   GetSelectedNames(s.SelectedNames);
 }
 
 void CPanel::RefreshListCtrl(const CSelectedState &s)
 {
-  RefreshListCtrl(s.FocusedName, s.FocusedItem, s.SelectedNames);
+  bool selectFocused = s.SelectFocused;
+  if (_mySelectMode)
+    selectFocused = true;
+  RefreshListCtrl(s.FocusedName, s.FocusedItem, selectFocused, s.SelectedNames);
 }
 
 void CPanel::RefreshListCtrlSaveFocused()
@@ -278,7 +290,21 @@ void CPanel::RefreshListCtrlSaveFocused()
   RefreshListCtrl(state);
 }
 
-void CPanel::RefreshListCtrl(const UString &focusedName, int focusedPos,
+void CPanel::SetFocusedSelectedItem(int index, bool select)
+{
+  UINT state = LVIS_FOCUSED;
+  if (select)
+    state |= LVIS_SELECTED;
+  _listView.SetItemState(index, state, state);
+  if (!_mySelectMode && select)
+  {
+    int realIndex = GetRealItemIndex(index);
+    if (realIndex != kParentIndex)
+      _selectedStatusVector[realIndex] = true;
+  }
+}
+
+void CPanel::RefreshListCtrl(const UString &focusedName, int focusedPos, bool selectFocused,
     const UStringVector &selectedNames)
 {
   LoadFullPathAndShow();
@@ -292,7 +318,7 @@ void CPanel::RefreshListCtrl(const UString &focusedName, int focusedPos,
   _listView.SetRedraw(false);
   // m_RedrawEnabled = false;
 
-  LVITEM item;
+  LVITEMW item;
   ZeroMemory(&item, sizeof(item));
   
   _listView.DeleteAllItems();
@@ -344,14 +370,10 @@ void CPanel::RefreshListCtrl(const UString &focusedName, int focusedPos,
     item.mask = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
     int subItem = 0;
     item.iSubItem = subItem++;
-    item.lParam = -1;
-    const int kMaxNameSize = MAX_PATH * 2;
-    TCHAR string[kMaxNameSize];
-    lstrcpyn(string, GetSystemString(itemName), kMaxNameSize);
-    item.pszText = string;
+    item.lParam = kParentIndex;
+    item.pszText = (wchar_t *)(const wchar_t *)itemName;
     UINT32 attributes = FILE_ATTRIBUTE_DIRECTORY;
-    item.iImage = _extToIconMap.GetIconIndex(attributes, 
-        GetSystemString(itemName));
+    item.iImage = _extToIconMap.GetIconIndex(attributes, itemName);
     if (item.iImage < 0)
       item.iImage = 0;
     if(_listView.InsertItem(&item) == -1)
@@ -360,7 +382,7 @@ void CPanel::RefreshListCtrl(const UString &focusedName, int focusedPos,
   
   // OutputDebugStringA("S1\n");
 
-  for(int i = 0; i < numItems; i++)
+  for(UInt32 i = 0; i < numItems; i++)
   {
     UString itemName = GetItemName(i);
     if (itemName.CompareNoCase(focusedName) == 0)
@@ -369,18 +391,15 @@ void CPanel::RefreshListCtrl(const UString &focusedName, int focusedPos,
     if (selectedNames.FindInSorted(itemName) >= 0)
       selected = true;
     _selectedStatusVector.Add(selected);
-    /*
-    if (_virtualMode)
-    {
-      _realIndices.Add(i);
-    }
-    else
-    */
-    {
 
     item.mask = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
-    // item.mask = LVIF_TEXT | LVIF_PARAM;
 
+    if (!_mySelectMode)
+      if (selected)
+      {
+        item.mask |= LVIF_STATE;
+        item.state = LVIS_SELECTED;
+      }
   
     int subItem = 0;
     item.iItem = _listView.GetItemCount();
@@ -388,11 +407,9 @@ void CPanel::RefreshListCtrl(const UString &focusedName, int focusedPos,
     item.iSubItem = subItem++;
     item.lParam = i;
     
-    const int kMaxNameSize = MAX_PATH * 2;
-    TCHAR string[kMaxNameSize + 1];
+    UString correctedName;
     if (itemName.Find(L"     ") >= 0)
     {
-      UString correctedName;
       int pos = 0;
       while (true)
       {
@@ -407,11 +424,10 @@ void CPanel::RefreshListCtrl(const UString &focusedName, int focusedPos,
         pos = posNew;
         while (itemName[++pos] == ' ');
       }
-      lstrcpyn(string, GetSystemString(correctedName), kMaxNameSize);
+      item.pszText = (wchar_t *)(const wchar_t *)correctedName;
     }
     else
-      lstrcpyn(string, GetSystemString(itemName), kMaxNameSize);
-    item.pszText = string;
+      item.pszText = (wchar_t *)(const wchar_t *)itemName;
 
     NCOM::CPropVariant propVariant;
     _folder->GetProperty(i, kpidAttributes, &propVariant);
@@ -436,13 +452,12 @@ void CPanel::RefreshListCtrl(const UString &focusedName, int focusedPos,
       if (_currentFolderPrefix.IsEmpty())
       {
         int iconIndexTemp;
-        GetRealIconIndex(GetSystemString(itemName + L"\\"), attributes, iconIndexTemp);
+        GetRealIconIndex(itemName + L"\\", attributes, iconIndexTemp);
         item.iImage = iconIndexTemp;
       }
       else
       {
-        item.iImage = _extToIconMap.GetIconIndex(attributes, 
-            GetSystemString(itemName));
+        item.iImage = _extToIconMap.GetIconIndex(attributes, itemName);
       }
     }
     if (item.iImage < 0)
@@ -450,22 +465,17 @@ void CPanel::RefreshListCtrl(const UString &focusedName, int focusedPos,
 
     if(_listView.InsertItem(&item) == -1)
       return; // error
-    }
   }
   // OutputDebugStringA("End2\n");
 
   if(_listView.GetItemCount() > 0 && cursorIndex >= 0)
-  {
-    UINT state = LVIS_FOCUSED | LVIS_SELECTED;
-    _listView.SetItemState(cursorIndex, state, state);
-  }
+    SetFocusedSelectedItem(cursorIndex, selectFocused);
   _listView.SortItems(CompareItems, (LPARAM)this);
   if (cursorIndex < 0 && _listView.GetItemCount() > 0)
   {
     if (focusedPos >= _listView.GetItemCount())
       focusedPos = _listView.GetItemCount() - 1;
-    UINT state = LVIS_FOCUSED | LVIS_SELECTED;
-    _listView.SetItemState(focusedPos, state, state);
+    SetFocusedSelectedItem(focusedPos, true);
   }
   // m_RedrawEnabled = true;
   _listView.EnsureVisible(_listView.GetFocusedItem(), false);
@@ -505,9 +515,12 @@ void CPanel::GetOperatedItemIndices(CRecordVector<UINT32> &indices) const
   int focusedItem = _listView.GetFocusedItem();
   if (focusedItem >= 0)
   {
-    int realIndex = GetRealItemIndex(focusedItem);
-    if (realIndex != -1)
+    if(_listView.GetItemState(focusedItem, LVIS_SELECTED) == LVIS_SELECTED)
+    {
+      int realIndex = GetRealItemIndex(focusedItem);
+      if (realIndex != kParentIndex)
       indices.Add(realIndex);
+    }
   }
 }
 
@@ -538,7 +551,7 @@ void CPanel::EditItem()
   if (focusedItem < 0)
     return;
   int realIndex = GetRealItemIndex(focusedItem);
-  if (realIndex == -1)
+  if (realIndex == kParentIndex)
     return;
   if (!IsItemFolder(realIndex))
     EditItem(realIndex);
@@ -562,7 +575,7 @@ void CPanel::OpenSelectedItems(bool tryInternal)
   GetOperatedItemIndices(indices);
   if (indices.Size() > 20)
   {
-    MessageBox(L"Too much items");
+    MessageBox(LangString(IDS_TOO_MANY_ITEMS, 0x02000606));
     return;
   }
   
@@ -570,7 +583,7 @@ void CPanel::OpenSelectedItems(bool tryInternal)
   if (focusedItem >= 0)
   {
     int realIndex = GetRealItemIndex(focusedItem);
-    if (realIndex == -1 && (tryInternal || indices.Size() == 0))
+    if (realIndex == kParentIndex && (tryInternal || indices.Size() == 0))
       indices.Insert(0, realIndex);
   }
 
@@ -600,7 +613,7 @@ void CPanel::OpenSelectedItems(bool tryInternal)
 
 UString CPanel::GetItemName(int itemIndex) const
 {
-  if (itemIndex == -1)
+  if (itemIndex == kParentIndex)
     return L"..";
   NCOM::CPropVariant propVariant;
   if (_folder->GetProperty(itemIndex, kpidName, &propVariant) != S_OK)
@@ -613,7 +626,7 @@ UString CPanel::GetItemName(int itemIndex) const
 
 bool CPanel::IsItemFolder(int itemIndex) const
 {
-  if (itemIndex == -1)
+  if (itemIndex == kParentIndex)
     return true;
   NCOM::CPropVariant propVariant;
   if (_folder->GetProperty(itemIndex, kpidIsFolder, &propVariant) != S_OK)
@@ -627,7 +640,7 @@ bool CPanel::IsItemFolder(int itemIndex) const
 
 UINT64 CPanel::GetItemSize(int itemIndex) const
 {
-  if (itemIndex == -1)
+  if (itemIndex == kParentIndex)
     return 0;
   NCOM::CPropVariant propVariant;
   if (_folder->GetProperty(itemIndex, kpidSize, &propVariant) != S_OK)
@@ -644,13 +657,14 @@ void CPanel::ReadListViewInfo()
     return;
   CMyComBSTR typeID;
   folderGetTypeID->GetTypeID(&typeID);
-  _typeIDString = GetSystemString((const wchar_t *)typeID);
+  _typeIDString = typeID;
   ::ReadListViewInfo(_typeIDString, _listViewInfo);
 }
 
 void CPanel::SaveListViewInfo()
 {
-  for(int i = 0; i < _visibleProperties.Size(); i++)
+  int i;
+  for(i = 0; i < _visibleProperties.Size(); i++)
   {
     CItemProperty &property = _visibleProperties[i];
     LVCOLUMN winColumnInfo;

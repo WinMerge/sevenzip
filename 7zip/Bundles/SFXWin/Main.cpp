@@ -19,6 +19,17 @@
 #include "../../UI/GUI/ExtractGUI.h"
 
 HINSTANCE g_hInstance;
+#ifndef _UNICODE
+bool g_IsNT = false;
+static inline bool IsItWindowsNT()
+{
+  OSVERSIONINFO versionInfo;
+  versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
+  if (!::GetVersionEx(&versionInfo)) 
+    return false;
+  return (versionInfo.dwPlatformId == VER_PLATFORM_WIN32_NT);
+}
+#endif
 
 int APIENTRY WinMain(
   HINSTANCE hInstance,
@@ -27,6 +38,11 @@ int APIENTRY WinMain(
   int nCmdShow)
 {
   g_hInstance = (HINSTANCE)hInstance;
+  #ifndef _UNICODE
+  g_IsNT = IsItWindowsNT();
+  #endif
+
+  UString password;
   bool assumeYes = false;
   bool outputFolderDefined = false;
   UString outputFolder;
@@ -43,6 +59,10 @@ int APIENTRY WinMain(
       NWindows::NFile::NName::NormalizeDirPathPrefix(outputFolder);
       outputFolderDefined = !outputFolder.IsEmpty();
     }
+    else if (s.Left(2).CompareNoCase(L"-p") == 0)
+    {
+      password = s.Mid(2);
+    }
   }
 
   UString path;
@@ -58,9 +78,14 @@ int APIENTRY WinMain(
 
   COpenCallbackGUI openCallback;
 
+  openCallback.PasswordIsDefined = !password.IsEmpty();
+  openCallback.Password = password;
+
   CExtractCallbackImp *ecs = new CExtractCallbackImp;
   CMyComPtr<IFolderArchiveExtractCallback> extractCallback = ecs;
   ecs->Init();
+  ecs->PasswordIsDefined = !password.IsEmpty();
+  ecs->Password = password;
   
   CExtractOptions eo;
   eo.OutputDir = outputFolderDefined ? outputFolder : 
@@ -76,7 +101,7 @@ int APIENTRY WinMain(
   v1.Add(fullPath);
   v2.Add(fullPath);
   NWildcard::CCensorNode wildcardCensor;
-  wildcardCensor.AddItem(L"*", true, true, true, true);
+  wildcardCensor.AddItem(true, L"*", true, true, true);
 
   HRESULT result = ExtractGUI(v1, v2,
     wildcardCensor, eo, (assumeYes ? false: true), &openCallback, ecs);

@@ -1,4 +1,4 @@
-// Decode.cpp
+// 7zDecode.cpp
 
 #include "StdAfx.h"
 
@@ -136,10 +136,10 @@ static bool AreBindInfoExEqual(const CBindInfoEx &a1, const CBindInfoEx &a2)
 
 CDecoder::CDecoder(bool multiThread)
 {
-  _multiThread = true;
-  #ifdef _ST_MODE
-  _multiThread = multiThread;
+  #ifndef _ST_MODE
+  multiThread = true;
   #endif
+  _multiThread = multiThread;
   _bindInfoExPrevIsDefinded = false;
   #ifndef EXCLUDE_COM
   LoadMethodMap();
@@ -336,10 +336,12 @@ HRESULT CDecoder::Decode(IInStream *inStream,
     if (result == S_OK)
     {
       const CByteBuffer &properties = altCoderInfo.Properties;
-      UInt32 size = properties.GetCapacity();
+      size_t size = properties.GetCapacity();
+      if (size > 0xFFFFFFFF)
+        return E_NOTIMPL;
       if (size > 0)
       {
-        RINOK(compressSetDecoderProperties->SetDecoderProperties2((const Byte *)properties, size));
+        RINOK(compressSetDecoderProperties->SetDecoderProperties2((const Byte *)properties, (UInt32)size));
       }
     }
     else if (result != E_NOINTERFACE)

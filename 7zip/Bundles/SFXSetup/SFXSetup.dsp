@@ -349,6 +349,14 @@ SOURCE=..\..\..\Common\IntToString.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\NewHandler.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\NewHandler.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\String.cpp
 # End Source File
 # Begin Source File
@@ -559,6 +567,14 @@ SOURCE=..\..\Common\StreamObjects.cpp
 
 SOURCE=..\..\Common\StreamObjects.h
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.h
+# End Source File
 # End Group
 # Begin Group "UI"
 
@@ -641,15 +657,6 @@ SOURCE=..\..\FileManager\Resource\ProgressDialog\ProgressDialog.cpp
 # Begin Source File
 
 SOURCE=..\..\FileManager\Resource\ProgressDialog\ProgressDialog.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\FileManager\Resource\ProgressDialog\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\FileManager\Resource\ProgressDialog\resource.rc
-# PROP Exclude_From_Build 1
 # End Source File
 # End Group
 # Begin Source File

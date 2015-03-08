@@ -138,7 +138,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib htmlhelp.lib /nologo /dll /debug /machine:I386 /out:"C:\Program Files\7-ZIP\7-Zip.dll" /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib htmlhelp.lib /nologo /dll /debug /machine:I386 /out:"C:\Program Files\7-ZIP\7-Zipn.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib htmlhelp.lib /nologo /dll /debug /machine:I386 /out:"C:\Program Files\7-ZIP\7-Zip.dll" /pdbtype:sept
 
 !ENDIF 
 
@@ -320,10 +320,6 @@ SOURCE=..\Common\ZipRegistry.cpp
 
 SOURCE=..\Common\ZipRegistry.h
 # End Source File
-# Begin Source File
-
-SOURCE=..\Common\ZipSettings.h
-# End Source File
 # End Group
 # Begin Group "Engine"
 
@@ -356,15 +352,6 @@ SOURCE=.\MyMessages.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\SystemPage\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\SystemPage\resource.rc
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
 SOURCE=.\SystemPage\SystemPage.cpp
 # End Source File
 # Begin Source File
@@ -382,15 +369,6 @@ SOURCE=.\FoldersPage\FoldersPage.cpp
 # Begin Source File
 
 SOURCE=.\FoldersPage\FoldersPage.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\FoldersPage\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\FoldersPage\resource.rc
-# PROP Exclude_From_Build 1
 # End Source File
 # End Group
 # End Group
@@ -571,6 +549,14 @@ SOURCE=..\..\..\Common\StringConvert.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Common\StringToInt.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Common\StringToInt.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Common\TextConfig.cpp
 # End Source File
 # Begin Source File
@@ -671,10 +657,6 @@ SOURCE=..\..\..\Windows\FileIO.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Windows\FileMapping.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\Windows\FileMapping.h
 # End Source File
 # Begin Source File
@@ -684,6 +666,14 @@ SOURCE=..\..\..\Windows\FileName.cpp
 # Begin Source File
 
 SOURCE=..\..\..\Windows\FileName.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Windows\Memory.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Windows\Menu.cpp
 # End Source File
 # Begin Source File
 
@@ -761,6 +751,14 @@ SOURCE=..\..\Common\FileStreams.cpp
 # Begin Source File
 
 SOURCE=..\..\Common\FileStreams.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.h
 # End Source File
 # End Group
 # Begin Group "Compress"

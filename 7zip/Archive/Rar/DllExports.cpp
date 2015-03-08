@@ -16,6 +16,17 @@ DEFINE_GUID(CLSID_CCrypto_AES128_Decoder,
 #include "RarHandler.h"
 
 HINSTANCE g_hInstance;
+#ifndef _UNICODE
+bool g_IsNT = false;
+static bool IsItWindowsNT()
+{
+  OSVERSIONINFO versionInfo;
+  versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
+  if (!::GetVersionEx(&versionInfo)) 
+    return false;
+  return (versionInfo.dwPlatformId == VER_PLATFORM_WIN32_NT);
+}
+#endif
 
 void GetCryptoFolderPrefix(TCHAR *path)
 {
@@ -46,15 +57,20 @@ DEFINE_GUID(CLSID_CCryptoRar29Decoder,
 0x23170F69, 0x40C1, 0x278B, 0x06, 0xF1, 0x03, 0x03, 0x00, 0x00, 0x00, 0x00);
 */
 
-// {23170F69-40C1-278A-1000-000110020000}
+// {23170F69-40C1-278A-1000-000110030000}
 DEFINE_GUID(CLSID_CRarHandler, 
-  0x23170F69, 0x40C1, 0x278A, 0x10, 0x00, 0x00, 0x01, 0x10, 0x02, 0x00, 0x00);
+  0x23170F69, 0x40C1, 0x278A, 0x10, 0x00, 0x00, 0x01, 0x10, 0x03, 0x00, 0x00);
 
 extern "C"
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 {
   if (dwReason == DLL_PROCESS_ATTACH)
+  {
     g_hInstance = hInstance;
+    #ifndef _UNICODE
+    g_IsNT = IsItWindowsNT();
+    #endif
+  }
   return TRUE;
 }
 

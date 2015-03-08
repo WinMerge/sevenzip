@@ -20,6 +20,7 @@
 #include "../../../Common/StringToInt.h"
 
 #include "../../Common/FileStreams.h"
+#include "../../Common/StreamUtils.h"
 
 #include "../LZMA/LZMADecoder.h"
 #include "../LZMA/LZMAEncoder.h"
@@ -33,6 +34,22 @@ extern "C"
 }
 
 using namespace NCommandLineParser;
+
+#ifdef _WIN32
+bool g_IsNT = false;
+static inline bool IsItWindowsNT()
+{
+  OSVERSIONINFO versionInfo;
+  versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
+  if (!::GetVersionEx(&versionInfo)) 
+    return false;
+  return (versionInfo.dwPlatformId == VER_PLATFORM_WIN32_NT);
+}
+#endif
+
+static const char *kCantAllocate = "Can not allocate memory";
+static const char *kReadError = "Read error";
+static const char *kWriteError = "Write error";
 
 namespace NKey {
 enum Enum
@@ -81,15 +98,15 @@ static void PrintHelp()
     "<Switches>\n"
     "  -a{N}:  set compression mode - [0, 2], default: 2 (max)\n"
     "  -d{N}:  set dictionary - [0,28], default: 23 (8MB)\n"
-    "  -fb{N}: set number of fast bytes - [5, 255], default: 128\n"
+    "  -fb{N}: set number of fast bytes - [5, 273], default: 128\n"
     "  -lc{N}: set number of literal context bits - [0, 8], default: 3\n"
     "  -lp{N}: set number of literal pos bits - [0, 4], default: 0\n"
     "  -pb{N}: set number of pos bits - [0, 4], default: 2\n"
     "  -mf{MF_ID}: set Match Finder: [bt2, bt3, bt4, bt4b, pat2r, pat2,\n"
     "              pat2h, pat3h, pat4h, hc3, hc4], default: bt4\n"
     "  -eos:   write End Of Stream marker\n"
-    "  -si:    Read data from stdin\n"
-    "  -so:    Write data to stdout\n"
+    "  -si:    read data from stdin\n"
+    "  -so:    write data to stdout\n"
     );
 }
 
@@ -129,7 +146,11 @@ static bool GetNumber(const wchar_t *s, UInt32 &value)
 
 int main2(int n, const char *args[])
 {
-  fprintf(stderr, "\nLZMA 4.23 Copyright (c) 1999-2005 Igor Pavlov  2005-06-29\n");
+  #ifdef _WIN32
+  g_IsNT = IsItWindowsNT();
+  #endif
+
+  fprintf(stderr, "\nLZMA 4.32 Copyright (c) 1999-2005 Igor Pavlov  2005-12-09\n");
 
   if (n == 1)
   {
@@ -258,25 +279,32 @@ int main2(int n, const char *args[])
     if (fileSize > 0xF0000000)
       throw "File is too big";
     UInt32 inSize = (UInt32)fileSize;
-    Byte *inBuffer = (Byte *)MyAlloc((size_t)inSize); 
-    if (inBuffer == 0)
-      throw "Can not allocate memory";
+    Byte *inBuffer = 0;
+    if (inSize != 0)
+    {
+      inBuffer = (Byte *)MyAlloc((size_t)inSize); 
+      if (inBuffer == 0)
+        throw kCantAllocate;
+    }
     
     UInt32 processedSize;
-    if (inStream->Read(inBuffer, (UInt32)inSize, &processedSize) != S_OK)
+    if (ReadStream(inStream, inBuffer, (UInt32)inSize, &processedSize) != S_OK)
       throw "Can not read";
     if ((UInt32)inSize != processedSize)
       throw "Read size error";
 
-    Byte *outBuffer;
+    Byte *outBuffer = 0;
     size_t outSizeProcessed;
     if (encodeMode)
     {
       // we allocate 105% of original size for output buffer
       size_t outSize = (size_t)fileSize / 20 * 21 + (1 << 16);
-      outBuffer = (Byte *)MyAlloc((size_t)outSize); 
-      if (outBuffer == 0)
-        throw "Can not allocate memory";
+      if (outSize != 0)
+      {
+        outBuffer = (Byte *)MyAlloc((size_t)outSize); 
+        if (outBuffer == 0)
+          throw kCantAllocate;
+      }
       if (!dictionaryIsDefined)
         dictionary = 1 << 23;
       int res = LzmaRamEncode(inBuffer, inSize, outBuffer, outSize, &outSizeProcessed, 
@@ -292,16 +320,18 @@ int main2(int n, const char *args[])
       size_t outSize;
       if (LzmaRamGetUncompressedSize(inBuffer, inSize, &outSize) != 0)
         throw "data error";
-      outBuffer = (Byte *)MyAlloc(outSize); 
-      if (outBuffer == 0)
-        throw "Can not allocate memory";
-      
+      if (outSize != 0)
+      {
+        outBuffer = (Byte *)MyAlloc(outSize); 
+        if (outBuffer == 0)
+          throw kCantAllocate;
+      }
       int res = LzmaRamDecompress(inBuffer, inSize, outBuffer, outSize, &outSizeProcessed, malloc, free);
       if (res != 0)
         throw "LzmaDecoder error";
     }
-    if (outStream->Write(outBuffer, (UInt32)outSizeProcessed, &processedSize) != S_OK)
-      throw "Can not write";
+    if (WriteStream(outStream, outBuffer, (UInt32)outSizeProcessed, &processedSize) != S_OK)
+      throw kWriteError;
     MyFree(outBuffer);
     MyFree(inBuffer);
     return 0;
@@ -397,9 +427,9 @@ int main2(int n, const char *args[])
     for (int i = 0; i < 8; i++)
     {
       Byte b = Byte(fileSize >> (8 * i));
-      if (outStream->Write(&b, sizeof(b), 0) != S_OK)
+      if (outStream->Write(&b, 1, 0) != S_OK)
       {
-        fprintf(stderr, "Write error");
+        fprintf(stderr, kWriteError);
         return 1;
       }
     }
@@ -423,14 +453,14 @@ int main2(int n, const char *args[])
     const UInt32 kPropertiesSize = 5;
     Byte properties[kPropertiesSize];
     UInt32 processedSize;
-    if (inStream->Read(properties, kPropertiesSize, &processedSize) != S_OK)
+    if (ReadStream(inStream, properties, kPropertiesSize, &processedSize) != S_OK)
     {
-      fprintf(stderr, "Read error");
+      fprintf(stderr, kReadError);
       return 1;
     }
     if (processedSize != kPropertiesSize)
     {
-      fprintf(stderr, "Read error");
+      fprintf(stderr, kReadError);
       return 1;
     }
     if (decoderSpec->SetDecoderProperties2(properties, kPropertiesSize) != S_OK)
@@ -442,14 +472,14 @@ int main2(int n, const char *args[])
     for (int i = 0; i < 8; i++)
     {
       Byte b;
-      if (inStream->Read(&b, sizeof(b), &processedSize) != S_OK)
+      if (inStream->Read(&b, 1, &processedSize) != S_OK)
       {
-        fprintf(stderr, "Read error");
+        fprintf(stderr, kReadError);
         return 1;
       }
       if (processedSize != 1)
       {
-        fprintf(stderr, "Read error");
+        fprintf(stderr, kReadError);
         return 1;
       }
       fileSize |= ((UInt64)b) << (8 * i);

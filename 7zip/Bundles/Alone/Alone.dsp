@@ -220,10 +220,6 @@ SOURCE=..\..\UI\Console\UserInputUtils.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\resource.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\resource.rc
 # End Source File
 # Begin Source File
@@ -485,6 +481,14 @@ SOURCE=..\..\..\Windows\Handle.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Windows\MemoryLock.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Windows\MemoryLock.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Windows\PropVariant.cpp
 # End Source File
 # Begin Source File
@@ -638,6 +642,14 @@ SOURCE=..\..\Common\StreamObjects.cpp
 # Begin Source File
 
 SOURCE=..\..\Common\StreamObjects.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.h
 # End Source File
 # End Group
 # Begin Group "Compress"

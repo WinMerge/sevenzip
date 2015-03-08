@@ -93,15 +93,11 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\arj.def
+SOURCE=..\Archive.def
 # End Source File
 # Begin Source File
 
 SOURCE=.\DllExports.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
@@ -217,19 +213,19 @@ SOURCE=.\ArjItem.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\Compress\Arj\Decoder1.cpp
+SOURCE=..\..\Compress\Arj\ArjDecoder1.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Arj\Decoder1.h
+SOURCE=..\..\Compress\Arj\ArjDecoder1.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Arj\Decoder2.cpp
+SOURCE=..\..\Compress\Arj\ArjDecoder2.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Compress\Arj\Decoder2.h
+SOURCE=..\..\Compress\Arj\ArjDecoder2.h
 # End Source File
 # End Group
 # Begin Group "LZ"
@@ -282,11 +278,27 @@ SOURCE=..\..\Common\MSBFDecoder.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\Common\OutBuffer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\OutBuffer.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Common\ProgressUtils.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\Common\ProgressUtils.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Common\StreamUtils.h
 # End Source File
 # End Group
 # Begin Group "Archive Common"
