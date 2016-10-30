@@ -2,7 +2,7 @@
 ;Defines
 
 !define VERSION_MAJOR 16
-!define VERSION_MINOR 02
+!define VERSION_MINOR 04
 !define VERSION_POSTFIX_FULL ""
 !ifdef WIN64
 !ifdef IA64
