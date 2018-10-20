@@ -196,6 +196,8 @@ HRESULT CDecoder::ExecuteFilter(const CFilter &f)
 
     default:
       _unsupportedFilter = true;
+      memset(_filterSrc, 0, f.Size);
+      // return S_OK;  // unrar
   }
 
   return WriteData(useDest ?
@@ -301,7 +303,11 @@ HRESULT CDecoder::AddFilter(CBitDecoder &_bitStream)
   UInt32 blockStart = ReadUInt32(_bitStream);
   f.Size = ReadUInt32(_bitStream);
 
-  // if (f.Size > ((UInt32)1 << 16)) _unsupportedFilter = true;
+  if (f.Size > ((UInt32)1 << 22))
+  {
+    _unsupportedFilter = true;
+    f.Size = 0;  // unrar 5.5.5
+  }
 
   f.Type = (Byte)_bitStream.ReadBits9fix(3);
   f.Channels = 0;
@@ -415,7 +421,7 @@ HRESULT CDecoder::ReadTables(CBitDecoder &_bitStream)
   Byte lens[kTablesSizesSum];
   unsigned i = 0;
   
-  while (i < kTablesSizesSum)
+  do
   {
     if (_bitStream._buf >= _bitStream._bufCheck2)
     {
@@ -433,34 +439,24 @@ HRESULT CDecoder::ReadTables(CBitDecoder &_bitStream)
       return S_FALSE;
     else
     {
-      sym -= 16;
-      unsigned sh = ((sym & 1) << 2);
-      unsigned num = (unsigned)_bitStream.ReadBits9(3 + sh) + 3 + (sh << 1);
-      
+      unsigned num = ((sym - 16) & 1) * 4;
+      num += num + 3 + (unsigned)_bitStream.ReadBits9(num + 3);
       num += i;
       if (num > kTablesSizesSum)
         num = kTablesSizesSum;
-
-      if (sym < 2)
+      Byte v = 0;
+      if (sym < 16 + 2)
       {
         if (i == 0)
-        {
-          // return S_FALSE;
-          continue; // original unRAR
-        }
-        Byte v = lens[i - 1];
-        do
-          lens[i++] = v;
-        while (i < num);
+          return S_FALSE;
+        v = lens[(size_t)i - 1];
       }
-      else
-      {
-        do
-          lens[i++] = 0;
-        while (i < num);
-      }
+      do
+        lens[i++] = v;
+      while (i < num);
     }
   }
+  while (i < kTablesSizesSum);
 
   if (_bitStream.IsBlockOverRead())
     return S_FALSE;
@@ -475,7 +471,7 @@ HRESULT CDecoder::ReadTables(CBitDecoder &_bitStream)
   _useAlignBits = false;
   // _useAlignBits = true;
   for (i = 0; i < kAlignTableSize; i++)
-    if (lens[kMainTableSize + kDistTableSize + i] != kNumAlignBits)
+    if (lens[kMainTableSize + kDistTableSize + (size_t)i] != kNumAlignBits)
     {
       _useAlignBits = true;
       break;

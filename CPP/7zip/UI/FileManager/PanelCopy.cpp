@@ -101,7 +101,7 @@ HRESULT CPanel::CopyTo(CCopyToOptions &options, const CRecordVector<UInt32> &ind
   {
     UString errorMessage = LangString(IDS_OPERATION_IS_NOT_SUPPORTED);
     if (options.showErrorMessages)
-      MessageBox(errorMessage);
+      MessageBox_Error(errorMessage);
     else if (messages != 0)
       messages->Add(errorMessage);
     return E_FAIL;
@@ -183,7 +183,7 @@ HRESULT CPanel::CopyTo(CCopyToOptions &options, const CRecordVector<UInt32> &ind
       title = LangString(titleID);
   }
 
-  UString progressWindowTitle = L"7-Zip"; // LangString(IDS_APP_TITLE);
+  UString progressWindowTitle ("7-Zip"); // LangString(IDS_APP_TITLE);
   
   extracter.ProgressDialog.MainWindow = GetParent();
   extracter.ProgressDialog.MainTitle = progressWindowTitle;
@@ -248,9 +248,12 @@ struct CThreadUpdate
   }
 };
 
+
 HRESULT CPanel::CopyFrom(bool moveMode, const UString &folderPrefix, const UStringVector &filePaths,
     bool showErrorMessages, UStringVector *messages)
 {
+  // CDisableNotify disableNotify(*this);
+
   HRESULT res;
   if (!_folderOperations)
     res = E_NOINTERFACE;
@@ -265,7 +268,7 @@ HRESULT CPanel::CopyFrom(bool moveMode, const UString &folderPrefix, const UStri
   updater.UpdateCallbackSpec->ProgressDialog = &updater.ProgressDialog;
 
   UString title = LangString(IDS_COPYING);
-  UString progressWindowTitle = L"7-Zip"; // LangString(IDS_APP_TITLE);
+  UString progressWindowTitle ("7-Zip"); // LangString(IDS_APP_TITLE);
 
   updater.ProgressDialog.MainWindow = GetParent();
   updater.ProgressDialog.MainTitle = progressWindowTitle;
@@ -304,7 +307,7 @@ HRESULT CPanel::CopyFrom(bool moveMode, const UString &folderPrefix, const UStri
   {
     UString errorMessage = LangString(IDS_OPERATION_IS_NOT_SUPPORTED);
     if (showErrorMessages)
-      MessageBox(errorMessage);
+      MessageBox_Error(errorMessage);
     else if (messages != 0)
       messages->Add(errorMessage);
     return E_ABORT;
@@ -321,9 +324,9 @@ void CPanel::CopyFromNoAsk(const UStringVector &filePaths)
   CSelectedState srcSelState;
   SaveSelectedState(srcSelState);
 
-  HRESULT result = CopyFrom(false, L"", filePaths, true, 0);
-
   CDisableNotify disableNotify(*this);
+
+  HRESULT result = CopyFrom(false, L"", filePaths, true, 0);
 
   if (result != S_OK)
   {
@@ -331,7 +334,7 @@ void CPanel::CopyFromNoAsk(const UStringVector &filePaths)
     // For Password:
     SetFocusToList();
     if (result != E_ABORT)
-      MessageBoxError(result);
+      MessageBox_Error_HRESULT(result);
     return;
   }
 
@@ -345,9 +348,9 @@ void CPanel::CopyFromAsk(const UStringVector &filePaths)
 {
   UString title = LangString(IDS_CONFIRM_FILE_COPY);
   UString message = LangString(IDS_WANT_TO_COPY_FILES);
-  message += L"\n\'";
+  message += "\n\'";
   message += _currentFolderPrefix;
-  message += L"\' ?";
+  message += "\' ?";
   int res = ::MessageBoxW(*(this), message, title, MB_YESNOCANCEL | MB_ICONQUESTION);
   if (res != IDYES)
     return;

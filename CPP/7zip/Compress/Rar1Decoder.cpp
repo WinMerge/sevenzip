@@ -29,7 +29,7 @@ public:
 };
 */
 
-CDecoder::CDecoder(): m_IsSolid(false) { }
+CDecoder::CDecoder(): m_IsSolid(false), _errorMode(false) { }
 
 void CDecoder::InitStructures()
 {
@@ -57,7 +57,7 @@ UInt32 CDecoder::DecodeNum(const UInt32 *posTab)
   UInt32 num = m_InBitStream.GetValue(12);
   for (;;)
   {
-    UInt32 cur = (posTab[startPos + 1] - posTab[startPos]) << (12 - startPos);
+    UInt32 cur = (posTab[(size_t)startPos + 1] - posTab[startPos]) << (12 - startPos);
     if (num < cur)
       break;
     startPos++;
@@ -149,7 +149,7 @@ HRESULT CDecoder::ShortLZ()
       PlaceA[dist]--;
       UInt32 lastDistance = ChSetA[(unsigned)distancePlace];
       PlaceA[lastDistance]++;
-      ChSetA[(unsigned)distancePlace + 1] = lastDistance;
+      ChSetA[(size_t)(unsigned)distancePlace + 1] = lastDistance;
       ChSetA[(unsigned)distancePlace] = dist;
     }
     len += 2;
@@ -406,9 +406,14 @@ HRESULT CDecoder::CodeReal(ISequentialInStream *inStream, ISequentialOutStream *
   InitData();
   if (!m_IsSolid)
   {
+    _errorMode = false;
     InitStructures();
     InitHuff();
   }
+  
+  if (_errorMode)
+    return S_FALSE;
+    
   if (m_UnpackSize > 0)
   {
     GetFlagsBuf();
@@ -477,9 +482,9 @@ STDMETHODIMP CDecoder::Code(ISequentialInStream *inStream, ISequentialOutStream 
     const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress)
 {
   try { return CodeReal(inStream, outStream, inSize, outSize, progress); }
-  catch(const CInBufferException &e) { return e.ErrorCode; }
-  catch(const CLzOutWindowException &e) { return e.ErrorCode; }
-  catch(...) { return S_FALSE; }
+  catch(const CInBufferException &e) { _errorMode = true; return e.ErrorCode; }
+  catch(const CLzOutWindowException &e) { _errorMode = true; return e.ErrorCode; }
+  catch(...) { _errorMode = true; return S_FALSE; }
 }
 
 STDMETHODIMP CDecoder::SetDecoderProperties2(const Byte *data, UInt32 size)
