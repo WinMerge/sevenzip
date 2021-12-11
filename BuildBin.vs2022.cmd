@@ -28,8 +28,6 @@ pushd CPP\7zip
 nmake
 popd
 
-endlocal
-
 if exist "%SIGNBAT_PATH%" (
   call "%SIGNBAT_PATH%" CPP\7zip\Bundles\Format7zF\%1\7z.dll
 )
