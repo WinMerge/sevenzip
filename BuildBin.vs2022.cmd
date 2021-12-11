@@ -17,10 +17,15 @@ goto :eof
 
 setlocal
 
+if "%1" == "Win32" set ARCH=x86
 if "%1" == "x86" set ARCH=x86
+if "%1" == "X86" set ARCH=x86
 if "%1" == "x64" set ARCH=amd64
+if "%1" == "X64" set ARCH=amd64
 if "%1" == "arm" set ARCH=amd64_arm
+if "%1" == "ARM" set ARCH=amd64_arm
 if "%1" == "arm64" set ARCH=amd64_arm
+if "%1" == "ARM64" set ARCH=amd64_arm
 
 call "%InstallDir%\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
 
@@ -29,7 +34,11 @@ nmake
 popd
 
 if exist "%SIGNBAT_PATH%" (
-  call "%SIGNBAT_PATH%" CPP\7zip\Bundles\Format7zF\%1\7z.dll
+  if "%ARCH%" == "x86" (
+    call "%SIGNBAT_PATH%" CPP\7zip\Bundles\Format7zF\x86\7z.dll
+  ) else (
+    call "%SIGNBAT_PATH%" CPP\7zip\Bundles\Format7zF\%1\7z.dll
+  )
 )
 
 endlocal
