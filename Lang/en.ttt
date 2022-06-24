@@ -1,5 +1,5 @@
 ﻿;!@Lang2@!UTF-8!
-; 15.00 : 2015-03-29 : Igor Pavlov
+; 22.00 : 2022-06-09 : Igor Pavlov
 ;
 ;
 ;
@@ -193,6 +193,11 @@ Hard Link
 iNode
 
 Read-only
+
+Copy Link
+
+
+Metadata Changed
 2100
 Options
 Language
@@ -299,6 +304,9 @@ Auto rename existing files
 3430
 Eliminate duplication of root folder
 Restore file security
+3440
+Propagate Zone.Id stream:
+For Office files
 3500
 Confirm File Replace
 Destination folder already contains processed file.
@@ -392,6 +400,17 @@ Browse
 All Files
 Non-solid
 Solid
+4080
+Time
+Timestamp precision:
+Store modification time
+Store creation time
+Store last access time
+Set archive time to latest file time
+Do not change source files last access time
+4090
+sec
+ns
 6000
 Copy
 Move
