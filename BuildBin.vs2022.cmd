@@ -25,8 +25,8 @@ if "%1" == "x64" set ARCH=amd64
 if "%1" == "X64" set ARCH=amd64
 if "%1" == "arm" set ARCH=amd64_arm
 if "%1" == "ARM" set ARCH=amd64_arm
-if "%1" == "arm64" set ARCH=amd64_arm
-if "%1" == "ARM64" set ARCH=amd64_arm
+if "%1" == "arm64" set ARCH=amd64_arm64
+if "%1" == "ARM64" set ARCH=amd64_arm64
 
 call "%InstallDir%\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
 
