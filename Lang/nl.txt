@@ -2,11 +2,11 @@
 ;       : Bert van Velsen
 ;  4.26 : Jeroen van der Weijde.
 ;       : Harm Hilvers
-;  9.07 : Jeroen Tulp 
-; 15.00 : Jeroen Tulp 
+;  9.07 : Jeroen Tulp
+; 15.00 : Jeroen Tulp
 ; 21.03 : Quinten Althues
 ; 21.05 : Jeroen Tulp
-;
+; 22.00 : 2022-07-04: Jeroen Tulp
 ;
 ;
 ;
@@ -63,7 +63,7 @@ Nieuwe map
 Nieuw bestand
 &Sluiten
 Koppeling
-&Alternate streams
+&Alternatieve streams
 600
 &Alles selecteren
 Alles deselecteren
@@ -86,7 +86,7 @@ Hoogste niveau openen
 Één niveau omhoog
 &Mapgeschiedenis...
 &Verversen
-Automatisch verversen 
+Automatisch verversen
 750
 Archiefwerkbalk
 Standaardwerkbalk
@@ -122,7 +122,7 @@ Woordenboek
 Type
 Anti
 Methode
-Host-besturingssysteem
+Hostbesturingssysteem
 Bestandssysteem
 Gebruiker
 Groep
@@ -162,7 +162,7 @@ Label
 Lokale naam
 Provider
 NT-beveiliging
-Alternate stream
+Alternatieve stream
 Aux
 Verwijderd
 Is boomstructuur
@@ -174,8 +174,8 @@ Fouten
 Waarschuwingen
 Waarschuwing
 Streams
-Alternate streams
-Grootte alternate streams
+Alternatieve streams
+Grootte alternatieve streams
 Virtuele grootte
 Uitgepakte grootte
 Totale fysieke grootte
@@ -193,6 +193,11 @@ Harde koppeling
 iNode
 
 Alleen lezen
+
+Kopieer Koppeling
+
+
+Metadata Gewijzigd
 2100
 Opties
 Taal
@@ -297,8 +302,11 @@ Bestaande bestanden overslaan
 Automatisch hernoemen
 Bestaande bestanden automatisch hernoemen
 3430
-Duplicaat van hoogste niveau verwijderen 
+Duplicaat van hoogste niveau verwijderen
 Bestandsbeveiliging herstellen
+3440
+Doorgeven Zone.Id stream:
+Voor Office Bestanden
 3500
 Bevestigen om een bestand te vervangen
 De doelmap bevat het verwerkte bestand al.
@@ -373,7 +381,7 @@ Bestanden na inpakken verwijderen
 4040
 Symbolische koppelingen opslaan
 Harde koppelingen opslaan
-Alternate data streams opslaan
+Alternatieve gegevensstreams opslaan
 Bestandsbeveiliging opslaan
 4050
 Opslaan
@@ -392,6 +400,17 @@ Bladeren
 Alle bestanden
 Niet-compact
 Compact
+4080
+Tijd
+Tijdstempel precisie:
+Bewaar wijzigingstijd
+Bewaar aanmaaktjjd
+Bewaar laatste toegangstijd
+Stel archieftijd in op de laatste bestandstijd
+Wijzig laatste toegangstijd van de bronbestanden niet
+4090
+sec
+ns
 6000
 Kopiëren
 Verplaatsen
@@ -489,7 +508,7 @@ Koppelen van:
 Koppelen aan:
 7710
 Koppelingstype
-Harde koppeling
+Vaste  koppeling
 Symbolische bestandskoppeling
 Symbolische mapkoppeling
-Map knooppunt
+Mapsplitsing

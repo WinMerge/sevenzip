@@ -1,14 +1,14 @@
 ﻿;!@Lang2@!UTF-8!
-; 20.02 : 2020-12-04 : Patriccollu di Santa Maria è Sichè (Latest Update)
-;  9.20 : 2010-12-12 : Patriccollu di Santa Maria è Sichè (Creation)
-;
-;
-;
-;
-;
-;
-;
-;
+; 22.00 : 2022-06-21 : Patriccollu di Santa Maria è Sichè (Latest Update)
+; 20.02 : 2020-12-05 : Patriccollu di Santa Maria è Sichè
+; 19.00 : 2019-04-28 : Patriccollu di Santa Maria è Sichè
+; 15.14 : 2016-05-06 : Patriccollu di Santa Maria è Sichè
+; 15.00 : 2015-04-26 : Patriccollu di Santa Maria è Sichè
+;  9.36 : 2014-12-29 : Patriccollu di Santa Maria è Sichè
+;  9.29 : 2012-09-09 : Patriccollu di Santa Maria è Sichè
+;  9.25 : 2012-04-03 : Patriccollu di Santa Maria è Sichè
+;  9.22 : 2011-09-17 : Patriccollu di Santa Maria è Sichè
+;  9.20 : 2010-12-12 : Patriccollu di Santa Maria è Sichè (Creation)
 ;
 0
 7-Zip
@@ -20,26 +20,26 @@ Abbandunà
 
 
 
-&Iè
-I&nnò
+&Sì
+&Nò
 &Chjode
 Aiutu
 
 &Cuntinuà
 440
-Iè per &tutti
-Innò per t&utti
+Sì per &tutti
+Nò per t&utti
 Piantà
 Rilancià
 Tacca di &fondu
-In &primu pianu
+&Primu pianu
 &Pausa
 In pausa
-Site sicuru di vulè annullà ?
+Vulete veramente annullà ?
 500
 &Schedariu
-&Mudificazione
-&Affissera
+&Mudificà
+&Affissà
 &Favuriti
 A&ttrezzi
 Ai&utu
@@ -50,8 +50,8 @@ Apre f&ora
 &Fighjà
 &Mudificà
 &Rinuminà
-&Cupià ver di…
-&Dispiazzà  ver di…
+&Cupià versu…
+&Dispiazzà  versu…
 S&quassà
 &Sparte u schedariu…
 &Unisce i schedarii…
@@ -111,7 +111,7 @@ Dimensione cumpressa
 Attributi
 Creatu u
 Accessu u
-Mudificatu u
+Mudificatu
 Solidu
 Cummentatu
 Cifratu
@@ -150,7 +150,7 @@ Caratteristiche
 Indirizzu virtuale
 ID
 Nome cortu
-Appiecazione d’urigine
+Appiecazione d’origine
 Dimensione di settore
 Modu
 Liame simbolicu
@@ -193,6 +193,11 @@ Liame solidu
 iNodu
 
 Lettura sola
+
+Cupià u liame
+
+
+Metadati cambiati
 2100
 Ozzioni
 Lingua
@@ -217,10 +222,10 @@ Estrae i schedarii…
 Aghjunghje à l’archiviu…
 Verificà l’archiviu
 Estrae quì
-Estrae ver di {0}
+Estrae versu {0}
 Aghjunghje à {0}
 Cumprime è mandà da eMail…
-Cumprime ver di {0} è mandà da eMail
+Cumprime versu {0} è mandà da eMail
 2400
 Cartulari
 Cartulare di &travagliu
@@ -249,7 +254,7 @@ U sistema ùn pò micca attribuisce a quantità richiesta di memoria
 U cartulare « {0} » ùn pò micca esse creatu
 L’azzioni di mudificazione ùn sò micca accettate per st’archiviu.
 U schedariu « {0} » ùn pò micca esse apertu cum’è un archiviu
-L’archiviu cifratu « {0} » ùn pò micca esse apertu. Parolla d’entrata falsa ?
+L’archiviu cifratu « {0} » ùn pò micca esse apertu. Parolla d’intesa falsa ?
 Stu tipu d’archiviu ùn hè micca accettatu
 U schedariu {0} esiste dighjà
 U schedariu « {0} » hè statu mudificatu.\nVulete mudificallu in l’archiviu ?
@@ -281,7 +286,7 @@ Squassatura
 Creazione d’una intestatura
 3400
 Estrae
-E&strae ver di :
+E&strae versu :
 Sciglite un cartulare per l’estrazzione di i schedarii.
 3410
 Modu di chjassu :
@@ -299,23 +304,26 @@ Rinuminà autumat. i schedarii esistenti
 3430
 Toglie a duplicazione di u cartulare principale
 Risturà a sicurità di i schedarii
+3440
+Prupagazione di flussu Zone.Id :
+Per i schedarii Office
 3500
 Cunfirmà u rimpiazzamentu di schedariu
 U cartulare di destinazione cuntene dighjà un schedariu cù stu nome.
-Vulete rimpiazzà u schedariu esistentu
+Vulete rimpiazzà u schedariu esistente
 cù quellu ?
 {0} ottetti
 Rinuminà &autumaticamente
 3700
-Metoda di cumpressione micca accettatu per « {0} ».
+Metoda di cumpressione micca accettata per « {0} ».
 Sbagliu di dati in « {0} ». U schedariu hè dannighjatu.
 Fiascu di l’ispezzione CRC per u schedariu « {0} ». U schedariu hè dannighjatu.
-Sbagliu di dati in u schedariu cifratu « {0} ». Parolla d’entrata falsa ?
-Fiascu di l’ispezzione CRC per u schedariu cifratu « {0} ». Parolla d’entrata falsa ?
+Sbagliu di dati in u schedariu cifratu « {0} ». Parolla d’intesa falsa ?
+Fiascu di l’ispezzione CRC per u schedariu cifratu « {0} ». Parolla d’intesa falsa ?
 3710
-Parolla d’entrata falsa ?
+Parolla d’intesa falsa ?
 3721
-Metoda di compressione micca accettatu
+Metoda di compressione micca accettata
 Sbagliu di dati
 Fiascu di l’ispezzione CRC
 Dati micca dispunibule
@@ -323,7 +331,7 @@ Fine inaspettata di dati
 Ci hè d’altri dati dopu à a fine di i dati ghjuvevule
 Ùn hè micca un archiviu
 Sbagliu d’intestature
-Parolla d’entrata
+Parolla d’intesa
 3763
 Principiu di l’archiviu micca dispunibule
 Principiu di l’archiviu micca confirmatu
@@ -332,14 +340,14 @@ Principiu di l’archiviu micca confirmatu
 
 Funzione micca accettata
 3800
-Scrivite a parolla d’entrata
-Scrivite a parolla d’entrata :
-Scrivite torna a parolla d’entrata :
-&Affissà a parolla d’entrata
-E parolle d’entrata sò sfarente
-Impiegate solu : lettere senza aletta, cifri è segni particulari (!, #, $, …) per a parolla d’entrata
-A parolla d’entrata hè troppu longa
-Parolla d’entrata
+Stampittate a parolla d’intesa
+Stampittate a parolla d’intesa :
+Stampittate torna a parolla d’intesa :
+&Affissà a parolla d’intesa
+E parolle d’intesa sò sfarente
+Impiegate solu : lettere senza aletta, cifri è segni particulari (!, #, $, …) per a parolla d’intesa
+A parolla d’intesa hè troppu longa
+Parolla d’intesa
 3900
 Tempu passatu :
 Tempu rimanentu :
@@ -392,11 +400,22 @@ Sfuglià
 Tutti i schedarii
 Non-solidu
 Solidu
+4080
+Data
+Precizione di stampiglia :
+Data è ora di mudificazione
+Data è ora di creazione
+Data è ora d’ultimu accessu
+Definisce l’ultima data è ora di u schedariu per l’archiviu
+Ùn cambià micca l’ultima data è ora di i schedarii di fonte
+4090
+sec
+ns
 6000
 Cupià
 Dispiazzà
-Cupià ver di :
-Dispiazzà ver di :
+Cupià versu :
+Dispiazzà versu :
 Copia…
 Dispiazzamentu…
 Cambiamentu di nome…
@@ -404,14 +423,14 @@ Selezziunà u cartulare di destinazione.
 St’azzione ùn hè micca accettata per stu cartulare.
 Sbagliu durante u cambiu di nome di schedariu o di cartulare
 Cunfirmazione di a copia di schedariu
-Site sicuru di vulè cupià u(i) schedariu(i) ver di l’archiviu
+Vulete veramente cupià u(i) schedariu(i) versu l’archiviu
 6100
 Cunfirmà a squassatura di u schedariu
 Cunfirmà a squassatura di u cartulare
 Cunfirmà a squassatura di schedarii multiplice
-Site sicuru di vulè squassà « {0} » ?
-Site sicuru di vulè squassà u cartulare « {0} » è tuttu u so cuntenutu ?
-Site sicuru di vulè squassà sti {0} elementi ?
+Vulete veramente squassà « {0} » ?
+Vulete veramente squassà u cartulare « {0} » è tuttu u so cuntenutu ?
+Vulete veramente squassà sti {0} elementi ?
 Squassatura…
 Sbagliu durante a squassatura di schedariu o di cartulare
 U sistema ùn pò micca mette à a Rumenzula un schedariu cù u nome di chjassu cusì longu
@@ -454,10 +473,10 @@ Sparte u schedariu
 Sparte in &vulumi, ottetti :
 Spartimentu…
 Cunfirmà u spartimentu
-Site sicuru di vulè sparte u schedariu in {0} vulumi ?
-A dimensione di u vulume deve esse più chjuca chì u schedariu d’urigine
+Vulete veramente sparte u schedariu in {0} vulumi ?
+A dimensione di u vulume deve esse più chjuca chè u schedariu d’origine
 Dimensione di vulume incurretta
-Dimensione di vulume specificata : {0} ottetti.\nsite sicuru di vulè taglià l’archiviu in tali vulumi ?
+Dimensione di vulume specificata : {0} ottetti.\nVulete veramente taglià l’archiviu in tali vulumi ?
 7400
 Unisce i schedarii
 &Unisce in :
@@ -479,8 +498,8 @@ Stima
 Valutazione tutale
 Attuale
 Risultante
-Impiegu CPU
-Stima/Impiegu
+Aghjovu CPU
+Stima / Aghjovu
 Passagi :
 7700
 Liame

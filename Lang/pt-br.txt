@@ -1,7 +1,7 @@
 ﻿;!@Lang2@!UTF-8!
 ;        : Francisco Jr
-;  4.37  : Fabricio Biazzotto 
-;  18.05 : Atualizado por Felipe
+;  4.37  : Fabricio Biazzotto
+;  22.00 : Atualizado por Felipe
 ;
 ;
 ;
@@ -193,6 +193,11 @@ Link Rígido
 iNode
 
 Somente-Leitura
+
+Copiar Link
+
+
+Metadados Mudados
 2100
 Opções
 Idioma
@@ -299,6 +304,9 @@ Auto-renomear os arquivos existentes
 3430
 Eliminar duplicação da pasta raiz
 Restaurar a segurança do arquivo
+3440
+Propagar o fluxo do Zone.Id:
+Pros arquivos do Office
 3500
 Confirmar a Substituição dos Arquivos
 A pasta destino já contém o arquivo processado.
@@ -392,6 +400,17 @@ Navegar
 Todos os Arquivos
 Não-sólido
 Sólido
+4080
+Tempo
+Precisão do tempo:
+Armazenar o tempo de modificação
+Armazenar o tempo da criação
+Armazenar o tempo do último acesso
+Definir o tempo do arquivo compactado no tempo do arquivo mais recente
+Não mudar os arquivos de origem do tempo do último acesso
+4090
+segs
+ns
 6000
 Copiar
 Mover

@@ -3,10 +3,10 @@
 ;       : João Alves
 ;       : João Frade (100 NOME TR)
 ;  4.46 : Rui Costa
-;  9.17 : Sérgio Marques 
+;  9.17 : Sérgio Marques
 ; 15.00 : Rui Aguiar
 ; 15.00 : 2022-03-22 : Hugo Carvalho
-;
+; 22.00 : 2022-06-28 : Hugo Carvalho
 ;
 ;
 ;
@@ -63,7 +63,7 @@ Criar pasta
 Criar ficheiro
 &Sair
 Ligação
-&Alternar fluxo
+&Alternar fluxos
 600
 Seleccionar &tudo
 Desseleccionar tudo
@@ -82,7 +82,7 @@ Desordenado
 Vista plana
 &2 painéis
 &Barras de ferramentas
-Abrir pasta root
+Abrir pasta principal
 Subir um nível
 Histórico de pastas...
 &Actualizar
@@ -192,7 +192,12 @@ Ligação
 Ligação física
 iNode
 
-Só de leitura
+Apenas leitura
+
+Copiar ligação
+
+
+Metadados alterados
 2100
 Opções
 Idioma
@@ -208,7 +213,7 @@ Todos os utilizadores
 Integrar o 7-Zip no menu de contexto
 Menu de contexto em cascata
 Itens do menu de contexto:
-Icons no menu de contexto
+Ícones no menu de contexto
 2320
 <Pasta>
 <Arquivo>
@@ -299,6 +304,9 @@ Mudar o nome automaticamente os ficheiros existentes
 3430
 Eliminar a duplicação da pasta de raiz
 Restaurar segurança de ficheiros
+3440
+Propagar fluxo Zone.Id:
+Para ficheiros do Office
 3500
 Confirmar substituição de ficheiro
 A pasta já possui um ficheiro com o mesmo nome.
@@ -392,6 +400,17 @@ Procurar
 Todos os ficheiros
 Não sólido
 Sólido
+4080
+Data
+Precisão da data:
+Última modificação
+Data de criação
+Último acesso
+Definir data de arquivo para a última data de arquivo
+Não alterar a data do último acesso
+4090
+s
+ns
 6000
 Copiar
 Mover
