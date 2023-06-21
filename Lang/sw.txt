@@ -1,5 +1,5 @@
 ;!@Lang2@!UTF-8!
-; 15.00 : 2020-05-15 : Mara Gati Lucky (http://electricity.co.ke)
+; 15.00 : 2020-05-15 : Mara Gati Lucky
 ;
 ;
 ;
@@ -166,7 +166,7 @@ Mtiririsho mbadala
 Aux
 Imefutwa
 Ni mti
-	
+
 
 Aina ya hitilafu
 Hitilafu

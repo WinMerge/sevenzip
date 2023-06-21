@@ -1,5 +1,5 @@
 ﻿;!@Lang2@!UTF-8!
-;  4:26 : Tomas Miralles
+;  4.26 : Tomas Miralles
 ;  4.44 : Fernando Verdú
 ;
 ;
@@ -204,7 +204,7 @@ Mode de selecció &alternatiu
 Utilitzar pàgines de memòria &grans
 2900
 Sobre 7-Zip
-7-Zip és un programa lliure (GNU LGPL). Pot col·laborar en el desenvolupament del 7-zip registrant-lo, com a usuari registrat podrà rebre suport tècnic.
+7-Zip és un programa lliure.
 3000
 
 No hi ha errors

@@ -241,7 +241,7 @@ Otevřít položku jedním kliknutím
 &Používat velké stránky paměti
 2900
 O programu 7-Zip
-7-Zip je svobodný software. Nicméně můžete podpořit jeho vývoj registrací.
+7-Zip je svobodný software.
 3000
 Systém nemůže přidělit požadovanou velikost paměti
 Nedošlo k žádným chybám

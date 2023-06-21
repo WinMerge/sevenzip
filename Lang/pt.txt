@@ -246,7 +246,7 @@ Modo de seleçção &alternativo
 Utilizar páginas de &memória grandes
 2900
 Acerca do 7-Zip
-O 7-Zip é um programa gratuito.\n\nO 7-Zip foi traduzido por: Hugo Carvalho\n\thugokarvalho@hotmail.com
+O 7-Zip é um programa gratuito.
 3000
 O sistema não consegue atribuir a memória necessária
 Não existem erros

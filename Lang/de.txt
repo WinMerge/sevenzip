@@ -241,7 +241,7 @@ Einfacher &Klick zum Öffnen
 Große &Speicherseiten verwenden
 2900
 Info über 7-Zip
-7-Zip ist freie Software. Sie können jedoch das Projekt durch eine Registrierung unterstützen.
+7-Zip ist freie Software.
 3000
 Das System kann die benötigte Speichermenge nicht bereit stellen.
 Es sind keine Fehler aufgetreten.

@@ -3,7 +3,7 @@
 ;       : pixel
 ;  9.07 : F1xat
 ;  9.33 : Łukasz Maria P. Pastuszczak
-; 21.03 : Michał L.
+; 22.00 : Michał L.
 ;
 ;
 ;
@@ -193,6 +193,11 @@ Dowiązanie twarde
 I-węzeł
 
 Tylko do odczytu
+
+Kopiuj odnośnik
+
+
+Zmienione metadane
 2100
 Opcje
 Język
@@ -299,6 +304,9 @@ Automatycznie zmień nazwy istniejących plików
 3430
 Wyeliminuj podwojenie folderu głównego
 Przywróć zabezpieczenia plików
+3440
+Propagowanie strumienia Zone.Id:
+Dla dokumentów MS Office
 3500
 Potwierdź zamianę pliku
 Folder docelowy zawiera już przetwarzany plik.
@@ -392,6 +400,17 @@ Przeglądaj
 Wszystkie pliki
 Nieciągły
 Ciągły
+4080
+Czas
+Precyzja znacznika czasu:
+Przechowuj czas ostatniej modifikacji
+Przechowuj czas utworzenia
+Przechowuj czas ostatniego dostępu
+Ustaw czas archiwizacji na czas ostatniego pliku
+Nie zmieniaj czasu ostatniego dostępu do plików źródłowych
+4090
+sek.
+ns
 6000
 Kopiuj
 Przenieś

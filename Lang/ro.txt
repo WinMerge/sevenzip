@@ -1,5 +1,5 @@
 ﻿;!@Lang2@!UTF-8!
-;  4.59 : Lucian Nan : http://www.prizeeinternational.com
+;  4.59 : Lucian Nan
 ;
 ;
 ;
@@ -204,7 +204,7 @@ Mod de selectare &alternativă
 Utilizează pagini &mari de memorie
 2900
 Despre 7-Zip
-7-Zip este un program gratuit. Oricum, poţi contribui la dezvoltarea 7-Zip înregistrându-te.
+7-Zip este un program gratuit.
 3000
 Sistemul nu poate aloca memoria necesară
 Nu sunt erori

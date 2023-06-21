@@ -241,7 +241,7 @@ Mode de selecció &alternatiu
 Utilitza pàgines de memòria &grans
 2900
 Quant al 7-Zip
-	El 7-Zip és programari lliure.\n       Traducció realitzada per: Softcatalà\n	https://www.softcatala.org
+El 7-Zip és programari lliure.
 3000
 El sistema no pot assignar la quantitat de memòria requerida
 Cap error

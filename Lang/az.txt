@@ -1,7 +1,7 @@
 ﻿;!@Lang2@!UTF-8!
-; 9.07 : F@rhad
+;  9.07 : F@rhad
 ; 15.02 : 2015-03-29 : Г. Гасымов
-; 
+;
 ;
 ;
 ;
@@ -205,7 +205,7 @@ Quruluş
 7-Zip Fayllarla Əlaqələnsin
 Bütün İstifadəçilər
 2301
-7-Zip əhatə təklifinə tətbiq edilsin 
+7-Zip əhatə təklifinə tətbiq edilsin
 Zəncirvari əhatə təklifi
 Ünsürlü əhatə təklifi:
 Əhatə təklifində nişanlar
@@ -235,7 +235,7 @@ Tənzimləmələr
 Həqiqi fayl işarələri göstərmək
 Quruluş təklifini göstərmək
 Ox bütün sətir üzrə
-Ayrıcıları Göstərmək 
+Ayrıcıları Göstərmək
 Bir Toxunuşla Açmaq
 Əvəzedici vəziyyət işarələnməsi
 Böyük yaddaş səhifələri istifadəsi
@@ -252,7 +252,7 @@ Bu arxiv üçün dəyişiklik əməliyatı dəstəklənmir
 Şifrələnmiş '{0}' arxivini açmaq alınmadı. Yanlış şifrə?
 Dəstəklənməyən arxiv
 {0} faylı artıq mövcuddur
-'{0}' faylına dəyişiklik edildi.\nSiz onu arxivdə yeniləmək istəyirsiz? 
+'{0}' faylına dəyişiklik edildi.\nSiz onu arxivdə yeniləmək istəyirsiz?
 \n'{0}' faylını yeniləmək alınmadı
 Redaktəni işə salmaq alınmadı
 Fayl zərərvericiyə oxşayır (faylın adı uzun boşluq ardıcıllığı təşkil edir).
@@ -298,7 +298,7 @@ Birbaşa yenidən adlandırmaq
 Mövcud olanları yenidən adlandırmaq
 3430
 Kök qovluqla bənzərliyi aradan qaldırmaq
-Faylın təhlükəsizlik bərpası 
+Faylın təhlükəsizlik bərpası
 3500
 Faylın əvəzlənmə təsdiqi
 Qovluq artıq emal olunan fayl təşkil edir.
@@ -402,7 +402,7 @@ Köçürülür...
 Yenidən adlandırılır...
 Qovluğu göstərin.
 Əməliyyat bu qovluq üçün dəstəklənmir.
-Fayl və ya Qovluğun Yenidən Adlandırılması Zamanı Xəta 
+Fayl və ya Qovluğun Yenidən Adlandırılması Zamanı Xəta
 Faylların Nüsxələlənmə Təsdiqi
 Siz həqiqətən bu faylları arxivə nüsxələmək istəyirsiz
 6100
@@ -489,7 +489,7 @@ Mənbə:
 Məqsəd:
 7710
 İstinad Qismi
-Sərt İstinad 
+Sərt İstinad
 Rəmzi İstinad (Fayl)
 Rəmzi İstinad (Qovluq)
 Bağlantı Nöqtəsi (Qovşaq)

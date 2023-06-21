@@ -1,7 +1,7 @@
 ﻿;!@Lang2@!UTF-8!
-;  2.30 : Marius Navickas : http://www.teisininkas.lt/ivairus/7-zip:
+;  2.30 : Marius Navickas
 ;  4.57 : Domas Jokubauskis
-;  15.05 : Vaidas777 (terminų šaltinis: www.raštija.lt)
+; 15.05 : Vaidas777
 ;
 ;
 ;

@@ -1,7 +1,7 @@
 ﻿;!@Lang2@!UTF-8!
-;        : Francisco Jr
-;  4.37  : Fabricio Biazzotto
-;  22.00 : Atualizado por Felipe
+;       : Francisco Jr
+;  4.37 : Fabricio Biazzotto
+; 23.00 : Atualizado por Felipe
 ;
 ;
 ;
@@ -71,7 +71,7 @@ Desmarcar Tudo
 Selecionar...
 Desmarcar...
 Selecionar por Tipo
-Desfazer seleção por Tipo
+Desfazer a Seleção por Tipo
 700
 Íco&nes Grandes
 Íc&ones Pequenos
@@ -93,7 +93,7 @@ Barra de Ferramentas Padrão
 Botões Grandes
 Mostrar o Texto dos Botões
 800
-&Adicionar a pasta aos Favoritos como
+&Adicionar a pasta aos favoritos como
 Favorito
 900
 &Opções...
@@ -107,7 +107,7 @@ Nome
 Extensão
 Pasta
 Tamanho
-Tamanho Compactado
+Tamanho compactado
 Atributos
 Criado
 Acessado
@@ -221,11 +221,11 @@ Abrir arquivo compactado
 Extrair arquivos...
 Adicionar ao arquivo compactado...
 Testar arquivo compactado
-Extrair Aqui
-Extrair para {0}
-Adicionar para {0}
+Extrair aqui
+Extrair em {0}
+Adicionar como {0}
 Comprimir e enviar por email...
-Comprimir para {0} e enviar por email
+Comprimir como {0} e enviar por email
 2400
 Pastas
 &Pasta de trabalho
@@ -291,7 +291,7 @@ Especifique um local pros arquivos extraídos.
 3410
 Modo do caminho:
 Nomes dos caminhos completos
-Sem nomes de caminhos
+Não há nomes pros caminhos
 Nomes dos caminhos absolutos
 Nomes dos caminhos relativos
 3420
@@ -309,11 +309,11 @@ Propagar o fluxo do Zone.Id:
 Pros arquivos do Office
 3500
 Confirmar a Substituição dos Arquivos
-A pasta destino já contém o arquivo processado.
+A pasta de destino já contém o arquivo processado.
 Você gostaria de substituir o arquivo existente
 por este?
 {0} bytes
-A&uto-Renomear
+A&uto-renomear
 3700
 Método de compressão não suportado por '{0}'.
 Erro nos dados do '{0}'. O arquivo está danificado.
@@ -330,7 +330,7 @@ Dados indisponíveis
 Fim inesperado dos dados
 Há alguns dados após o fim da carga dos dados
 Não é arquivo compactado
-Erro dos Cabeçalhos
+Erro dos cabeçalhos
 Senha errada
 3763
 Início indisponível do arquivo compactado
@@ -354,9 +354,9 @@ Tempo restante:
 Tamanho total:
 Velocidade:
 Processados:
-Taxa de compressão:
+Taxa da compressão:
 Erros:
-Arquivos:
+Arquivos compactados:
 4000
 Adicionar ao arquivo compactado
 &Arquivo compactado:
@@ -375,8 +375,8 @@ Comprimir arquivos compartilhados
 Encriptação
 Método de encriptação:
 Criptografar os &nomes dos arquivos
-Uso de memória pra Compressão:
-Uso de memória pra Descompressão:
+Uso de memória pra compressão:
+Uso de memória pra descompressão:
 Apagar arquivos após a compressão
 4040
 Armazenar links simbólicos
@@ -407,7 +407,7 @@ Armazenar o tempo de modificação
 Armazenar o tempo da criação
 Armazenar o tempo do último acesso
 Definir o tempo do arquivo compactado no tempo do arquivo mais recente
-Não mudar os arquivos de origem do tempo do último acesso
+Não mudar o tempo do último acesso dos arquivos de origem
 4090
 segs
 ns
@@ -419,7 +419,7 @@ Mover para:
 Copiando...
 Movendo...
 Renomeando...
-Selecionar a pasta destino.
+Selecionar a pasta de destino.
 A operação não é suportada por esta pasta.
 Erro ao Renomear o Arquivo ou Pasta
 Confirmar a Cópia do Arquivo
@@ -437,7 +437,7 @@ O sistema não pode mover um arquivo com caminho longo para o Recycle Bin
 6300
 Criar Pasta
 Criar Arquivo
-Nome da pasta:
+Nome da Pasta:
 Nome do Arquivo:
 Nova Pasta
 Novo Arquivo

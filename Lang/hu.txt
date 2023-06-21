@@ -2,7 +2,7 @@
 ;       : Jozsef Tamas Herczeg
 ;  9.16 : Nyilas MISY
 ; 15.00 : 2021-11-09 : Barnabas Kovacs
-;
+; 22.01 : 2022-07-15 : John Fowler
 ;
 ;
 ;
@@ -34,7 +34,7 @@ Leállítás
 &Háttérben
 &Előtérben
 &Szünet
-Szünet
+Szüneteltetve
 Biztos, hogy megszakítja a folyamatot?
 500
 &Fájl
@@ -47,7 +47,7 @@ Ked&vencek
 M&egnyitás
 Megnyitás &belül
 Megnyitás kí&vül
-&Nézet
+&Fájl megtekintése
 S&zerkesztés
 Átn&evezés
 Más&olás mappába...
@@ -165,7 +165,7 @@ NT biztonság
 Alternatív adatfolyam
 Aux
 Törölt
-Is Tree
+A fa
 
 
 Hiba típusa
@@ -193,6 +193,11 @@ Hard link
 iNode
 
 Csak olvasható
+
+Link másolása
+
+
+Metaadatok megváltoztatva
 2100
 Beállítások
 Nyelv
@@ -203,7 +208,7 @@ Szerkesztő
 2200
 Rendszer
 7-Zip társítása:
-Minden felhasználóhoz
+Minden felhasználónak
 2301
 7-Zip hozzáadása a parancsértelmező helyi menüjéhez
 Lépcsőzetes helyi menü
@@ -227,7 +232,7 @@ Mappák
 A &rendszer ideiglenes mappája
 &Jelenlegi
 &Meghatározott:
-Csak cserélhető meghajtókhoz
+Csak cserélhető meghajtók esetén használható
 Válassza ki az ideiglenes archív fájlok mappáját.
 2500
 Beállítások
@@ -255,10 +260,10 @@ A(z) {0} fájl már létezik
 '{0}'\nA fájl tartalma megváltozott.\nKívánja aktualizálni az archívumban?
 A fájl nem aktualizálható:\n'{0}'
 A szerkesztő nem indítható.
-A fájl vírusnak néz ki (a fájlnév hosszú szóközt tartalmaz a nevében).
-A művelet nem hívható meg abból a mappából amelynek hosszú az elérési útvonala.
+A fájl vírusnak tűnik (a fájl neve hosszú szóközöket tartalmaz).
+A művelet nem hívható meg olyan mappából, amelynek hosszú az elérési útvonala.
 Egy fájlt ki kell jelölnie!
-Egy vagy több fájlt ki kell jelölnie
+Egy vagy több fájlt ki kell jelölnie!
 Túl sok elem
 Nem nyitható meg a fájl mint {0} archívum
 Fájl nyitva van mint {0} archívum
@@ -273,7 +278,7 @@ Eltávolítás
 3320
 Hozzáadás
 Frissítés
-Analizálás
+Elemzés
 Másolat készítés
 Újratömörítés
 Átugrás
@@ -282,7 +287,7 @@ Fejléc készítés
 3400
 Kibontás
 &Kibontás ide:
-Határozza meg a kibontott fájlok tárolómappáját.
+Adja meg a kicsomagolt fájlok helyét!
 3410
 Útvonal
 Teljes útvonal
@@ -297,8 +302,11 @@ A létező fájlok kihagyása
 Automatikus átnevezés
 A létező fájlok automatikus átnevezése
 3430
-Gyökérmappa többszörözés megszüntetése
-Biztonsági adatok visszaállítása
+A gyökérmappa megkettőződésének megszüntetése.
+Fájlvédelem visszaállítása
+3440
+Propagálja a Zone.Id adatfolyamot:
+Office-fájlokhoz
 3500
 Fájlcsere megerősítése
 A célmappa már tartalmazza a feldolgozott fájlt.
@@ -320,13 +328,13 @@ Adat hiba
 CRC hiba
 Elérhetetlen adat
 az adat váratlanul véget ért
-There are some data after the end of the payload data
+A hasznosnak vélt adatok után van néhány adat.
 Ez nem archívum
 Fejléc hiba
 Hibás jelszó
 3763
-Unavailable start of archive
-Unconfirmed start of archive
+Az archiválás megkezdése nem elérhető el.
+Az archiválás megkezdése nincs megerősítve.
 
 
 
@@ -343,7 +351,7 @@ Jelszó
 3900
 Eltelt idő:
 Hátralévő idő:
-Méret:
+Teljes méret:
 Sebesség:
 Feldolgozott:
 Tömörítési arány:
@@ -392,6 +400,17 @@ Tallózás
 Minden fájl
 Nem tömör
 Tömör
+4080
+Idő
+Időbélyeg pontossága:
+Tárolás módosítási ideje
+Tárolás létrehozásának ideje
+A tárolás utolsó hozzáférési ideje
+Az archívum idejének beállítása a legutolsó fájl idejére
+Ne változtassa meg a forrásfájlok utolsó hozzáférési idejét
+4090
+mp
+ns
 6000
 Másolás
 Áthelyezés
@@ -414,7 +433,7 @@ Biztos, hogy törölni akarja a(z) '{0}' mappát és annak teljes tartalmát?
 Biztos, hogy törölni akarja ezt a(z) {0} elemet?
 Törlés...
 Hiba történt a fájl vagy a mappa törlésekor
-A rendszer nem bírja mozgatni a fájlt a hosszú útvonallal a Lomtárba
+A rendszer nem tudja áthelyezni a hosszú elérési úttal rendelkező fájlokat a Lomtárba.
 6300
 Mappa létrehozása
 Fájl létrehozása
@@ -428,7 +447,7 @@ Hiba történt a fájl létrehozásakor
 Megjegyzés
 &Megjegyzés:
 Kijelölés
-Megszüntetés
+Kijelölés megszüntetése
 Maszk:
 6600
 Tulajdonságok
@@ -466,10 +485,10 @@ Csak az első rész kiválasztása a darabolt fájlból
 Nem ismeri fel a fájlt, mint darabolt fájl része
 Nem talál egynél több részt a darabolt fájlból
 7500
-Leírás számolása...
-Leírás információ
-CRC leírás az adathoz:
-CRC leírás az adathoz és névhez:
+Ellenőrző összeg kiszámítása...
+Ellenőrző összeg információ
+CRC ellenőrző összeg az adatokhoz:
+Az adatok és nevek CRC ellenőrző összege:
 7600
 Teljesítménymérés
 Memóriahasználat:

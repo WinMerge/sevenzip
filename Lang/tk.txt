@@ -58,16 +58,16 @@ Faýllary &birleşdir...
 &Düzgünlemeler
 Tes&wir...
 Barlag jemini hasapla
-Tapawutlanma 
+Tapawutlanma
 Bukja döret
 Faýl döret
 &Çyk
-Bag 
+Bag
 Akymlary ç&alyş
 600
 Hemmesini Seç
 Hemmesini Seçme
-Seçim&i tersine öwür 
+Seçim&i tersine öwür
 Seç...
 Seçme...
 Tiplerine görä seç
@@ -135,7 +135,7 @@ Faýllar
 Wersiýa
 Tom
 Köp Tomly
-Offset (Ýeri doldurylan) 
+Offset (Ýeri doldurylan)
 Baglar
 Bölümler
 Tomlar
@@ -302,7 +302,7 @@ Faýl goraglaryny yzyna/ýerine goý
 3500
 Faýl çalyşyklygyny tassykla
 Seçilen bukjada öň işlenen faýl bar.
-Bar bolan faýly şunuň bilen 
+Bar bolan faýly şunuň bilen
 çalyşjakmy?
 {0} baýt
 A&wtomatiki adyny üýtget

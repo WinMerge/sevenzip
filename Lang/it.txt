@@ -3,8 +3,8 @@
 ;       : Vincenzo Reale (some corrections)
 ; 15.05 : 2015-06-17 : TJL73
 ; 17.00 : 2017-02-01 : Massimo Castiglia
-; 18.03 : 2018-01-15 : POLAR www.polarmachines.com
-; 22.00 : 2022-06-20 : TJL73 : https://tjl73.altervista.org/
+; 18.03 : 2018-01-15 : POLAR
+; 22.00 : 2022-06-20 : TJL73
 ;
 ;
 ;
@@ -246,7 +246,7 @@ Modalità di selezione &alternativa
 Utilizza pagine &larghe di memoria
 2900
 Informazioni su 7-Zip
-7-Zip è un software libero.\n\nTraduzione italiana a cura di:\nTJL73 <https://tjl73.altervista.org/>
+7-Zip è un software libero.
 3000
 Non è possibile allocare la quantità di memoria richiesta
 Nessun errore.
@@ -335,9 +335,9 @@ Password errata
 3763
 Inizio dell'archivio non disponibile
 Inizio dell'archivio non confermato
-	
-	
-	
+
+
+
 Funzionalità non supportata
 3800
 Inserisci password

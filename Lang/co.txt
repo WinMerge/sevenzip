@@ -1,14 +1,14 @@
 ﻿;!@Lang2@!UTF-8!
 ; 22.00 : 2022-06-21 : Patriccollu di Santa Maria è Sichè (Latest Update)
-; 20.02 : 2020-12-05 : Patriccollu di Santa Maria è Sichè
-; 19.00 : 2019-04-28 : Patriccollu di Santa Maria è Sichè
-; 15.14 : 2016-05-06 : Patriccollu di Santa Maria è Sichè
-; 15.00 : 2015-04-26 : Patriccollu di Santa Maria è Sichè
-;  9.36 : 2014-12-29 : Patriccollu di Santa Maria è Sichè
-;  9.29 : 2012-09-09 : Patriccollu di Santa Maria è Sichè
-;  9.25 : 2012-04-03 : Patriccollu di Santa Maria è Sichè
-;  9.22 : 2011-09-17 : Patriccollu di Santa Maria è Sichè
 ;  9.20 : 2010-12-12 : Patriccollu di Santa Maria è Sichè (Creation)
+;
+;
+;
+;
+;
+;
+;
+;
 ;
 0
 7-Zip
@@ -246,7 +246,7 @@ Modu di selezzione &alternativa
 Impiegà pagine &maiò di memoria
 2900
 Apprupositu di 7-Zip
-7-Zip hè un prugramma liberu.\n\nTraduttu in lingua corsa da Patriccollu di Santa Maria è Sichè.
+7-Zip hè un prugramma liberu.
 3000
 U sistema ùn pò micca attribuisce a quantità richiesta di memoria
 Ùn ci hè micca sbagliu

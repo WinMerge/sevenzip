@@ -1,8 +1,8 @@
 ﻿;!@Lang2@!UTF-8!
-;       : tomazek
-;  4.55 : miles
+; 22.01 : 2022-07-17 : Jadran Rudec
 ;
-; 21.00 : 2021-01-19 : Jadran Rudec
+;
+;
 ;
 ;
 ;
@@ -193,6 +193,11 @@ Trdna povezava
 iNode
 
 Samo-za-branje
+
+Kopiraj povezavo
+
+
+Metapodatki so bili spremenjeni
 2100
 Možnosti
 Jezik
@@ -299,6 +304,9 @@ Samodejno preimenuj obstoječe datoteke
 3430
 Odpravi podvajanje korenske mape
 Obnovi varnost datoteke
+3440
+Razširi tok Zone.Id:
+za datoteke MS Office
 3500
 Potrdite zamenjavo datoteke
 Ciljna mapa že vsebuje obdelano datoteko.
@@ -392,6 +400,17 @@ Prebrskaj
 Vse datoteke
 Ne-trdni
 Trdni
+4080
+Čas
+Natančnost časovnega žiga:
+Čas spreminjanja shranjevanja
+Čas ustvarjanja shranjevanja
+Shrani čas zadnjega dostopa
+Nastavi čas arhiviranja na čas zadnje datoteke
+Ne spreminjaj časa zadnjega dostopa izvornih datotek
+4090
+sek
+ns
 6000
 Kopiraj
 Premakni
@@ -447,7 +466,7 @@ Preizkusi
 Kopiraj
 Premakni
 Izbriši
-Informacije
+Informacija
 7300
 Razdeli datoteko
 &Razdeli na:
@@ -485,7 +504,7 @@ Prehodov:
 7700
 Povezava
 Povezava
-Povezava iz:
+Povezava od:
 Povezava do:
 7710
 Vrsta povezave

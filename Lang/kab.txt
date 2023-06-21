@@ -197,7 +197,7 @@ Taɣuri-Kan
 Iɣewwaṛen
 Tutlayt
 Tutlayt:
-Amaẓrag 
+Amaẓrag
 &Amaẓrag:
 &Iceṛṛiq:
 2200
@@ -244,7 +244,7 @@ Use &large memory pages
 7-Zip d aseɣẓan n baṭṭel
 3000
 The system cannot allocate the required amount of memory
-Ulac Tuccḍiwin 
+Ulac Tuccḍiwin
 {0} n tiɣawsiwin yettwafernen
 Ur yezmir ara ad isnulfu Akaram '{0}'
 Update operations are not supported for this archive.
@@ -322,7 +322,7 @@ Ulac isefka
 Tagar n isefka ur tettwaṛǧi ara
 Llan kra n isefka seld tagara n isefka iwulmen
 Mačči d Aɣbaṛ
-Tuccḍa n Iqerra 
+Tuccḍa n Iqerra
 Yir awal uffir
 3763
 Ulac Beddu n Uɣbaṛ

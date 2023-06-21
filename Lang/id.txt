@@ -1,5 +1,5 @@
 ﻿;!@Lang2@!UTF-8!
-; 20.00 : 2020-02-18 : Frans Leung
+; 22.01 : 2023-02-25 : Frans Leung
 ;
 ;
 ;
@@ -27,8 +27,8 @@ Bantuan
 
 &Lanjut
 440
-Ya untuk &semua
-Tidak untuk s&emua
+Ya &semuanya
+Tidak s&emuanya
 Henti
 Mulai Ulang
 Latar Bela&kang
@@ -100,7 +100,7 @@ Markah
 Pa&tokan
 960
 Petun&juk...
-Tent&ang 7-Zip...
+Mengen&ai 7-Zip...
 1003
 Lintasan
 Nama
@@ -122,7 +122,7 @@ Kamus
 Tipe
 Anti
 Metode
-SO Hos
+SO Tuan Rumah
 Sistem Berkas
 Pengguna
 Grup
@@ -193,6 +193,11 @@ Tautan Keras
 iNode
 
 Hanya-baca
+
+Salin Tautan
+
+
+Metadata Berubah
 2100
 Pilihan
 Bahasa
@@ -241,7 +246,7 @@ Ragam pemilihan &alternatif
 Gunakan halaman memori &besar
 2900
 Mengenai 7-Zip
-7-Zip merupakan perangkat lunak gratis.\n\nTerjemahan oleh Frans Liando.
+7-Zip merupakan perangkat lunak gratis.
 3000
 Sistem tidak bisa mengalokasikan jumlah memori yang diperlukan
 Tidak ada galat
@@ -252,7 +257,7 @@ Tidak bisa membuka berkas arsip '{0}'
 Tidak bisa membuka arsip terenkripsi '{0}'. Salah kata sandi?
 Tipe arsip tidak didukung
 Berkas {0} telah ada
-Berkas '{0}' telah diubah.\nAnda ingin memperbarui berkas dalam arsip?
+Berkas '{0}' telah dimodifikasi.\nApakah Anda ingin memperbaruinya di arsip?
 Tidak bisa perbarui berkas\n'{0}'
 Tidak bisa memulai editor.
 Berkas ini tampaknya seperti virus (pada nama berkas berisi spasi yang panjang).
@@ -299,6 +304,9 @@ Penamaan ulang automatis terhadap berkas yang ada
 3430
 Hilangkan duplikasi direktori akar
 Pulihkan keamanan berkas
+3440
+Propagasi aliran Zone.Id:
+Untuk berkas Office
 3500
 Konfirmasi Penggantian Berkas
 Direktori tujuan telah berisi berkas yang terproses.
@@ -371,12 +379,12 @@ Pemakaian memori untuk Pemampatan:
 Pemakaian memori untuk Pengawamampatan:
 Hapus berkas setelah dimampatkan
 4040
-Simpan tautan simbolik
-Simpan tautan keras
-Simpan alternatif aliran data
-Simpan keamanan berkas
+Menyimpan tautan simbolik
+Menyimpan tautan keras
+Menyimpan alternatif aliran data
+Menyimpan keamanan berkas
 4050
-Simpan
+Menyimpan
 Tercepat
 Cepat
 Normal
@@ -392,6 +400,17 @@ Ramban
 Semua Berkas
 Non-padat
 Padat
+4080
+Waktu
+Stempel waktu presisi:
+Menyimpan waktu modifikasi
+Menyimpan waktu pembuatan
+Menyimpan waktu akses teralkhir
+Setel waktu arsip ke waktu file terbaru
+Jangan ubah waktu akses terakhir file sumber
+4090
+dtk
+nd
 6000
 Salin
 Pindah
@@ -414,7 +433,7 @@ Anda yakin ingin hapus direktori '{0}' dan semua isinya?
 Anda yakin ingin hapus {0} butir?
 Menghapus...
 Galat Penghapusan Berkas atau Direktori
-Sistem tidak bisa memindah suatu berkas yang berlintasan panjang ke Recycle Bin
+Sistem tidak bisa memindah suatu berkas yang berlintasan panjang ke Tempat Sampah
 6300
 Buat Direktori
 Buat Berkas
@@ -475,12 +494,12 @@ Patokan
 Pemakaian memori:
 Pemampatan
 Pengawamampatan
-Penilaian
-Jumlah Penilaian
+Peringkat
+Peringkat Keseluruhan
 Aktual
 Perolehan
 Pemakaian CPU
-Penilaian/Pemakaian
+Peringkat / Pemakaian
 Pas:
 7700
 Tautan

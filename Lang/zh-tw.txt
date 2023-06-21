@@ -1,6 +1,6 @@
 ﻿;!@Lang2@!UTF-8!
 ;  4.59 : Leon Tseng, sec2, 琥珀
-;  9.07 - 22.00 : Jack Pang : https://www.developershome.com/7-zip/
+;  9.07 - 22.00 : Jack Pang
 ;
 ;
 ;

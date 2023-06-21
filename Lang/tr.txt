@@ -1,7 +1,7 @@
-﻿;!@Lang2@!UTF-8!
+;!@Lang2@!UTF-8!
+; 22.00 : 2023-05-28 : Emir SARI
 ; 15.00 : 2018-11-21 : Kaya Zeren
-; 9.07 : 2009-09-22 : X-FoRcE 
-;
+;  9.07 : 2009-09-22 : X-FoRcE 
 ;
 ;
 ;
@@ -27,18 +27,18 @@ Yardım
 
 &Devam
 440
-Tümüne E&vet
-Tümüne Ha&yır
+Tümüne &Evet
+Tümüne &Hayır
 Durdur
 Yeniden Başlat
 &Arka Planda
 Ö&n Planda
 &Duraklat
-Duraklatılmış
+Duraklatıldı
 İptal etmek istediğinize emin misiniz?
 500
 &Dosya
-Düz&enle
+Dü&zen
 &Görünüm
 &Sık Kullanılanlar
 &Araçlar
@@ -47,8 +47,8 @@ Düz&enle
 &Aç
 7-Zip İçi&nde Aç
 &Varsayılan Uygulamada Aç
-&Görüntüleyici
-Düz&enle
+&Görüntüle
+Dü&zenle
 &Yeniden Adlandır
 Klasöre Ko&pyala...
 Klasöre &Taşı...
@@ -59,29 +59,29 @@ Dosyaları Bi&rleştir...
 Açıkla&ma....
 Sağlamaları Hesapla
 Fark
-Klasör &Oluştur
-Dosya Ol&uştur
+Klasör Oluştur
+Dosya Oluştur
 Çı&k
 Ba&ğlantı
-Akış&ları Değiştir
+Alternatif &Akışlar
 600
 Tümünü &Seç
-Tümünü Bırak
+Tümünün Seçimini Kaldır
 Seçimi &Tersine Çevir
 Seç...
-Tümünü Bırak...
-Aynı Türdekileri Seç
-Aynı Türdekileri Bırak
+Seçimini Kaldır...
+Türe Göre Seç
+Türe Göre Seçimi Kaldır
 700
-Büyük Sim&geler
-Küçük Si&mgeler
+&Büyük Simgeler
+&Küçük Simgeler
 &Liste Görünümü
 &Ayrıntılı Görünüm
 730
-Sıralanmasın
+Sıralamasız
 Düz Görünüm
-&2 Pano
-A&raç Çubukları
+&2 Panelli
+&Araç Çubukları
 Kök Klasöre Git
 Üst Klasöre Geç
 Klasör Geçmişi...
@@ -90,8 +90,8 @@ Görünüm Otomatik Yenilensin
 750
 Arşiv Araç Çubuğu
 Standart Araç Çubuğu
-Büyük Düğmeler Görüntülensin
-Düğme Metinleri Görüntülensin
+Büyük Düğmeler
+Düğme Metinlerini Göster
 800
 &Klasörü Sık Kullanılanlara Ekle
 Yer İmi
@@ -99,7 +99,7 @@ Yer İmi
 &Ayarlar...
 &Başarım
 960
-&Kullanım Kılavuzu...
+&İçerik...
 7-Zip &Hakkında...
 1003
 Yol
@@ -129,7 +129,7 @@ Grup
 Blok
 Açıklama
 Konum
-Yol Ön Eki
+Yol Öneki
 Klasörler
 Dosyalar
 Sürüm
@@ -140,8 +140,8 @@ Bağlantılar
 Blok Sayısı
 Parça Sayısı
 
-64-bit
-Big-endian
+64 Bit
+Büyük Son Haneli
 İşlemci
 Fiziksel Boyut
 Üst Bilgi Boyutu
@@ -193,22 +193,27 @@ Mutlak Bağlantı
 iNode
 
 Salt Okunur
+
+Bağlantıyı Kopyala
+
+
+Üst Veri Değiştirildi
 2100
-Ayarlar
+Seçenekler
 Dil
 Dil:
 Düzenleyici
 &Düzenleyici:
-&Fark Görüntüleyici:
+&Fark görüntüleyici:
 2200
 Sistem
 7-Zip ile açılacak dosya türleri:
 Tüm kullanıcılar
 2301
-Sağ Tık Menüsünde 7-Zip Görüntülensin
-Sağ Tık Menüsü Gruplansın
-Sağ Tık Menüsünde Görüntülenecek Ögeler
-Sağ Tık Menüsünde Simgeler Görüntülensin
+7-Zip'i sağ tık menüsüne ekle
+Gruplanmış sağ tık menüsü
+Sağ tık menüsü ögeleri
+Sağ tık menüsünde simgeleri göster
 2320
 <Klasör>
 <Arşiv Dosyası>
@@ -224,21 +229,21 @@ Sıkıştırıp E-Posta Gönder...
 2400
 Klasörler
 Ç&alışma Klasörü
-&Sistem Geçici Klasörü
-&Geçerli Klasör
-Ş&u Klasör:
-&Yalnız Çıkarılabilir Sürücüler İçin Kullanılsın
+&Sistem geçici klasörü
+&Geçerli klasör
+Ş&u klasör:
+&Yalnızca çıkarılabilir sürücüler için kullan
 Geçici arşiv dosyalarının yazılacağı konumu belirtin.
 2500
 Ayarlar
-".." Üst &Klasör Simgesi Görüntülensin
-&Gerçek Dosya Simgeleri Görüntülensin
-&Sistem Menüsü Görüntülensin
-&Tam Satır Seçilebilsin
-&Bölme Çizgileri Görüntülensin
-Ögeler T&ek Tık İle Açılabilsin
-Alternati&f Seçim Kipi Kullanılabilsin
-Büyük Be&llek Sayfaları Kullanılsın
+".." üst &klasör simgesini göster
+Gerçek dosya simgelerini göster
+Sistem menüsünü göster
+&Tam satırı seç
+&Izgara çizgilerini göster
+Ögeleri açmak için &tek tık kullan
+&Alternatif seçim kipi
+Büyük &bellek sayfaları kullan
 2900
 7-Zip Hakkında
 7-Zip özgür ve ücretsiz bir uygulamadır.
@@ -251,14 +256,14 @@ Bu arşiv türü için güncelleme işlemi yapılamaz
 '{0}' dosyası arşiv olarak açılamadı
 Şifreli '{0}' dosyası açılamadı. Parola yanlış olabilir mi?
 Arşiv türü desteklenmiyor
-{0}dosyası zaten var
+{0} dosyası zaten var
 '{0}' dosyası değiştirilmiş\nArşivdeki dosyayı güncellemek ister misiniz?
 Dosya güncellenemedi.}\n'{0}'
 Düzenleyici başlatılamadı
-Dosya virus gibi görünüyor (dosya adında uzun boşluklar var).
+Dosya virüs gibi görünüyor (dosya adında uzun boşluklar var).
 İşlem dosya yolu uzun olan bir klasörden başlatılamaz.
 Bir dosya seçmelisiniz
-Bir ya da bir kaç dosya seçmelisiniz
+Bir veya birkaç dosya seçmelisiniz
 Çok fazla öge var
 Dosya {0} arşivi olarak açılamadı
 Dosya {0} arşivi olarak açık
@@ -273,12 +278,12 @@ Siliniyor
 3320
 Ekleniyor
 Güncelleniyor
-İnceleniyor
+Çözümleniyor
 Kopyalanıyor
 Yeniden paketleniyor
 Atlanıyor
 Siliniyor
-Üst bilgi oluşturuluyor
+Üstbilgi oluşturuluyor
 3400
 Ayıkla
 Şuraya a&yıkla:
@@ -288,17 +293,20 @@ Yol kipi:
 Tam yol adları
 Bir yol adı olmasın
 Mutlak yol adları
-Göreli yol adları
+Göreceli yol adları
 3420
 Üzerine Yazma Kipi:
-Yazılmadan Önce Sorulsun
-Sorulmadan Üzerine Yazılsın
-Var Olan Dosyalar Atlansın
-Otomatik Olarak Yeniden Adlandırılsın
-Var Olan Dosyalar Otomatik Yeniden Adlandırılsın
+Üzerine yazmadan önce sor
+Sormadan üzerine yaz
+Var olan dosyaları atla
+Kendiliğinden yeniden adlandır
+Var olan dosyaları kendiliğinden yeniden adlandır
 3430
-Kök Klasörün Kopyalanması Engellensin
-Dosya Güvenliği Bilgileri Geri Yüklensin
+Kök klasörün çoğaltılmasını engelle
+Dosya güvenliği bilgisini geri yükle
+3440
+Zone.Id akışını yay
+Office dosyaları için
 3500
 Dosya Değiştirme Onayı
 İşlenen dosya hedef klasörde zaten var.
@@ -309,20 +317,20 @@ ister misiniz?
 3700
 '{0}' için sıkıştırma yöntemi desteklenmiyor.
 '{0}' içindeki veriler hatalı. Dosya bozuk.
-'{0}' için CRC sağlaması yapılamadı. Dosya bozuk.
+'{0}' için CRC sağlama toplamı yapılamadı. Dosya bozuk.
 Şifrelenmiş '{0}' dosyasındaki veriler hatalı. Parola yanlış olabilir mi?
-'{0}' dosyasında CRC sağlaması yapılamadı. Parola yanlış olabilir mi?
+'{0}' dosyasında CRC sağlama toplamı yapılamadı. Parola yanlış olabilir mi?
 3710
 Parola yanlış olabilir mi?
 3721
 Desteklenmeyen sıkıştırma yöntemi
 Veri hatası
-CRC sağlaması yapılamadı
-Veriler kulllanılamıyor
+CRC sağlama toplamı yapılamadı
+Veriler kullanılamıyor
 Beklenmeyen veri sonu
-Yüklenen verilerden sonra bazı veriler var
+Yüklenen verilerden sonra biraz veri var
 Arşiv değil
-Üst Bilgi Hatası
+Üstbilgi Hatası
 Parola yanlış
 3763
 Arşiv başlangıcı bulunamadı
@@ -332,21 +340,21 @@ Arşiv başlangıcı doğrulanamadı
 
 Özellik desteklenmiyor
 3800
-Parolayı yazın
-Parolayı yazın:
-Parola onayı:
-Par&ola görüntülensin
-Parola ve onayı aynı değil
-Parola içinde yalnız İngiliz alfabesindeki harf, sayı ve özel karekterleri (!, #, $, ...) kullanabilirsiniz
-Parola çok uzun
+Parolayı gir
+Parolayı gir:
+Parolayı yeniden gir:
+Par&olayı göster
+Parolalar eşleşmiyor
+Parolada yalnızca İngilizce harf, sayı ve özel karakterleri (!, #, $, ...) kullanabilirsiniz
+Parola pekuzun
 Parola
 3900
-Geçen Süre:
-Kalan Süre:
-Toplam Boyut:
+Geçen süre:
+Kalan süre:
+Toplam boyut:
 Hız:
 İşlenen:
-Sıkıştırma Oranı:
+Sıkıştırma oranı:
 Sorunlar:
 Arşivler:
 4000
@@ -361,48 +369,59 @@ Sö&zcük Boyutu:
 Katı Arşiv Blok Boyutu:
 İşlemci İşlemi Sayısı:
 &Parametreler:
-Ayarlar
-&Kendi Açılan Arşiv Oluşturulsun
-Paylaşılmış Dosyalar Sıkıştırılsın
+Seçenekler
+&Kendi açılan arşiv oluştur
+Paylaşılan dosyaları sıkıştır
 Şifreleme
-Şifreleme Yöntemi:
-Dosya Adları Şifrele&nsin
-Sıkıştırma İçin Kullanılacak Bellek:
-Ayıklama İçin Kullanılacak Bellek:
-Sıkıştırılan Dosyalar Silinsin
+Şifreleme yöntemi:
+Dosya &adlarını şifrele
+Sıkıştırma için kullanılacak bellek:
+Ayıklama için kullanılacak bellek:
+Sıkıştırma sonrası dosyaları sil
 4040
-Sembolik Bağlantılar Kaydedilsin
-Mutlak Bağlantılar Kaydedilsin
-Alternatif Veri Akışları Kaydedilsin
-Dosyaların Güvenlik Bilgileri Kaydedilsin
+Sembolik bağlantıları depola
+Mutlak bağlantıları depola
+Alternatif veri akışlarını depola
+Dosya güvenlik bilgisini depola
 4050
-02000D81="Sıkıştırmasız"
-02000D85="En hızlı"
-02000D84="Hızlı"
-02000D82="Normal"
-02000D83="Yüksek"
-02000D86="Çok yüksek"
+Sıkıştırmasız
+En hızlı
+Hızlı
+Normal
+Yüksek
+Çok yüksek
 4060
-Dosyalar Eklensin ve Güncellensin
-Eski Dosyalar Güncellensin
-Var Olan Dosyalar Yenilensin
-Dosyalar Eşitlensin
+Dosyaları ekle ve güncelle
+Dosyaları güncelle ve ekle
+Var olan dosyaları yenile
+Dosyaları eşzamanla
 4070
-Gözat
+Göz At
 Tüm Dosyalar
 Katı Arşiv Olmayanlar
 Katı Arşiv Olanlar
+4080
+Zaman
+Zaman damgası kesinliği:
+Değişiklik zamanını depola
+Oluşturma zamanını depola
+Son erişim zamanını depola
+Arşiv zamanını son dosya zamanı olarak ayarla
+Kaynak dosyaların son erişim zamanını değiştirme
+4090
+san
+ns
 6000
 Kopyala
 Taşı
-Şuraya Kopyala:
-Şuraya Taşı:
+Şuraya kopyala:
+Şuraya taşı:
 Kopyalanıyor...
 Taşınıyor...
-Yeniden Adlandırılıyor...
+Yeniden adlandırılıyor...
 Hedef klasörü seçin.
 Bu işlem bu klasörde yapılamaz.
-Dosya ya da klasör yeniden adlandırılırken sorun çıktı
+Dosya/Klasör Yeniden Adlandırma Hatası
 Dosya Kopyalama Onayı
 Dosyaları arşiv dosyasına kopyalamak istediğinize emin misiniz
 6100
@@ -413,22 +432,22 @@ Birden Fazla Dosya Silme Onayı
 '{0}' klasörü ve içindeki tüm ögeler silinsin mi?
 {0} öge silinsin mi?
 Siliniyor...
-Dosya ya da klasör silinirken sorun çıktı
+Dosya/Klasör Silme Hatası
 Dosya yolu uzun olduğundan çöpe atılamadı"
 6300
 Klasör Oluştur
 Dosya Oluştur
-Klasör Adı:
-Dosya Adı:
+Klasör adı:
+Dosya adı:
 Yeni Klasör
 Yeni Dosya
-Klasör Oluşturulurken Sorun Çıktı
-Dosya Oluşturulurken Sorun Çıktı
+Klasör Oluşturulurken Hata
+Dosya Oluşturulurken Hata
 6400
 Açıklama
 &Açıklama:
 Seç
-Bırak
+Seçimi Kaldır
 Seçim Koşulu:
 6600
 Özellikler
@@ -449,44 +468,44 @@ Taşı
 Sil
 Bilgiler
 7300
-Bölünecek Dosya:
-Parçaların &Yazılacağı Klasör:
-Bölünecek &Parçaların Büyüklüğü:
+Dosyayı Böl
+Şuna böl:
+&Parçalara, baytlara böl:
 Bölünüyor...
-Bölmeyi Onaylayın
+Bölmeyi Onayla
 Dosyayı {0} parçaya bölmek istediğinize emin misiniz?
 Parça büyüklüğü, özgün dosya boyutundan küçük olmalıdır
 Parça boyutu hatalı
 Belirtilen parça boyutu: {0} bayt.\nArşiv dosyasını parçalara bölmek istediğinize emin misiniz?
 7400
 Dosyaları Birleştir
-Dosyanın &Birleştirileceği Klasör:
+Şuraya &birleştir:
 Birleştiriliyor...
-Bölünmüş dosyasının yalnız ilk parçasını seçin
-Dosya bölünmüş bir dosyanın parçası olarak algılanamadı
-Bölünmüş dosyanın yalnız bir parçası bulunabildi
+Bölünmüş dosyasının yalnız ilk parçasını seç
+Dosya, bölünmüş bir dosyanın parçası olarak algılanamıyor
+Bölünmüş dosyanın birden çok parçası bulunamıyor
 7500
-Sağlama değeri hesaplanıyor...
-Sağlama Bilgileri
-Verinin CRC Sağlaması:"
-Veri ve Adların CRC Sağlaması:"
+Sağlama toplamı hesaplanıyor...
+Sağlama toplamı bilgisi
+Verinin CRC sağlama toplamı:"
+Veri ve adların CRC sağlama toplamı:"
 7600
 Bilgisayar Başarımı
-Bellek Kullanımı:
+Bellek kullanımı:
 Sıkıştırma
 Ayıklama
 Sonuç
 Genel Sonuç
 Geçerli
 Sonuç
-İşlemci Yükü
+İşlemci Kullanımı
 Değerlendirme/Yük
-İşlem Adımı
+Geçişler
 7700
 Bağlantı
 Bağlantı
-Şuradan Bağlantı:
-Şuraya Bağlantı
+Şuradan bağlantıla:
+Şuraya bağlantıla:
 7710
 Bağlantı Türü
 Mutlak Bağlantı
