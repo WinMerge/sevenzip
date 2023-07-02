@@ -1,7 +1,7 @@
-﻿;!@Lang2@!UTF-8!
-;  4.07 : Nicolas Sierro
-;  9.07 : Philippe Berthault
-; 15.14 : Sylvain St-Amand (SSTSylvain)
+;!@Lang2@!UTF-8!
+; 22.00 : 2022-06-09 : Lolo S.
+;
+;
 ;
 ;
 ;
@@ -27,8 +27,8 @@ Aide
 
 &Continuer
 440
-Oui pour &Tous
-Non pour T&ous
+Oui pour &tous
+Non pour t&ous
 Arrêter
 Redémarrer
 &Arrière-plan
@@ -63,18 +63,18 @@ Créer un dossier
 Créer un fichier
 &Quitter
 Lien
-Flux &Alternatif
+Flux &alternatif
 600
-Sélectionner &Tout
-Désélectionner Tout
-&Inverser la Sélection
+Sélectionner &tout
+Désélectionner tout
+&Inverser la sélection
 Sélectionner...
 Désélectionner...
-Sélectionner par Sorte
-Désélectionner par Sorte
+Sélectionner par type
+Désélectionner par type
 700
-&Grandes Icônes
-&Petites Icônes
+&Grandes icônes
+&Petites icônes
 &Liste
 &Détails
 730
@@ -86,14 +86,14 @@ Ouvrir le dossier racine
 Dossier parent
 Historique des dossiers...
 Actualis&er
-Actualiser Automatiquement
+Actualiser automatiquement
 750
-Barre d'Archive
-Barre Standard
-Grands Boutons
-Montrer le texte des Boutons
+Barre d'archive
+Barre standard
+Grands boutons
+Montrer le texte des boutons
 800
-&Ajouter le répertoire aux Favoris
+&Ajouter le répertoire aux favoris
 Signet
 900
 &Options...
@@ -115,15 +115,15 @@ Modifié le
 Solide
 Commentaire
 Chiffrer
-Diviser Avant
-Diviser Après
+Diviser avant
+Diviser après
 Dictionnaire
 
-Sorte
+Type
 Anti
 Méthode
 OS hôte
-Système de Fichiers
+Système de fichiers
 Utilisateur
 Groupe
 Bloc
@@ -165,7 +165,7 @@ Sécurité NT
 Flux alternatif
 Aux
 Effacer
-En Arbre
+En arbre
 
 
 Type d'erreur
@@ -174,32 +174,37 @@ Erreurs
 Avertissements
 Avertissement
 Flux
-Flux Alterné
-Grosseur du Flux Alterné
-Grosseur Virtuel
-Grosseur Décompressé
-Grosseur Physique Totale
+Flux alterné
+Taille du flux alterné
+Taille virtuelle
+Taille décompressée
+Taille physique totale
 Indexe du Volume
-Sous-Type
-Commentaire Bref
-Code Page
+Sous-type
+Commentaire bref
+Code bage
 
 
 
-Grosseur Tail
-Grosseur Embedded Stub
+Taille de la queue
+Taille de la matrice intégrée
 Lien
 Lien Solide
 iNode
 
-Lecture-seulement
+Lecture seulement
+
+Copier le lien
+
+
+Métadonnées modifiées
 2100
 Options
 Langue
 Langue :
 Éditeur
 &Éditeur :
-&Diff :
+Résultat de comparaison (&Diff) :
 2200
 Système
 Associer avec 7-Zip :
@@ -225,10 +230,10 @@ Compresser vers {0} et envoyer par courriel
 Dossiers
 Dossier de &travail
 Dossier temporaire du &système
-&Courant
+Dossier &courant
 S&pécifié :
 N'utiliser que pour les médias amovibles
-Spécifiez un dossier pour les fichiers d'archive temporaires.
+Spécifier un dossier pour les fichiers d'archive temporaires.
 2500
 Paramètres
 Afficher l'élément ".."
@@ -282,7 +287,7 @@ Création d'un en-tête
 3400
 Extraire
 E&xtraire vers :
-Choisissez un dossier pour l'extraction des fichiers.
+Choisir un dossier pour l'extraction des fichiers.
 3410
 Mode de chemin :
 Nom de chemin complet
@@ -299,6 +304,9 @@ Renommer les fichiers existants
 3430
 Élimine la duplication du répertoire racine
 Restauration du fichier de sécurité
+3440
+Propager le flux Zone.Id :
+Pour les fichiers Office
 3500
 Confirmer le remplacement de fichier
 Le dossier de destination contient déjà un fichier avec ce nom.
@@ -325,19 +333,19 @@ N'est pas une archive
 Erreur en-têtes
 Mauvais mot de passe
 3763
-Démarrage non disponible d'une archive
-Démarrage non confirmé d'une archive
+Démarrage de l'archive non disponible
+Démarrage de l'archive non confirmé
 
 
 
 Option non supportée
 3800
-Entrez le mot de passe
-Entrez le mot de passe :
-Entrez le mot de passe à nouveau :
+Entrer le mot de passe
+Entrer le mot de passe :
+Entrer le mot de passe à nouveau :
 &Afficher le mot de passe
 Les mots de passe ne correspondent pas
-Pour le mot de passe, n'utilisez que des lettres non accentuées, des chiffres et des caractères spéciaux (!, #, $, ...)
+Pour le mot de passe, n'utiliser que des lettres non accentuées, des chiffres et des caractères spéciaux (!, #, $, ...)
 Le mot de passe est trop long
 Mot de passe
 3900
@@ -371,10 +379,10 @@ Mémoire pour la compression :
 Mémoire pour la décompression :
 Effacer les fichiers après compression
 4040
-Emmagasine liens symboliques
-Emmagasine liens solides
-Emmagasine flux de données alternatifs
-Emmagasine fichier de sécurité
+Enregistrer le liens symboliques
+Enregistrer le liens solides
+Enregistrer le flux de données alternatifs
+Enregistrer le fichier de sécurité
 4050
 Aucune
 Le plus rapide
@@ -392,6 +400,17 @@ Choisir
 Tous les fichiers
 Non-solide
 Solide
+4080
+Heure
+Précision de l'horodatage :
+Stocker l'heure de modification
+Stocker l'heure de création
+Stocker l'heure du dernier accès
+Définir l'heure d'archivage sur l'heure du dernier fichier
+Ne pas modifier l'heure du dernier accès aux fichiers source
+4090
+sec
+ns
 6000
 Copier
 Déplacer
@@ -400,7 +419,7 @@ Déplacer vers :
 Copie...
 Déplacement...
 Renommage...
-Sélectionnez le dossier de destination.
+Sélectionner le dossier de destination.
 L'opération n'est pas possible pour ce dossier.
 Erreur durant le Renommage du Fichier ou du Dossier
 Confirmation de la Copie de(s) Fichier(s)
@@ -453,7 +472,7 @@ Diviser le fichier
 &Diviser en :
 Diviser en &volumes, octets :
 Découper...
-Confirmez le découpage
+Confirmer le découpage
 Êtes-vous sûr de vouloir découper le fichier en {0} volumes ?
 La taille de volume doit être inférieure à la taille du fichier d'origine
 Taille de volume incorrecte
@@ -462,7 +481,7 @@ Taille de volume spécifiée : {0} octets.\nÊtes-vous sûr de vouloir découper
 Combiner les fichiers
 &Combiner en :
 Combinaison...
-Ne sélectionnez que le premier fichier
+Ne sélectionner que le premier fichier
 Ne trouve aucun fichier faisant partie d'une archive divisée
 Ne trouve qu'un seul fichier faisant partie d'une archive divisée
 7500
@@ -486,9 +505,9 @@ Passe :
 Lien
 Lien
 Lien depuis :
-Lien ver :
+Lien vers :
 7710
-Sorte de lien
+Type de lien
 Lien solide
 Lien symbolique de fichier
 Lien symbolique de répertoire
