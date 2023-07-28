@@ -1,5 +1,5 @@
 ﻿;!@Lang2@!UTF-8!
-; 22.01 : 2022-07-17 : Jadran Rudec
+; 22.01 : 2023-07-27 : Jadran Rudec, jrudec@gmail.com
 ;
 ;
 ;
@@ -57,7 +57,7 @@ Iz&briši
 &Združi datoteke...
 L&astnosti
 Ko&mentar
-Izračunaj preizusno vsoto
+Izračunaj kontrolno vsoto
 Razlika
 Ustvari mapo
 Ustvari datoteko
@@ -144,7 +144,7 @@ Nosilcev
 Big-endian
 CPE
 Fizična velikost
-Velikost glave
+Velikost glav
 Kontrolna vsota
 Značilnosti
 Navidezni naslov
@@ -340,9 +340,9 @@ Nepotrjen začetek arhiva
 
 Nepodprta funkcija
 3800
-Vnos gesla
+Vnesite geslo
 Vnesite geslo:
-Ponovno vnesite geslo:
+Ponovite vnos gesla:
 &Prikaži geslo
 Gesli se ne ujemata
 Za geslo uporabite le črke, številke in posebne znake angleške abecede (!, #, $,...)
@@ -388,7 +388,7 @@ Brez stiskanja
 Najhitrejše
 Hitro
 Običajno
-Največje stiskanje
+Največje
 Ultra
 4060
 Dodaj in zamenjaj datoteke
@@ -485,10 +485,10 @@ Izberite samo prvi del deljene datoteke
 Ni mogoče zaznati datoteke kot del deljene datoteke
 Ni mogoče najti več kot en del deljene datoteke
 7500
-Izračun preizkusne vsote...
-Podatki o preizkusni vsoti
-Preizkusna vsota za podatke:
-Preizkusna vsota za podatke in imena:
+Izračun kontrolne vsote...
+Podatki o kontrolni vsoti
+Kontrolna vsota za podatke:
+Kontrolna vsota za podatke in imena:
 7600
 Meritev
 Poraba pomnilnika:
