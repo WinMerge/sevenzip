@@ -153,7 +153,7 @@ Nom court
 Application créatrice
 Taille de secteur
 Mode
-Lien Symbolique
+Lien symbolique
 Erreur
 Taille Totale
 Espace Libre
@@ -182,7 +182,7 @@ Taille physique totale
 Indexe du Volume
 Sous-type
 Commentaire bref
-Code bage
+Page de code
 
 
 
@@ -421,13 +421,13 @@ Déplacement...
 Renommage...
 Sélectionner le dossier de destination.
 L'opération n'est pas possible pour ce dossier.
-Erreur durant le Renommage du Fichier ou du Dossier
-Confirmation de la Copie de(s) Fichier(s)
+Erreur durant le renommage du fichier ou du dossier
+Confirmation de la copie de(s) fichier(s)
 Confirmer la copie de(s) fichier(s) à archiver
 6100
-Confirmer la Suppression du Fichier
-Confirmer la Suppression du Dossier
-Confirmer la Suppression de Multiple Fichiers
+Confirmer la suppression du fichier
+Confirmer la suppression du dossier
+Confirmer la suppression de multiple Fichiers
 Êtes-vous sûr de vouloir supprimer '{0}' ?
 Êtes-vous sûr de vouloir supprimer le dossier '{0}' et tout ce qu'il contient ?
 Êtes-vous sûr de vouloir supprimer ces {0} objets ?
