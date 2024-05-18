@@ -3,6 +3,7 @@
 ;  4.33 : Michal Molhanec
 ;  9.07 : Jiří Malák
 ; 15.00 : Kryštof Černý
+; 23.01 : 2023-06-20 : Patrik (Pa4k) Špaňo
 ;
 ;
 ;
@@ -63,7 +64,7 @@ Vytvořit složku
 Vytvořit soubor
 &Konec
 Odkázat
-&Alternate Streams
+&Alternativní toky
 600
 Vybrat &vše
 Zrušit výběr vše
@@ -80,7 +81,7 @@ Zrušit výběr podle typu
 730
 &Bez třídění
 "Ploché" zobrazení
-&2 panely
+&2 Panely
 Nástrojové lišty
 Otevřít kořenovou složku
 O úroveň výš
@@ -110,15 +111,15 @@ Velikost
 Komprimovaná velikost
 Atributy
 Vytvořen
-Použit
+Použito
 Změněn
 Pevný
 S poznámkou
 Zakódovaný
-Rozdělen do
-Rozdělen od
+Rozdělen před
+Rozdělen po
 Slovník
-CRC
+
 Typ
 Anti
 Metoda
@@ -162,10 +163,10 @@ Označení
 Místní název
 Poskytovatel
 NT Zabezpečení
-Alternate Stream
+Alternativní toky
 Aux
 Odstraněný
-Is Tree
+Je strom
 
 
 Typ chyby
@@ -173,26 +174,31 @@ Chyby
 Chyby
 Upozornění
 Upozornění
-Streams
-Alternate Streams
-Alternate Streams Size
+Toky
+Alternativní toky
+Velikost alternativních toků
 Virtuální velikost
 Rozbalená velikost
 Celková fyzická velikost
-Volume Index
-SubType
-Short Comment
-Code Page
+Index svazku
+PodTyp
+Krátký komentář
+Kódová stránka
 
 
 
-Tail Size
-Embedded Stub Size
-Link
-Hard Link
+Velikost zakončení
+Velikost vloženého prvku
+Odkaz
+Pevný odkaz
 iNode
 
 Jen pro čtení
+
+Zkopírovat odkaz
+
+
+Metadata změněna
 2100
 Možnosti
 Jazyk
@@ -241,7 +247,7 @@ Otevřít položku jedním kliknutím
 &Používat velké stránky paměti
 2900
 O programu 7-Zip
-7-Zip je svobodný software.
+7-Zip je svobodný software
 3000
 Systém nemůže přidělit požadovanou velikost paměti
 Nedošlo k žádným chybám
@@ -299,6 +305,9 @@ Automatické přejmenování existujících souborů
 3430
 Eliminovat duplikaci kořenové složky
 Obnovit zabezpečení souborů
+3440
+Propagovat Zone.Id stream:
+Pro soubory Office
 3500
 Potvrzení nahrazení souboru
 Cílová složka již obsahuje zpracovaný soubor.
@@ -373,10 +382,10 @@ Odstranit soubory po zabalení
 4040
 Uložit symbolické odkazy
 Uložit pevné odkazy
-Store alternate data streams
+Uložit alternativní datové toky
 Uložit zabezpečení souborů
 4050
-Skladovací
+Bez komprese
 Nejrychlejší
 Rychlá
 Normální
@@ -392,6 +401,17 @@ Procházet
 Všechny soubory
 Podle velikosti souboru
 Pevný
+4080
+Čas
+Přesnost časové značky:
+Uložit čas úpravy
+Uložit čas vytvoření
+Uložit čas posledního přístupu
+Nastavit čas archivu dle času nejnovějšího souboru
+Neměnit čas posledního přístupu u zdrojových souborů
+4090
+sek
+ns
 6000
 Kopírovat
 Přesunout
@@ -483,12 +503,12 @@ Využití procesoru
 Výkon / Využití
 Průchodů:
 7700
-Odkázat1
-Odkázat2
+Odkaz
+Propojit
 Odkázat z:
 Odkázat na:
 7710
-Typ odkázání
+Typ odkazu
 Pevný odkaz
 Symbolický odkaz souboru
 Symbolický odkaz složky

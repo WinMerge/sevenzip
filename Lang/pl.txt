@@ -4,7 +4,7 @@
 ;  9.07 : F1xat
 ;  9.33 : Łukasz Maria P. Pastuszczak
 ; 22.00 : Michał L.
-;
+; 24.04 : Piter, Michał L.
 ;
 ;
 ;
@@ -98,6 +98,8 @@ Zakładka
 900
 &Opcje...
 &Test wydajności
+910
+Usuń pliki tymczasowe…
 960
 &Zawartość
 7-Zip - i&nformacje
@@ -403,7 +405,7 @@ Ciągły
 4080
 Czas
 Precyzja znacznika czasu:
-Przechowuj czas ostatniej modifikacji
+Przechowuj czas ostatniej modyfikacji
 Przechowuj czas utworzenia
 Przechowuj czas ostatniego dostępu
 Ustaw czas archiwizacji na czas ostatniego pliku
@@ -512,3 +514,20 @@ Dowiązanie twarde
 Dowiązanie symboliczne pliku
 Dowiązanie symboliczne katalogu
 Połączenie katalogów
+7800
+Żądanie użycia pamięci
+Zmień dozwolony limit dla kolejnych operacji
+&Powtórz wybraną akcję dla bieżącej operacji
+Akcja
+7810
+Operacja została zablokowana przez 7-Zip.
+Operacja wymaga dużej ilości pamięci RAM.
+wymagany rozmiar pamięci do użycia
+dozwolony limit pamięci do użycia
+limit pamięci do użycia ustawiony przez 7-Zip
+rozmiar pamięci RAM
+Maksymalna ilość pamięci RAM dozwolona do rozpakowywania archiwów:
+7820
+&Zezwól na rozpakowywanie archiwum
+&Pomiń rozpakowywanie archiwum
+Rozpakowywanie archiwum zostało pominięte.

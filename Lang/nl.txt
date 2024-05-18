@@ -6,7 +6,7 @@
 ; 15.00 : Jeroen Tulp
 ; 21.03 : Quinten Althues
 ; 21.05 : Jeroen Tulp
-; 22.00 : 2022-07-04: Jeroen Tulp
+; 24.04 : Jeroen Tulp : 2024-05-13
 ;
 ;
 ;
@@ -98,6 +98,8 @@ Bladwijzer toevoegen
 900
 &Opties...
 &Benchmark
+910
+Verwijder tijdelijke bestanden...
 960
 &Inhoud...
 &Over 7-Zip...
@@ -512,3 +514,20 @@ Vaste  koppeling
 Symbolische bestandskoppeling
 Symbolische mapkoppeling
 Mapsplitsing
+7800
+Geheugengebruik verzoek
+Wijzigen toegestane limiet voor volgende operaties
+&Herhaal geselecteerde actie voor huidige operatie
+Actie
+7810
+De operatie is geblokkeerd door 7-Zip.
+De operatie vereist een grote hoeveelheid geheugen (RAM).
+vereiste grootte geheugengebruik
+toegestane limiet geheugengebruik
+limiet geheugengebruik  ingesteld door 7-Zip
+RAM grootte
+Maximale hoeveelheid RAM geheugen toegestaan voor het uitpakken van archieven:
+7820
+&Toestaan uitpaken van archief
+&Overslaan uitpakken van archief
+Uitapkken van het archief is overgeslagen.

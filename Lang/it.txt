@@ -4,7 +4,7 @@
 ; 15.05 : 2015-06-17 : TJL73
 ; 17.00 : 2017-02-01 : Massimo Castiglia
 ; 18.03 : 2018-01-15 : POLAR
-; 22.00 : 2022-06-20 : TJL73
+; 24.04 : 2024-04-05 : TJL73
 ;
 ;
 ;
@@ -84,7 +84,7 @@ Interfaccia a &2 pannelli
 Barre degli &strumenti
 Apri cartella principale
 Livello superiore
-Cronologia cartele...
+Cronologia cartelle...
 &Aggiorna
 Aggiornamento automatico
 750
@@ -98,6 +98,8 @@ Segnalibro
 900
 &Opzioni...
 &Benchmark
+910
+Elimina file temporanei...
 960
 &Guida...
 &Informazioni su 7-Zip...
@@ -512,3 +514,20 @@ Collegamento statico
 Collegamento simbolico al file
 Collegamento simbolico alla cartella
 Giunzione cartella
+7800
+Richiesta utilizzo della memoria
+Modifica il limite consentito per le prossime operazioni
+&Ripete l'azione selezionata per l'operazione corrente
+Azione
+7810
+L'operazione è stata bloccata da 7-Zip.
+L'operazione richiede una grande quantità di RAM.
+dimensione di utilizzo della memoria necessaria
+limite di utilizzo della memoria consentito
+limite di utilizzo della memoria impostato da 7-Zip
+Dimensione RAM
+Quantità massima di utilizzo della memoria RAM consentita per decomprimere gli archivi:
+7820
+Consenti la decompressione dell'&archivio
+&Salta la decompressione dell'archivio
+La decompressione dell'archivio è stata saltata.

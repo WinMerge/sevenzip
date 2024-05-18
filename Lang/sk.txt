@@ -2,7 +2,7 @@
 ;       : Tomas Tomasek
 ;  9.07 : Pavel Devečka
 ;  9.38 beta : 2015-01-11 : Roman Horváth
-;
+;  24.02 : Milan Šalka
 ;
 ;
 ;
@@ -63,6 +63,7 @@ Vytvoriť priečinok
 Vytvoriť súbor
 Uko&nčiť
 Odkaz...
+&Alternatívne streamy
 600
 Označiť všetko
 Odznačiť všetko
@@ -190,6 +191,13 @@ Veľkosť vloženého ústrižku
 Odkaz
 Pevný odkaz
 iNode
+
+Len na čítanie
+
+Kopírovať link
+
+
+Metadata zmenené
 2100
 Nastavenia
 Jazyk
@@ -200,6 +208,7 @@ Vyhľadávač rozdielov (Diff):
 2200
 Systém
 Asociovať 7-Zip s vybranými typmi súborov:
+Všetci používatelia
 2301
 Integrovať 7-Zip do kontextovej ponuky
 Kaskádová kontextová ponuka
@@ -256,12 +265,25 @@ Operácia nemôže byť vykonaná v priečinku, ktorý má dlhú cestu.
 Musíte vybrať jeden súbor
 Musíte vybrať jeden alebo viac súborov
 Priveľa položiek
+Súbor nie je možné otvoriť ako {0} archív
+Súbor je otvorený ako {0} archív
+Archív je otvorený s ofsetom
 3300
 Rozbaľovanie
 Komprimovanie
 Výsledok testovania
 Otváranie...
 Prehľadávanie...
+Odstraňovanie
+3320
+Pridávanie
+Aktualizovanie
+Analyzovanie
+Replikovanie
+Repackovanie
+Preskakovanie
+Mazanie
+Vytváranie hlavičky
 3400
 Rozbaliť
 Rozbaliť do:
@@ -282,6 +304,9 @@ Automaticky premenovať existujúce súbory
 3430
 Eliminovať duplikáty koreňového priečinka
 Obnoviť práva súboru
+3440
+Propagovať stream Zone.Id:
+Pre súbory balíka Office
 3500
 Potvrdenie nahradenia súboru
 Cieľový priečinok už obsahuje rozbaľovaný súbor.
@@ -306,6 +331,7 @@ Neočakávaný koniec údajov
 Za zužitkovateľnými údajmi sa nachádzajú ďalšie údaje
 Nie je to archív
 Chybné hlavičky
+Nesprávne heslo
 3763
 Začiatok archívu je nedostupný
 Začiatok archívu nie je potvrdený
@@ -374,6 +400,17 @@ Prehľadávať
 Všetky súbory
 Nejednoliaty
 Jednoliaty
+4080
+Čas
+Presnosť časovej pečiatky:
+Uložiť čas úpravy
+Čas vytvorenia obchodu
+Uložiť čas posledného prístupu
+Nastavte čas archivácie na najnovší čas súboru
+Nemeňte zdrojové súbory v čase posledného prístupu
+4090
+sek
+ns
 6000
 Kopírovať
 Presunúť
@@ -475,3 +512,20 @@ Pevný odkaz
 Súbor symbolického odkazu
 Priečinok symbolického odkazu
 Prekríženie priečinkov
+7800
+Žiadosť o využitie pamäte
+Zmeňte povolený limit pre ďalšie operácie
+&Zopakujte vybratú akciu pre aktuálnu operáciu
+Akcia
+7810
+Operácia bola zablokovaná 7-Zipom.
+Operácia vyžaduje veľké množstvo pamäte (RAM).
+požadovaná veľkosť využitia pamäte
+povolený limit využitia pamäte
+limit využitia pamäte nastavený pomocou 7-Zip
+RAM veľkosť
+Maximálne množstvo pamäte RAM povolené na rozbaľovanie archívov:
+7820
+&Povoliť rozbaľovanie archívu
+P&reskočiť rozbaľovanie archívu
+Rozbaľovanie archívu bolo preskočené.

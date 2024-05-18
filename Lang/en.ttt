@@ -1,5 +1,5 @@
 ﻿;!@Lang2@!UTF-8!
-; 22.00 : 2022-06-09 : Igor Pavlov
+; 24.04 : 2024-04-05 : Igor Pavlov
 ;
 ;
 ;
@@ -98,6 +98,8 @@ Bookmark
 900
 &Options...
 &Benchmark
+910
+Delete Temporary Files...
 960
 &Contents...
 &About 7-Zip...
@@ -512,3 +514,20 @@ Hard Link
 File Symbolic Link
 Directory Symbolic Link
 Directory Junction
+7800
+Memory usage request
+Change allowed limit for next operations
+&Repeat selected action for current operation
+Action
+7810
+The operation was blocked by 7-Zip.
+The operation requires big amount of memory (RAM).
+required memory usage size
+allowed memory usage limit
+memory usage limit set by 7-Zip
+RAM size
+Maximum amount of RAM memory usage allowed to unpack archives:
+7820
+&Allow archive unpacking
+&Skip archive unpacking
+Archive unpacking was skipped.

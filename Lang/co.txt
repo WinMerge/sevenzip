@@ -1,8 +1,8 @@
 ﻿;!@Lang2@!UTF-8!
-; 22.00 : 2022-06-21 : Patriccollu di Santa Maria è Sichè (Latest Update)
+; 24.04 : 2024-04-06 : Patriccollu di Santa Maria è Sichè (Latest Update)
+; 22.00 : 2022-06-21 : Patriccollu di Santa Maria è Sichè (Update)
+; 15.00 : 2015-04-26 : Patriccollu di Santa Maria è Sichè (Update)
 ;  9.20 : 2010-12-12 : Patriccollu di Santa Maria è Sichè (Creation)
-;
-;
 ;
 ;
 ;
@@ -45,9 +45,9 @@ A&ttrezzi
 Ai&utu
 540
 &Apre
-Apre den&tru
-Apre f&ora
-&Fighjà
+Apre in &7-Zip
+Apre in l’espluratore Windows
+&Fighjà (esad.)
 &Mudificà
 &Rinuminà
 &Cupià versu…
@@ -58,7 +58,7 @@ S&quassà
 &Pruprietà
 Cumme&ntu…
 Calculà a somma di cuntrollu
-Paragunà e sfarenze
+Paragunà e sfarenze (Diff)
 Creà un cartulare
 Creà un schedariu
 &Esce
@@ -98,6 +98,8 @@ Indetta
 900
 &Ozzioni…
 &Sperimentu di pussibilità…
+910
+Squassà i schedarii timpurarii…
 960
 &Cuntenutu (in inglese)…
 &Apprupositu di 7-Zip…
@@ -112,7 +114,7 @@ Attributi
 Creatu u
 Accessu u
 Mudificatu
-Solidu
+Fisicu
 Cummentatu
 Cifratu
 Frazziunà nanzu
@@ -148,7 +150,7 @@ Dimensione di l’intestature
 Somma di cuntrollu
 Caratteristiche
 Indirizzu virtuale
-ID
+Identificazione
 Nome cortu
 Appiecazione d’origine
 Dimensione di settore
@@ -189,7 +191,7 @@ Pagina di codice
 Dimensione di a coda
 Dimensione di u mozzicone incurpuratu
 Liame
-Liame solidu
+Liame fisicu
 iNodu
 
 Lettura sola
@@ -230,18 +232,18 @@ Cumprime versu {0} è mandà da eMail
 Cartulari
 Cartulare di &travagliu
 Cartulare &timpurariu di u sistema
-&Currente
-&Specificatu :
+&Cartulare currente
+Cartulare &specificatu :
 Impiegà solu per i dischi amuvibili
 Specificate un cartulare per i schedarii timpurarii d’archiviu.
 2500
 Preferenze
-Affissà l’elementu « .. »
+Affissà l’elementu « ... »
 Affissà e vere icone di i schedarii
 Affissà u listinu di u sistema
 Selezziunà a linea &sana
 Affissà e linee &quadrittate
-Cliccu simplice per apre un elementu
+Apre un elementu cù un cliccu simplice
 Modu di selezzione &alternativa
 Impiegà pagine &maiò di memoria
 2900
@@ -260,12 +262,12 @@ U schedariu {0} esiste dighjà
 U schedariu « {0} » hè statu mudificatu.\nVulete mudificallu in l’archiviu ?
 Ùn si pò micca mudificà u schedariu\n« {0} »
 Ùn si pò lancià l’editore.
-U schedariu cuntene forse un virus (u so nome cuntene spazii numerosi).
+U schedariu puderia cuntene un virus (u so nome cuntene spazii numerosi chì ponu piattà l’estensione).
 St’azzione ùn pò micca fassi à partesi d’un cartulare cù un nome di chjassu cusì longu.
 Ci vole à selezziunà un schedariu
 Ci vole à selezziunà unu o parechji schedarii
 Troppu elementi
-Ùn si pò micca apre u schedariu cum’è un archiviu {0}
+Ùn si pò micca apre u schedariu {0} cum’è un archiviu
 U schedariu hè apertu cum’è un archiviu {0}
 L’archiviu hè apertu cù un spiazzamentu
 3300
@@ -273,7 +275,7 @@ Estrazzione
 Cumpressione
 Verificazione
 Apertura…
-Esplurazione…
+Analisa…
 Cacciatura
 3320
 Aghjuntu
@@ -380,7 +382,7 @@ Memoria impiegata da a scumpressione :
 Squassà i schedarii dopu à a cumpressione
 4040
 Cunservà i liami simbolichi
-Cunservà i liami solidi
+Cunservà i liami fisichi
 Cunservà i flussi di dati alternativi
 Cunservà a sicurità di i schedarii
 4050
@@ -403,11 +405,11 @@ Solidu
 4080
 Data
 Precizione di stampiglia :
-Data è ora di mudificazione
-Data è ora di creazione
-Data è ora d’ultimu accessu
-Definisce l’ultima data è ora di u schedariu per l’archiviu
-Ùn cambià micca l’ultima data è ora di i schedarii di fonte
+Arregistrà a data è l’ora di mudificazione
+Arregistrà a data è l’ora di creazione
+Arregistrà a data è l’ora d’ultimu accessu
+Definisce cum’è data è ora per l’archiviu quella di l’ultimu schedariu
+Ùn cambià micca data è ora d’ultimu accessu per i schedarii di fonte
 4090
 sec
 ns
@@ -476,14 +478,14 @@ Cunfirmà u spartimentu
 Vulete veramente sparte u schedariu in {0} vulumi ?
 A dimensione di u vulume deve esse più chjuca chè u schedariu d’origine
 Dimensione di vulume incurretta
-Dimensione di vulume specificata : {0} ottetti.\nVulete veramente taglià l’archiviu in tali vulumi ?
+Dimensione di vulume specificata : {0} ottetti.\nVulete veramente sparte l’archiviu in tanti vulumi ?
 7400
 Unisce i schedarii
 &Unisce in :
 Unione…
 Selezziunà solu a prima parte di l’archiviu spartutu
-Ùn si trova nisuna parte d’archiviu spartutu
-Ùn si trova micca più d’una parte d’archiviu spartutu
+Ùn si pò truvà nisuna parte d’archiviu spartutu
+Ùn si pò truvà più d’una parte d’archiviu spartutu
 7500
 Calculu di a somma di cuntrollu…
 Infurmazione nant’à a somma di cuntrollu
@@ -512,3 +514,20 @@ Liame solidu
 Liame simbolicu di schedariu
 Liame simbolicu di cartulare
 Unione di cartulare
+7800
+Dumanda d’aghjovu di memoria
+Cambià a cunfina permessa per e prossime operazioni
+&Ripete l’azzione selezziunata per l’operazione currente
+Azzione
+7810
+L’operazione hè stata bluccata da 7-Zip.
+L’operazione richiede una quantità tamanta di memoria (RAM).
+dimensione richiesta per l’aghjovu di memoria
+cunfina permessa per l’aghjovu di memoria
+cunfina definita da 7-Zip per l’aghjovu di memoria
+dimensione RAM
+Quantità massima di memoria RAM chì hè permessa per scumprime l’archivii :
+7820
+&Permette u spacchittime d’archiviu
+&Tralascià u spacchittime d’archiviu
+U spacchittime d’archiviu hè statu tralasciatu.
