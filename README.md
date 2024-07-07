@@ -3,7 +3,7 @@ Clone of http://sourceforge.net/projects/sevenzip/
 readme.txt
 
 ~~~
-7-Zip 24.05 Sources
+7-Zip 24.06 Sources
 -------------------
 
 7-Zip is a file archiver for Windows. 
