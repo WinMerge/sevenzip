@@ -3,7 +3,7 @@
 ;  9.16 : Nyilas MISY
 ; 15.00 : 2021-11-09 : Barnabas Kovacs
 ; 22.01 : 2022-07-15 : John Fowler
-;
+; 24.05 : 2024-05-16 : John Fowler
 ;
 ;
 ;
@@ -98,6 +98,8 @@ Könyvjelző
 900
 &Beállítások...
 &Teljesítménymérés
+910
+Ideiglenes fájlok törlése...
 960
 &Tartalomjegyzék...
 7-Zip &névjegye...
@@ -118,7 +120,7 @@ Titkosított
 Feldarabolás előtt
 Feldarabolás után
 Szótár
-CRC
+
 Típus
 Anti
 Módszer
@@ -145,7 +147,7 @@ Big-endian
 CPU
 Fizikai méret
 Fejlécek mérete
-Checksum
+Ellenőrző összeg
 Karakterisztika
 Virtuális cím
 ID
@@ -512,3 +514,20 @@ Hard link
 Szimbolikus fájl link
 Szimbolikus mappa link
 Mappa csatolási pont
+7800
+Memóriahasználati kérelem
+A következő műveletek megengedett határértékének módosítása
+A &kiválasztott művelet megismétlése az aktuális művelethez
+Művelet
+7810
+A műveletet a 7-Zip blokkolta.
+A művelet nagy mennyiségű memóriát (RAM) igényel.
+szükséges memóriahasználat mérete
+engedélyezett memóriahasználati korlát
+a 7-Zip által beállított memóriahasználati korlát
+RAM méret
+Az archívumok kicsomagolásához megengedett maximális RAM-használat:
+7820
+&Az archívum kicsomagolásának engedélyezése
+Az archívum kic&somagolásának kihagyása
+Az archívum kicsomagolását kihagytuk.

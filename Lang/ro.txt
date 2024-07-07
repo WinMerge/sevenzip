@@ -1,7 +1,7 @@
 ;!@Lang2@!UTF-8!
 ;  4.59 : Lucian Nan
 ; 23.00 : 2023-07-22 : Marius Hudea
-;
+; 24.05 : 2024-05-19 : Miloiu Andrei-Valentin
 ;
 ;
 ;
@@ -98,6 +98,8 @@ Arată text sub butoane
 900
 &Opţiuni...
 &Test performanță
+910
+Șterge fișierele temporare...
 960
 &Conţinut...
 &Despre 7-Zip...
@@ -511,4 +513,21 @@ Tip legătură
 Legatură grea
 Legatură simbolică fișier
 Legatură simbolică director
-Legătură director de tip "junction"
+Legătură director de tip joncțiune
+7800
+Cerere de utilizare a memoriei
+Schimbă limita permisă pentru următoarele operații
+&Repetă acțiunea selectată pentru operația curentă
+Acțiune
+7810
+Această operațiune a fost blocată de 7-Zip.
+Această operațiune necesită o cantitate mare de memorie (RAM).
+dimensiunea necesară de utilizare a memoriei
+limita permisă de utilizare a memoriei
+limita permisă de utilizare setată de 7-Zip
+Mărimea RAM
+Cantitatea maximă de utilizare a memoriei RAM permisă pentru despachetarea arhivelor:
+7820
+&Permite despachetarea arhivei
+&Omite despachetarea arhivei
+Despachetarea arhivei a fost omisă.

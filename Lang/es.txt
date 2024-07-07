@@ -6,7 +6,7 @@
 ;         2010-10-23 : Sergi Medina (corrected)
 ; 18.00 : 2018-01-10 : Agustín Bou (updated)
 ; 22.00 : 2023-05-13 : Toño Calo (updated and minor fixes)
-; 24.04 : 2024-04-05 : MELERIX (updated and various fixes)
+; 24.04 : 2024-04-25 : MELERIX (updated and various fixes)
 ;
 ;
 ;
@@ -88,7 +88,7 @@ Historial de carpetas...
 &Actualizar
 Actualizar automáticamente
 750
-Barra de herramientas de fichero
+Barra de herramientas de archivo comprimido
 Barra de herramientas estándar
 Botones grandes
 Mostrar texto de botones
@@ -218,11 +218,11 @@ Elementos del menú contextual:
 Iconos en el menú contextual
 2320
 <Carpeta>
-<Fichero>
-Abrir fichero
+<Archivo comprimido>
+Abrir archivo comprimido
 Extraer archivos...
-Agregar al fichero...
-Probar fichero
+Agregar al archivo comprimido...
+Probar archivo comprimido
 Extraer aquí
 Extraer a {0}
 Agregar a {0}
@@ -235,7 +235,7 @@ Carpeta temporal del &sistema
 &actual
 &especificada:
 Usar solo para unidades removibles
-Especificar una ubicación para los archivos temporales de ficheros.
+Especificar una ubicación para los archivos temporales de archivos comprimidos.
 2500
 Ajustes
 Mostrar el elemento ".."
@@ -254,12 +254,12 @@ El sistema no puede asignar la cantidad requerida de memoria
 No hay errores
 {0} objeto(s) seleccionado(s)
 No se puede crear la carpeta '{0}'
-Las operaciones de actualización no están soportadas para este fichero.
-No se puede abrir el archivo '{0}' como un fichero
-No se puede abrir el fichero cifrado '{0}'. ¿Contraseña incorrecta?
-Tipo de fichero no soportado
+Las operaciones de actualización no están soportadas para este archivo comprimido.
+No se puede abrir el archivo '{0}' como un archivo comprimido
+No se puede abrir el archivo comprimido cifrado '{0}'. ¿Contraseña incorrecta?
+Tipo de archivo comprimido no soportado
 El archivo {0} ya existe
-El archivo '{0}' fue modificado.\n¿Quieres actualizarlo en el fichero?
+El archivo '{0}' fue modificado.\n¿Quieres actualizarlo en el archivo comprimido?
 No se puede actualizar el archivo\n'{0}'
 No se puede iniciar el editor.
 El archivo parece un virus (el nombre del archivo contiene espacios largos en el nombre).
@@ -267,9 +267,9 @@ La operación no puede ser llamada desde una carpeta que tenga una ruta larga.
 Debes seleccionar un archivo
 Debes seleccionar uno o más archivos
 Demasiados elementos
-No se puede abrir el archivo como fichero {0}
-El archivo está abierto como fichero {0}
-El fichero está abierto con desplazamiento
+No se puede abrir el archivo como archivo comprimido {0}
+El archivo está abierto como archivo comprimido {0}
+El archivo comprimido está abierto con desplazamiento
 3300
 Extrayendo
 Comprimiendo
@@ -331,12 +331,12 @@ CRC fallida
 Datos no disponibles
 Final de datos inesperado
 Hay algunos datos después del final de los datos de carga útil.
-No es un fichero
+No es un archivo comprimido
 Error de encabezados
 Contraseña incorrecta
 3763
-Inicio de fichero no disponible
-Inicio de fichero sin confirmar
+Inicio del archivo comprimido no disponible
+Inicio del archivo comprimido sin confirmar
 
 
 
@@ -358,12 +358,12 @@ Velocidad:
 Procesado:
 Relación de compresión:
 Errores:
-Ficheros:
+Archivos comprimidos:
 4000
-Agregar al fichero
-&Fichero:
+Agregar al archivo comprimido
+&Archivo comprimido:
 &Modo de actualización:
-&Formato de fichero:
+&Formato del archivo comprimido:
 &Nivel de compresión:
 &Método de compresión:
 Tamaño del &diccionario:
@@ -372,7 +372,7 @@ Tamaño de bloque sólido:
 Número de hilos de la CPU:
 &Parámetros:
 Opciones
-Crear fichero SF&X
+Crear archivo comprimido SF&X
 Comprimir archivos compartidos
 Cifrado
 Método de cifrado:
@@ -408,7 +408,7 @@ Precisión de marca de tiempo:
 Almacenar tiempo de modificación
 Almacenar tiempo de creación
 Almacenar tiempo de último acceso
-Establecer el tiempo del fichero al último tiempo del archivo
+Establecer el tiempo del archivo comprimido al último tiempo del archivo
 No cambiar el tiempo de último acceso a los archivos fuente
 4090
 seg
@@ -425,7 +425,7 @@ Selecciona carpeta de destino
 La operación no está soportada para esta carpeta.
 Error renombrando archivo o carpeta
 Confirmar copia de archivo
-¿Estás seguro de querer copiar los archivos al fichero?
+¿Estás seguro de querer copiar los archivos al archivo comprimido?
 6100
 Confirmar borrado de archivo
 Confirmar borrado de carpeta
@@ -478,7 +478,7 @@ Confirmar división
 ¿Estás seguro de querer dividir el archivo en {0} volúmenes?
 El tamaño de los volúmenes debe ser menor que el del archivo original
 Tamaño de volumen incorrecto
-Tamaño de volumen especificado: {0} bytes.\n¿Estás seguro de querer dividir el fichero en dichos volúmenes?
+Tamaño de volumen especificado: {0} bytes.\n¿Estás seguro de querer dividir el archivo comprimido en dichos volúmenes?
 7400
 Combinar archivos
 &Combinar a:
@@ -526,8 +526,8 @@ tamaño de uso de memoria requerido
 límite de uso de memoria permitido
 límite de uso de memoria establecido por 7-Zip
 Tamaño de RAM
-Cantidad máxima de memoria RAM permitida para descomprimir ficheros:
+Cantidad máxima de memoria RAM permitida para descomprimir archivos comprimidos:
 7820
-&Permitir descompresión de fichero
-&Omitir descompresión de fichero
-Se ha omitido la descompresión del fichero.
+&Permitir descompresión del archivo comprimido
+&Omitir descompresión del archivo comprimido
+Se ha omitido la descompresión del archivo comprimido.

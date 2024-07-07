@@ -1,7 +1,7 @@
 ﻿;!@Lang2@!UTF-8!
-;       : Francisco Jr
-;  4.37 : Fabricio Biazzotto
-; 23.00 : Atualizado por Felipe
+;        : Francisco Jr
+;  4.37  : Fabricio Biazzotto
+;  24.06 : Atualizado por Felipe
 ;
 ;
 ;
@@ -98,6 +98,8 @@ Favorito
 900
 &Opções...
 &Benchmark
+910
+Apagar Arquivos Temporários...
 960
 &Conteúdo...
 &Sobre o 7-Zip...
@@ -512,3 +514,20 @@ Link Rígido
 Link Simbólico do Arquivo
 Link Simbólico do Diretório
 Junção do Diretório
+7800
+Requisição do uso de memória
+Mudar o limite permitido pras operações seguintes
+&Repetir a ação selecionada pra operação atual
+Ação
+7810
+A operação foi bloqueada pelo 7-Zip.
+A operação requer grande quantidade de memória (RAM).
+Tamanho do uso de memória requerida
+Limite de uso da memória permitida
+Limite de uso da memória definido pelo 7-Zip
+Tamanho da RAM
+Quantidade máxima do uso de memória RAM permitido pra desempacotar os arquivos compactados:
+7820
+&Permitir o desempacotamento dos arquivos compactados
+&Ignorar o desempacotamento dos arquivos compactados
+O desempacotamento dos arquivos compactados foi ignorado.

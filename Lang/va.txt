@@ -1,7 +1,7 @@
 ﻿;!@Lang2@!UTF-8!
 ;  4.26 : Tomas Miralles
 ;  4.44 : Fernando Verdú
-; 23.01 : 2024-01-19 : David Chova
+; 24.05 : 2024-05-23 : David Chova
 ;
 ;
 ;
@@ -98,6 +98,8 @@ Afig als Favorits
 900
 &Opcions...
 &Proves
+910
+Suprimeix els fitxers temporals...
 960
 &Contingut...
 Sobre 7-Zip...
@@ -512,3 +514,20 @@ Enllaç dur
 Enllaç simbòlic d'arxiu
 Enllaç simbòlic de directori
 Unió de directori
+7800
+Sol·licitud d'ús de memòria
+Canvia el límit permès per a les pròximes operacions
+&Repetiu l'acció seleccionada per a l'operació actual
+Acció
+7810
+7-Zip ha bloquejat l'operació.
+El funcionament requereix una gran quantitat de memòria (RAM).
+mida d'ús de memòria necessària
+límit d'ús de memòria permés
+límit d'ús de memòria establit per 7-Zip
+Mida de la memòria RAM
+Quantitat màxima d'ús de memòria RAM permés per desempaquetar fitxers:
+7820
+&Permet desempaquetar fitxers
+&Omet el desempaquetat de fitxers
+S'ha omès el desempaquetat de fitxers.
