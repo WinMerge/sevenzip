@@ -1,7 +1,7 @@
 ﻿;!@Lang2@!UTF-8!
 ;  9.07 : F@rhad
-; 15.02 : 2015-03-29 : Г. Гасымов
-; 23.01 : 2023-06-25 : Azər
+; 24.07 : 2024-07-23 : User
+;
 ;
 ;
 ;
@@ -29,13 +29,13 @@ Kömək
 440
 &Hamısına Bəli
 Ha&mısına Xeyr
-Dayan
+Dayandırmaq
 Yenidən başlamaq
 &Arxa planda
 Ö&ndə
 F&asilə
 Fasilədə
-Həqiqətən əməliyyatı dayandırmaq istəyirsiniz?
+Əməliyyat dayandırılsın?
 500
 &Fayl
 &Düzəliş
@@ -46,7 +46,7 @@ S&eçilmişlər
 540
 &Açmaq
 &Daxildə Açmaq
-B&ayırda açmaq
+K&ənarda Açmaq
 &Baxış
 &Düzəliş
 Ye&nidən Adlandırmaq
@@ -91,20 +91,22 @@ Bilavasitə Yeniləmək
 Arxivləyicinin Düymələr Lövhəsi
 Sadə Düymələr Lövhəsi
 Böyük Düymələr
-Düymələr Üzərində Mətnlər
+Düymələr Üzərində Qeydlər
 800
 &Qovluğu Seçilmişlərə Fərqli Əlavə Etmək
 Əlfəcin
 900
 Tənzimləmələr...
 Səmərə Sınağı
+910
+Müvəqqəti Faylların Silinməsi...
 960
 &Başlıq...
 7-Zip &Haqqında...
 1003
 İstiqamət
 Ad
-Genişləmə
+Genişlənmə
 Qovluq
 Ölçü
 Sıxılmış
@@ -115,8 +117,8 @@ Dəyişilib
 Aramsız
 Şərh
 Şifrələnib
-Əvvəlki parça
-Sonrakı parça
+Bölünüb Bundan Əvvəl
+Bölünüb Bundan Sonra
 Lüğət
 
 Növ
@@ -177,7 +179,7 @@ Axınlar
 Əvəzedici Axınlar
 Əvəzedici Axınlar Ölçüsü
 Xəyali Ölçü
-Ceşidli Ölçü
+Açıq\Çeşidlənmiş Ölçü
 Ümumi Fiziki Ölçü
 Cild Nömrəsi
 Növaltı
@@ -218,14 +220,14 @@ Zəncirvari əhatə təklifi
 <Qovluq>
 <Аrxiv>
 Arxivi Açmaq
-Çeşidləmək
+Açmaq\Çeşidləmək
 Arxivə Əlavə Etmək...
 Sınaq
-Burda Çeşidləmək
-{0} Çeşidləmək
-{0} Əlavə Etmək
-Sıxmaq Və E-Poçtla Göndərmək...
-{0} Sıxmaq Və E-Poçtla Göndərmək
+Burada Açmaq\Çeşidləmək
+{0} Açmaq\Çeşidləmək
+{0} kimi Əlavə Etmək
+Sıxmaq və E-Poçtla Göndərmək...
+{0} Sıxmaq və E-Poçtla Göndərmək
 2400
 Qovluqlar
 &İş Qovluğu
@@ -249,7 +251,7 @@ Böyük yaddaş səhifələri istifadəsi
 7-Zip Sərbəst Yayılan Proqramdır
 3000
 Kifayət qədər boş yaddaş yoxdur
-Səhvlər tapılmadı
+Xətalar tapılmadı
 {0} Ayrılmış hədəf
 '{0}' Qovluğunu yaratmaq mümkün olmadı
 Bu arxiv üçün dəyişiklik əməliyatı dəstəklənmir
@@ -262,14 +264,14 @@ Dəstəklənməyən arxiv
 Redaktəni işə salmaq alınmadı
 Fayl zərərvericiyə oxşayır (faylın adı uzun boşluq ardıcıllığı təşkil edir).
 Əməliyyat uzun yol təşkil edən qovluqdan icra oluna bilmir.
-Siz bir fayl seçməlisiniz
-Siz bir və ya bir neçə fayl seçməlisiniz
+Bir fayl seçilməlidir
+Bir və ya bir neçə fayl seçilməlidir
 Həddən çox ünsür
 Faylı, '{0}' arxivi kimi açmaq alınmadı
 Fayl, {0} arxivi kimi açıldı
 Arxiv əvəzlənərək açıldı
 3300
-Çeşidlənmə
+Açılma\Çeşidlənmə
 Sıxılma
 Sınaq
 Açılır...
@@ -280,14 +282,14 @@ Silinmə
 Yenilənmə
 Təhlil
 Nüsxələnmə
-Yenidən Çeşidlənmə
+Yenidən Açılma\Çeşidlənmə
 Keçmə İcazəsi
 Silinmə
 Başlıqlar Yaradılması
 3400
 Ayırmaq
-Ç&eçidlə:
-Ayrılan faylların yerini göstərin.
+Ç&eşidləmək:
+Ayrılan faylların yerini göstərmək.
 3410
 Fayllara istiqamət:
 Tam istiqamətlər
@@ -303,7 +305,7 @@ Birbaşa yenidən adlandırmaq
 Mövcud olanları yenidən adlandırmaq
 3430
 Kök qovluqla bənzərliyi aradan qaldırmaq
-Faylın təhlükəsizlik bərpası
+Giriş icazəsini təyin etmək
 3440
 Zone.Id axını yaymaq:
 Office faylları üçün
@@ -315,7 +317,7 @@ növbəti faylla?
 {0} bayt
 Birbaşa yenidən adlandırmaq
 3700
-'{0}' faylının dəstəklənməyən sıxılma üsulu.
+'{0}' faylı üçün dəstəklənməyən sıxılma üsulu.
 '{0}' məlumatlarında xəta. Fayl korlanıb.
 '{0}' CRC xətası. Fayl korlanıb.
 '{0}' şifrəli fayl məlumatlarında xəta. Yanlış şifrə?
@@ -345,7 +347,7 @@ Dəstəklənməyən xüsusiyyət
 Şifrəni təkrarlayın:
 &Şifrəni göstərmək
 Şifrələr uyğun deyil
-Şifrə üçün yalnız latın hərfləri, rəqəmlər və xüsusi rəmzlər istifadə edin (!, #, $, ...)
+Şifrə üçün yalnız latın hərfləri, rəqəmlər və xüsusi işarələr istifadə edin (!, #, $, ...)
 Şifrə şox uzundur
 &Şifrə
 3900
@@ -375,8 +377,8 @@ Yazılış üçün açıq faylları sıxmaq
 Şifrələmə
 Şifrələmə üsulu:
 Fayl adlarını &şifrələmək
-Qablaşdırma üçün yaddaş həcmi:
-Çeşidləmə üçün yaddaş həcmi:
+Sıxılma\Qablaşdırma üçün yaddaş həcmi:
+Açılma\Çeşidləmə üçün yaddaş həcmi:
 Sıxılmadan sonra faylları silmək
 4040
 Rəmzli keçidləri saxlamaq
@@ -389,12 +391,12 @@ Sürətli
 Cəld
 Məqbul
 Yüksək
-Daha Yüksək (Ultra)
+Ən Yüksək (Ultra)
 4060
 Əlavə etmək və əvəzləmək
 Yeniləmək və əlavə etmək
 Yeniləmək
-Eyniləşdir (Sinxron)
+Eyniləşdirmək (Sinxron)
 4070
 Vərəqləmək
 Bütün Fayllar
@@ -446,7 +448,7 @@ Fayl Yaradılması Zamanı Zəta
 6400
 Şərh
 &Şərh:
-Seçin
+Seçmək
 Seçimin Ləğvi
 Üzlük (Maska):
 6600
@@ -468,17 +470,17 @@ Köçürmək
 Silmək
 Məlumat
 7300
-Fayl Bölmək
+Faylı Bölmək
 &Bölmək:
-Cildlərə &bölmək, (bayt) ölçüdə:
+Cildlərə &bölmək, həcmi (bayt ilə):
 Bölünür...
 Bölünmə Təsdiqi
-Siz həqiqətən faylı {0} hissəyə bölmək istəyirsiz?
+Fayl {0} hissəyə bölünsün?
 Cild ölçüsü ilkin fayl ölçüsündən kiçik olmalıdır
 Cildlərin ölçü təyin etmə sahəsində xəta
-Təyin edilmiş cild ölçüsü: {0} bayt.\nSiz həqiqətən arxivi belə cildlərə bölmək istəyirsiniz?
+Təyin edilmiş cild ölçüsü: {0} bayt.\nArxiv belə cildlərə bölünsün?
 7400
-Faylları Birləşdir
+Faylları Birləşdirmək
 &Birləşdirmək:
 Birləşir...
 Bölünmüş faylın yalnız birinci hissəsini seçmək lazımdır
@@ -492,8 +494,8 @@ Dəlillər və adlar üçün CRC yoxlanma cəmi:
 7600
 Səmərə Sinağı
 Yaddaş Həcmi:
-Qablaşdırma/Sıxma
-Çeşidlənmə/Açma
+Sıxılma\Qablaşdırma
+Açmaq\Çeşidlənmə
 Reytinq
 Ümumi Reytinq
 Cari
@@ -507,8 +509,25 @@ Keçid:
 Mənbə:
 Məqsəd:
 7710
-İstinad Qismi
+İstinad Növü
 Sərt İstinad
 Rəmzi İstinad (Fayl)
 Rəmzi İstinad (Qovluq)
 Bağlantı Nöqtəsi (Qovşaq)
+7800
+Yaddaş istifadəsi sorğusu
+Növbəti əməliyyatlar üçün icazə verilən limiti dəyişdirmək
+Cari əməliyyat üçün seçilmiş fəaliyyəti təkrarlamaq
+Fəaliyyət
+7810
+7-Zip əməliyyatı blokladı.
+Əməliyyat böyük həcmdə operativ yaddaş (RAM) tələb edir.
+tələb olunan operativ yaddaş həcmi
+operativ yaddaş istifadəsinə icazə verilən limit
+7-Zip tərəfindən təyin olunan yaddaş istifadəsi limiti
+operativ yaddaş həcmi (RAM)
+Açmaq\Çeşidləmək üçün icazə verilən operativ yaddaş (RAM) istifadə limiti:
+7820
+Arxivin açılmasına icazə vermək
+Arxivin açılmasını ötürmək
+Arxiv açılmadı.

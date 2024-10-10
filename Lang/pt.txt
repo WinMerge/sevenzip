@@ -1,13 +1,13 @@
 ﻿;!@Lang2@!UTF-8!
-;       : Carlos Macao
-;       : João Alves
-;       : João Frade (100 NOME TR)
-;  4.46 : Rui Costa
-;  9.17 : Sérgio Marques
-; 15.00 : Rui Aguiar
+;       :            : Carlos Macao
+;       :            : João Alves
+;       :            : João Frade (100 NOME TR)
+;  4.46 :            : Rui Costa
+;  9.17 :            : Sérgio Marques
+; 15.00 :            : Rui Aguiar
 ; 15.00 : 2022-03-22 : Hugo Carvalho
 ; 22.00 : 2022-06-28 : Hugo Carvalho
-;
+; 24.07 : 2024-06-18 : Hugo Carvalho
 ;
 ;
 0
@@ -98,6 +98,8 @@ Marcador
 900
 &Opções...
 &Desempenho
+910
+Eliminar ficheiros temporários...
 960
 &Conteúdo...
 &Acerca do 7-Zip...
@@ -252,13 +254,13 @@ O sistema não consegue atribuir a memória necessária
 Não existem erros
 {0} objecto(s) seleccionado(s)
 Não é possível criar a pasta '{0}'
-Este tipo de arquivo não permite actualizações.
+Este tipo de arquivo não permite atualizações.
 Não é possível abrir o ficheiro '{0}' como arquivo
 Não é possível abrir o arquivo encriptado '{0}'. Palavra-passe errada?
 O arquivo não é suportado
 Já existe o ficheiro {0}
-O ficheiro '{0}' foi modificado.\nQuer actualizá-lo no arquivo?
-Não foi possível actualizar o ficheiro\n'{0}'
+O ficheiro '{0}' foi modificado.\nQuer atualizá-lo no arquivo?
+Não foi possível atualizar o ficheiro\n'{0}'
 Não foi possível iniciar o editor.
 O ficheiro parece ser um vírus (o nome do ficheiro contém muitos espaços em branco).
 A operação não pode ser invocada a partir de uma pasta com uma longa localização.
@@ -277,7 +279,7 @@ A pesquisar...
 A remover
 3320
 A adicionar...
-A actualizar...
+A atualizar...
 A analisar...
 A replicar
 A recomprimir...
@@ -360,7 +362,7 @@ Arquivos:
 4000
 Adicionar ao arquivo
 &Arquivo:
-&Modo de actualização:
+&Modo de atualização:
 &Formato do arquivo:
 Níve&l de compressão:
 Método de &compressão:
@@ -512,3 +514,20 @@ Ligação física
 Ligação do ficheiro simbólico
 Ligação do directório simbólico
 Directório de junção
+7800
+Pedido de utilização de memória
+Alterar o limite permitido para as operações seguintes
+&Repetir a ação selecionada para a operação atual
+Action
+7810
+A operação foi bloqueada pelo 7-Zip.
+A operação requer uma grande quantidade de memória (RAM).
+tamanho de utilização de memória necessário
+limite de utilização de memória permitido
+limite de utilização de memória definido pelo 7-Zip
+Tamanho da RAM
+Quantidade máxima de utilização de memória RAM permitida para descompactar arquivos:
+7820
+&Permitir a descompactação de arquivos
+&Ignorar a descompactação de arquivos
+A descompactação do arquivo foi ignorada.
