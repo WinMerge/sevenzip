@@ -1,6 +1,6 @@
 ﻿;!@Lang2@!UTF-8!
-;  9.07 : Josep Casals, Marc Folch
-; 17.01 : Benet «BennyBeat» R. i Camps
+;  9.07 : Josep Casals, Marc Folch.
+; 17.01 : Benet R. i Camps (BennyBeat).
 ;
 ;
 ;
@@ -98,6 +98,8 @@ Personal
 900
 Opcions...
 &Test de referència
+910
+Suprimeix els fitxers temporals...
 960
 &Contingut...
 Quant al 7-Zip...
@@ -118,7 +120,7 @@ Xifrat
 Expandit abans
 Expandit després
 Diccionari
-CRC
+
 Tipus
 Anti
 Mètode
@@ -193,6 +195,11 @@ Enllaç físic
 iNode
 
 Només lectura
+
+Copia l'enllaç
+
+
+Les metadades han canviat
 2100
 Opcions
 Llengua
@@ -299,6 +306,9 @@ Auto-reanomena fitxers existents
 3430
 Suprimeix la duplicació de la carpeta arrel
 Restaura el fitxer de seguretat
+3440
+Transmet el flux identificatiu de zona
+Per a fitxers de l'Office
 3500
 Confirmeu substitució de fitxers
 Ja existeix un fitxer amb el mateix nom a la carpeta de destinació.
@@ -392,6 +402,17 @@ Visualitza
 Tots els fitxers
 No sòlid
 Sòlid
+4080
+Data
+Precisió de la data:
+Emmagatzema la data de modificació
+Emmagatzema la data de creació
+Emmagatzema la data del darrer accés
+Estableix l'hora del fitxer a la data més recent
+No modifiquis la data original dels fitxers
+4090
+s
+ns
 6000
 Copia
 Mou
@@ -493,3 +514,20 @@ Enllaç físic
 Fitxer d'enllaç simbòlic
 Directori d'enllaç simbòlic
 Directori d'unió
+7800
+Sol·licitud d'ús de memòria
+Canvia el límit permès per a les properes operacions
+&Repeteix l'acció seleccionada per a l'operació actual
+Acció
+7810
+El 7-zip ha blocat l'operació.
+L'operació requereix molta capacitat de memòria (RAM).
+mida de memòria requerida
+límit d'ús de memòria permesa
+límit d'ús de memòria establert pel 7-Zip
+Memòria RAM
+Mida màxima d'ús de memòria RAM permesa per a desempaquetar arxius:
+7820
+Permet desempaquetar l'&arxiu
+&Ignora la descompressió dels arxius
+S'ha ignorat la descompressió dels arxius.

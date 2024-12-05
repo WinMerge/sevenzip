@@ -4,8 +4,7 @@
 ;  9.07 : Jiří Malák
 ; 15.00 : Kryštof Černý
 ; 23.01 : 2023-06-20 : Patrik (Pa4k) Špaňo
-;
-;
+; 24.08 : 2024-08-30 : Jirka V. (paradroid)
 ;
 ;
 ;
@@ -99,6 +98,8 @@ Záložka
 900
 &Možnosti...
 &Zkouška výkonu
+910
+Vymazat dočasné soubory
 960
 &Obsah...
 O progr&amu 7-Zip...
@@ -513,3 +514,20 @@ Pevný odkaz
 Symbolický odkaz souboru
 Symbolický odkaz složky
 Spojení složek
+7800
+Požadavek na využití paměti
+Změna povoleného limitu pro další operace
+&Zopakování vybrané akce pro aktuální operaci
+Akce
+7810
+Operace byla zablokována programem 7-Zip.
+Operace vyžaduje velké množství paměti (RAM).
+požadovaná velikost využití paměti
+povolený limit využití paměti
+limit využití paměti nastavený systémem 7-Zip
+velikost paměti RAM
+Maximální povolené využití paměti RAM pro rozbalování archivů:
+7820
+&Povolit rozbalování archivů
+Přerušit rozbalování archivů
+Rozbalování archivu bylo přeskočeno.
