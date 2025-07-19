@@ -4,7 +4,7 @@
 ; 15.14 : Sylvain St-Amand (SSTSylvain)
 ; 22.00 : 2022-06-09 : Lolo S.
 ; 23.01 : 2023-12-20 : Denis G (Need74)
-; 24.04 : 2024-04-29 : Lolo S.
+; 24.09 : 2024-12-28 : Lolo S.
 ;
 ;
 ;
@@ -93,7 +93,7 @@ Barre standard
 Grands boutons
 Montrer le texte des boutons
 800
-&Ajoutez le dossier aux favoris comme
+&Ajouter le dossier aux favoris comme
 Signet
 900
 &Options...
@@ -115,8 +115,8 @@ Créé le
 Accédé le
 Modifié le
 Solide
-Commentaire
-Chiffrer
+Commenté
+Chiffré
 Diviser avant
 Diviser après
 Dictionnaire
@@ -166,7 +166,7 @@ Fournisseur
 Sécurité NT
 Flux alternatif
 Auxiliaire
-Effacer
+Supprimé
 En arbre
 
 
@@ -238,7 +238,7 @@ N'utiliser que pour les médias amovibles
 Spécifier un dossier pour les fichiers d'archive temporaires.
 2500
 Paramètres
-Afficher l'élément "..."
+Afficher l'élément ".."
 Afficher les icônes réelles des fichiers
 Afficher le menu système
 &Sélectionner toute la ligne
@@ -276,7 +276,7 @@ Compression en cours
 Contrôle en cours
 Ouverture...
 Analyse...
-Suppression...
+Suppression
 3320
 Ajout
 Mise à jour
@@ -473,7 +473,7 @@ Informations
 Découper le fichier
 &Découper en :
 Découper en &volumes, octets :
-Découper...
+Découpage...
 Confirmer le découpage
 Êtes-vous sûr de vouloir découper le fichier en {0} volumes ?
 La taille de volume doit être inférieure à la taille du fichier d'origine
@@ -482,7 +482,7 @@ Taille spécifiée : {0} octets.\nÊtes-vous sûr de vouloir diviser l'archive d
 7400
 Fusionner les fichiers
 &Fusionner en :
-Fusionner...
+Fusionnage...
 Ne sélectionner que la première partie du fichier fractionné
 Fichier non reconnu comme partie d'une archive fractionnée
 Impossible de trouver plus d'une partie de l'archive fractionnée
