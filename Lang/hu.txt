@@ -1,9 +1,9 @@
 ﻿;!@Lang2@!UTF-8!
-;       : Jozsef Tamas Herczeg
-;  9.16 : Nyilas MISY
-; 15.00 : 2021-11-09 : Barnabas Kovacs
-; 22.01 : 2022-07-15 : John Fowler
-; 24.05 : 2024-05-16 : John Fowler
+; 03.12 : 2003.12.11 : Jozsef Tamas Herczeg
+; 09.16 : 2010.09.08 : Nyilas MISY
+; 15.00 : 2021.11.09 : Barnabas Kovacs
+; 22.01 : 2022.07.15 : John Fowler
+; 25.00 : 2025.07.05 : John Fowler
 ;
 ;
 ;
@@ -238,7 +238,7 @@ Csak cserélhető meghajtók esetén használható
 Válassza ki az ideiglenes archív fájlok mappáját.
 2500
 Beállítások
-A ".." elem látható
+A ".." elem látható.
 Az eredeti fájlikonok láthatók
 Látható a rendszermenü
 &Teljes soros kijelölés
@@ -250,7 +250,7 @@ Elem megnyitása egyszeres kattintással
 A 7-Zip névjegye
 A 7-Zip ingyenes szoftver.
 3000
-A rendszer nem tudja lefoglalni a szükséges memóriát
+A rendszer nem tudja lefoglalni a szükséges memóriát!
 Az archívum hibamentes
 {0} objektum kijelölve
 A(z) '{0}' mappát nem lehet létrehozni
