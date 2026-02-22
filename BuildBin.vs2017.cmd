@@ -28,7 +28,7 @@ if "%1" == "ARM" set ARCH=amd64_arm
 if "%1" == "arm64" set ARCH=amd64_arm64
 if "%1" == "ARM64" set ARCH=amd64_arm64
 
-call "%InstallDir%\VC\Auxiliary\Build\vcvarsall.bat" %ARCH% 10.0.16299.0
+call "%InstallDir%\VC\Auxiliary\Build\vcvarsall.bat" %ARCH% 10.0.17763.0
 
 pushd CPP\7zip
 nmake
