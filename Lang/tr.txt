@@ -1,5 +1,5 @@
 ;!@Lang2@!UTF-8!
-; 24.04 : 2024-04-05 : Ahmet Murat ÖZHAN
+; 24.04 : 2024-04-09 : Ahmet Murat ÖZHAN
 ; 22.00 : 2023-05-28 : Emir SARI
 ; 15.00 : 2018-11-21 : Kaya Zeren
 ;  9.07 : 2009-09-22 : X-FoRcE
@@ -312,8 +312,8 @@ Office dosyaları için
 3500
 Dosya Değiştirme Onayı
 İşlenen dosya hedef klasörde zaten var.
-Mevcut dosyayı bununla değiştirmek
-ister misiniz?
+Mevcut dosyayı değiştirmek ister misiniz?
+bununla
 {0} bayt
 &Otomatik Yeniden Adlandır
 3700
@@ -432,7 +432,7 @@ Klasör Silme Onayı
 Çoklu Dosya Silme İşlemini Onayla
 '{0}' ögesi silinsin mi?
 '{0}' klasörünü ve tüm içeriğini silmek istiyor musunuz?
-Bu {0} ögeleri silmek istiyor musunuz?
+Bu {0} ögeyi silmek istiyor musunuz?
 Siliniyor...
 Dosya/Klasör Silme Hatası
 Sistem uzun yola sahip bir dosyayı Geri Dönüşüm Kutusu'na taşıyamıyor
