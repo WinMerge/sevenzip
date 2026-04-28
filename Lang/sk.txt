@@ -3,7 +3,7 @@
 ;  9.07 : Pavel Devečka
 ;  9.38 beta : 2015-01-11 : Roman Horváth
 ;  24.02 : Milan Šalka
-;
+;  24.04 : Patrik Špaňo (Pa4k)
 ;
 ;
 ;
@@ -38,15 +38,15 @@ Pozastavené
 Ste si istý, že chcete akciu zrušiť?
 500
 &Súbor
-&Upraviť
-&Zobraziť
+&Úpravy
+&Zobrazenie
 &Obľúbené
 &Nástroje
 &Pomocník
 540
 &Otvoriť
-O&tvoriť vnútri
-Ot&voriť externe
+Otvoriť &vnútri
+Otvoriť &externe
 &Zobraziť
 &Upraviť
 &Premenovať
@@ -65,9 +65,9 @@ Uko&nčiť
 Odkaz...
 &Alternatívne streamy
 600
-Označiť všetko
+Označiť &všetko
 Odznačiť všetko
-Invertovať označenie
+&Invertovať výber
 Označiť...
 Odznačiť...
 Označiť podľa typu
@@ -93,32 +93,34 @@ Archív
 Veľké ikony
 Textový popis pod ikonami
 800
-Pridať priečinok medzi obľúbené ako
+&Pridať priečinok medzi obľúbené ako
 Záložka
 900
-N&astavenia...
-&Skúšobný test
+&Nastavenia...
+&Benchmark
+910
+Zmazať dočasné súbory...
 960
-&Obsah pomocníka...
-O p&rograme 7-Zip
+Obsah &pomocníka...
+&O programe 7-Zip
 1003
 Cesta
-Meno
+Názov
 Prípona
 Priečinok
 Veľkosť
 Veľkosť po kompresii
 Atribúty
 Vytvorený
-Sprístupnený
-Zmenený
-Jednoliaty
+Otvorený
+Upravený
+Kompaktný (Pevný)
 Komentovaný
 Zašifrovaný
-Rozdelený predtým
-Rozdelený potom
+Rozdelený pred
+Rozdelený po
 Slovník
-CRC
+
 Typ
 Anti
 Metóda
@@ -129,7 +131,7 @@ Skupina
 Blok
 Komentár
 Pozícia
-Predpona cesty
+Prefix cesty
 Priečinky
 Súbory
 Verzia
@@ -187,23 +189,23 @@ Kódová stránka
 
 
 Veľkosť zakončenia
-Veľkosť vloženého ústrižku
+Veľkosť vloženého prvku
 Odkaz
 Pevný odkaz
 iNode
 
 Len na čítanie
 
-Kopírovať link
+Kopírovať odkaz
 
 
-Metadata zmenené
+Metadáta zmenené
 2100
 Nastavenia
 Jazyk
 Jazyk:
 Editor
-Editor:
+&Editor:
 Vyhľadávač rozdielov (Diff):
 2200
 Systém
@@ -236,13 +238,13 @@ Po&užiť len pre vymeniteľné jednotky
 Vyberte priečinok pre dočasné súbory.
 2500
 Nastavenia
-Ukázať položku ".."
-Ukázať skutočné ikony súborov
-Ukázať systémovú ponuku
-Označiť celý riadok
-Zobraziť čiary mriežky
+Zobraziť položku ".."
+Zobraziť skutočné ikony súborov
+Zobraziť systémovú ponuku
+&Označiť celý riadok
+Zobraziť čiary &mriežky
 Otvoriť položku jednoduchým kliknutím
-Alternatívny režim výberu
+&Alternatívny režim výberu
 Použitie veľkých stránok pamäti
 2900
 O programe 7-Zip
@@ -271,7 +273,7 @@ Archív je otvorený s ofsetom
 3300
 Rozbaľovanie
 Komprimovanie
-Výsledok testovania
+Testovanie
 Otváranie...
 Prehľadávanie...
 Odstraňovanie
@@ -374,7 +376,7 @@ Vytvoriť samorozbaľovací archív
 Komprimovať zdieľané súbory
 Šifrovanie
 Metóda šifrovania:
-Zašifrovať mená súborov
+Zašifrovať názvy súborov
 Pamäť potrebná na kompresiu:
 Pamäť potrebná na dekompresiu:
 Vymazať súbory po kompresii
@@ -404,10 +406,10 @@ Jednoliaty
 Čas
 Presnosť časovej pečiatky:
 Uložiť čas úpravy
-Čas vytvorenia obchodu
+Uložiť čas vytvorenia
 Uložiť čas posledného prístupu
-Nastavte čas archivácie na najnovší čas súboru
-Nemeňte zdrojové súbory v čase posledného prístupu
+Nastaviť čas archívu podľa času najnovšieho súboru
+Nemeniť čas posledného prístupu zdrojových súborov
 4090
 sek
 ns
@@ -437,8 +439,8 @@ Systém nemôže presunúť do koša súbor s dlhou cestou
 6300
 Vytvoriť priečinok
 Vytvoriť súbor
-Meno priečinka:
-Meno súboru:
+Názov priečinka:
+Názov súboru:
 Nový priečinok
 Nový súbor
 Chyba pri vytváraní priečinka
@@ -469,8 +471,8 @@ Odstrániť
 Informácie
 7300
 Rozdeliť súbor
-&Rozdeliť na:
-Roz&deliť na zväzky bajtov:
+&Rozdeliť do:
+Rozdeliť na &zväzky bajtov:
 Rozdeľovanie...
 Potvrdiť rozdeľovanie.
 Ste si istý, že chcete rozdeliť súbor na {0} zväzkov?
@@ -499,19 +501,19 @@ Celkové hodnotenie
 Aktuálne
 Výsledné
 Využitie CPU
-Hodn. / Využitie
+Hodnotenie / Využitie
 Testov bez chýb:
 7700
 Odkaz
-Odkaz
+Prepojiť
 Odkaz z:
 Odkaz do:
 7710
 Typ odkazu
 Pevný odkaz
-Súbor symbolického odkazu
-Priečinok symbolického odkazu
-Prekríženie priečinkov
+Symbolický odkaz na súbor
+Symbolický odkaz na priečinok
+Prepojenie priečinka
 7800
 Žiadosť o využitie pamäte
 Zmeňte povolený limit pre ďalšie operácie
