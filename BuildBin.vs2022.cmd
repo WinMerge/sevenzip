@@ -1,7 +1,7 @@
 cd /d "%~dp0"
 
 for /f "usebackq tokens=*" %%i in (`"%programfiles(x86)%\microsoft visual studio\installer\vswhere.exe" -version [17.0^,18.0^) -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
-  set InstallDir=%%i
+  set "InstallDir=%%i"
 )
 if "%1" == "" (
   call :BuildBin x86 || goto :eof
